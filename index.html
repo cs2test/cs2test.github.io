@@ -602,8 +602,8 @@
         <div class="game-container">
             <div class="training-area" id="training-area">
                 <div class="crosshair" id="crosshair"></div>
-                <div class="combo-display">连击: <span id="combo-display">0</span></div>
-                <div class="score-display">得分: <span id="score-display">0</span></div>
+                <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
+                <div class="score-display" id="score-display-container">得分: <span id="score-display">0</span></div>
                 <div class="game-status" id="game-status">准备就绪</div>
                 <!-- Targets will be generated here -->
             </div>
@@ -687,6 +687,8 @@
             const scoreElement = document.getElementById('score');
             const comboDisplay = document.getElementById('combo-display');
             const scoreDisplay = document.getElementById('score-display');
+            const comboDisplayContainer = document.getElementById('combo-display-container');
+            const scoreDisplayContainer = document.getElementById('score-display-container');
             
             // Language elements
             const titleElement = document.getElementById('title');
@@ -725,9 +727,9 @@
             let targetSpawnInterval;
             let difficulty = 'easy'; // easy, medium, hard
             let language = 'zh'; // zh, en
-            let lastFrameTime = 0;
             let mouseX = 0;
             let mouseY = 0;
+            let lastUpdateTime = 0;
             
             // Difficulty settings
             const difficultySettings = {
@@ -748,6 +750,8 @@
                     reactionLabel: "Average Reaction Time:",
                     maxComboLabel: "Max Combo:",
                     scoreLabel: "Current Score:",
+                    comboDisplay: "Combo: ",
+                    scoreDisplay: "Score: ",
                     easyBtn: "Easy",
                     mediumBtn: "Medium",
                     hardBtn: "Hard",
@@ -778,6 +782,8 @@
                     reactionLabel: "平均反应时间:",
                     maxComboLabel: "最高连击:",
                     scoreLabel: "当前得分:",
+                    comboDisplay: "连击: ",
+                    scoreDisplay: "得分: ",
                     easyBtn: "简单",
                     mediumBtn: "中等",
                     hardBtn: "困难",
@@ -800,20 +806,47 @@
                 }
             };
             
-            // 使用 requestAnimationFrame 实现流畅的准星移动
-            function updateCrosshair() {
-                if (gameActive) {
+            // 使用高性能的准星移动
+            function updateCrosshair(timestamp) {
+                if (!lastUpdateTime) lastUpdateTime = timestamp;
+                const deltaTime = timestamp - lastUpdateTime;
+                
+                // 使用 requestAnimationFrame 的时间参数实现平滑动画
+                if (gameActive && trainingArea) {
                     const rect = trainingArea.getBoundingClientRect();
-                    crosshair.style.left = (mouseX - rect.left - 14) + 'px';
-                    crosshair.style.top = (mouseY - rect.top - 14) + 'px';
+                    // 使用 transform 而不是 left/top 实现硬件加速
+                    crosshair.style.transform = `translate(${mouseX - rect.left - 14}px, ${mouseY - rect.top - 14}px)`;
                 }
+                
+                lastUpdateTime = timestamp;
                 requestAnimationFrame(updateCrosshair);
             }
             
-            // 鼠标移动事件监听器
+            // 鼠标移动事件监听器（优化性能）
+            let mouseThrottle = false;
             trainingArea.addEventListener('mousemove', function(e) {
+                if (mouseThrottle) return;
+                mouseThrottle = true;
+                
                 mouseX = e.clientX;
                 mouseY = e.clientY;
+                
+                // 16ms 节流，避免过多的事件处理
+                setTimeout(() => {
+                    mouseThrottle = false;
+                }, 16);
+            }, { passive: true });
+            
+            // 鼠标进入时隐藏系统光标
+            trainingArea.addEventListener('mouseenter', function() {
+                if (gameActive) {
+                    trainingArea.style.cursor = 'none';
+                }
+            });
+            
+            // 鼠标离开时显示系统光标
+            trainingArea.addEventListener('mouseleave', function() {
+                trainingArea.style.cursor = 'default';
             });
             
             // 启动准星动画
@@ -989,11 +1022,9 @@
                     // Auto-remove target after timeout (missed target)
                     setTimeout(() => {
                         if (!target.classList.contains('hit') && target.parentNode) {
-                            // For missed targets, add a significant penalty to reaction time
-                            // This will substantially increase the average reaction time
-                            const penaltyMultiplier = 2; // Increase this for more penalty
-                            const penaltyTime = settings.speed * penaltyMultiplier;
-                            totalReactionTime += penaltyTime;
+                            // For missed targets, add the full duration to total reaction time
+                            // This ensures that even if you don't click, the time is counted
+                            totalReactionTime += settings.speed;
                             targetCount++; // Count this as a target that was processed (missed)
                             
                             target.remove();
@@ -1095,6 +1126,8 @@
                 reactionLabel.innerHTML = t.reactionLabel;
                 maxComboLabel.innerHTML = t.maxComboLabel;
                 scoreLabel.innerHTML = t.scoreLabel;
+                comboDisplayContainer.innerHTML = t.comboDisplay + '<span id="combo-display">0</span>';
+                scoreDisplayContainer.innerHTML = t.scoreDisplay + '<span id="score-display">0</span>';
                 easyBtn.innerHTML = t.easyBtn;
                 mediumBtn.innerHTML = t.mediumBtn;
                 hardBtn.innerHTML = t.hardBtn;
@@ -1112,6 +1145,12 @@
                 instruction8.innerHTML = t.instruction8;
                 footerText.innerHTML = t.footerText;
                 
+                // Update references to combo and score display elements
+                const newComboDisplay = document.getElementById('combo-display');
+                const newScoreDisplay = document.getElementById('score-display');
+                if (newComboDisplay) comboDisplay = newComboDisplay;
+                if (newScoreDisplay) scoreDisplay = newScoreDisplay;
+                
                 // Update button text based on game state
                 if (gameActive) {
                     startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
@@ -1119,17 +1158,6 @@
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
-            
-            // Hide cursor when inside training area
-            trainingArea.addEventListener('mouseenter', function() {
-                if (gameActive) {
-                    document.body.style.cursor = 'none';
-                }
-            });
-            
-            trainingArea.addEventListener('mouseleave', function() {
-                document.body.style.cursor = 'default';
-            });
             
             // Initialize
             updateStats();
