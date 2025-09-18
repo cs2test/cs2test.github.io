@@ -507,10 +507,11 @@
             const hardBtn = document.getElementById('hard-btn');
             // Game state
             let gameActive = false;
+            let gameReady = false; // 新增状态，用于倒计时
             let shots = 0;
             let hits = 0;
-            let totalReactionTime = 0; // Total reaction time for all targets (including missed ones)
-            let targetCount = 0; // Total number of targets that appeared (including missed ones)
+            let totalReactionTime = 0; // Total reaction time for all targets
+            let targetCount = 0; // Total number of targets that appeared
             let combo = 0;
             let maxCombo = 0;
             let score = 0;
@@ -661,58 +662,33 @@
                     updateStats();
                 }
             });
-            // Start training with countdown
+            // Start training
             startBtn.addEventListener('click', function() {
                 if (gameActive) {
                     gameActive = false;
+                    gameReady = false;
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
                     gameActive = true;
+                    gameReady = true; // 开始倒计时
                     startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
-                    // Show countdown
-                    showCountdown();
-                    // Start the actual spawning after countdown
-                    setTimeout(() => {
-                        spawnTargets();
-                        targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
-                        showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
-                    }, 3000);
+                    // 倒计时逻辑
+                    let countdown = 3;
+                    const countdownTimer = setInterval(() => {
+                        showGameStatus(countdown.toString());
+                        countdown--;
+                        if (countdown < 0) {
+                            clearInterval(countdownTimer);
+                            gameReady = false; // 倒计时结束，开始生成目标
+                            spawnTargets();
+                            targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
+                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                        }
+                    }, 1000);
                 }
             });
-            // Show countdown
-            function showCountdown() {
-                // Clear any existing countdown
-                const existingCountdown = document.querySelector('.countdown');
-                if (existingCountdown) {
-                    existingCountdown.remove();
-                }
-                // Create countdown element
-                const countdown = document.createElement('div');
-                countdown.className = 'countdown';
-                countdown.style.position = 'absolute';
-                countdown.style.top = '50%';
-                countdown.style.left = '50%';
-                countdown.style.transform = 'translate(-50%, -50%)';
-                countdown.style.fontSize = '6rem';
-                countdown.style.fontWeight = 'bold';
-                countdown.style.color = 'rgba(255, 255, 255, 0.8)';
-                countdown.style.textShadow = '0 0 30px rgba(255, 255, 255, 0.5)';
-                countdown.style.zIndex = '100';
-                countdown.style.pointerEvents = 'none';
-                trainingArea.appendChild(countdown);
-                // Update countdown
-                let count = 3;
-                const interval = setInterval(() => {
-                    countdown.textContent = count;
-                    count--;
-                    if (count < 0) {
-                        clearInterval(interval);
-                        countdown.remove();
-                    }
-                }, 1000);
-            }
             // Show game status message
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -749,7 +725,7 @@
             });
             // Spawn targets
             function spawnTargets() {
-                if (!gameActive) return;
+                if (!gameActive || gameReady) return; // 如果游戏未激活或正在倒计时，则不生成目标
                 // Remove old targets
                 const oldTargets = document.querySelectorAll('.target.hit');
                 oldTargets.forEach(target => {
@@ -792,6 +768,7 @@
                     setTimeout(() => {
                         if (!target.classList.contains('hit') && target.parentNode) {
                             // For missed targets, add the full duration to total reaction time
+                            // This ensures that even if you don't click, the time is counted
                             totalReactionTime += settings.speed;
                             targetCount++; // Count this as a target that was processed (missed)
                             target.remove();
@@ -842,6 +819,7 @@
             // Reset game
             function resetGame() {
                 gameActive = false;
+                gameReady = false;
                 startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 clearInterval(targetSpawnInterval);
                 // Reset stats
