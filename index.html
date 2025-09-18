@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS2 精准度训练模拟器</title>
+    <title>CS2 Aim Trainer</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,7 @@
         
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             padding: 20px;
         }
         
@@ -32,101 +32,104 @@
             text-align: center;
             padding: 15px 0;
             margin-bottom: 20px;
-            background: rgba(10, 15, 35, 0.7);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: rgba(10, 15, 35, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
             border: 1px solid #2d3047;
+            position: relative;
         }
         
         h1 {
-            font-size: 2.2rem;
+            font-size: 2.4rem;
             margin-bottom: 8px;
             color: #ff6b6b;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-            letter-spacing: 1px;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+            letter-spacing: 1.5px;
         }
         
         .subtitle {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: #a9a9c5;
         }
         
         .game-container {
             display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 25px;
+            margin-bottom: 25px;
         }
         
         .training-area {
             flex: 3;
-            background: rgba(5, 10, 25, 0.9);
-            border-radius: 10px;
+            background: rgba(5, 10, 25, 0.95);
+            border-radius: 12px;
             padding: 15px;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
             position: relative;
             overflow: hidden;
-            height: 600px;
+            height: 650px;
             border: 2px solid #2d3047;
         }
         
         .stats-panel {
             flex: 1;
-            background: rgba(10, 15, 35, 0.85);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: rgba(10, 15, 35, 0.9);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
             border: 1px solid #2d3047;
         }
         
         .stats-title {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #4ecdc4;
-            font-size: 1.5rem;
-            text-shadow: 0 0 5px rgba(78, 205, 196, 0.5);
+            font-size: 1.7rem;
+            text-shadow: 0 0 8px rgba(78, 205, 196, 0.6);
         }
         
         .stat-item {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
+            padding: 14px 0;
             border-bottom: 1px solid #2d3047;
         }
         
         .stat-label {
             color: #a9a9c5;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
         }
         
         .stat-value {
             font-weight: bold;
             color: #ffd166;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
+            text-shadow: 0 0 5px rgba(255, 209, 102, 0.5);
         }
         
         .controls {
             display: flex;
             justify-content: space-between;
-            margin-top: 25px;
+            margin-top: 30px;
+            gap: 15px;
         }
         
         button {
             background: linear-gradient(to right, #ff6b6b, #ff8e53);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
+            padding: 14px 25px;
+            border-radius: 35px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-            width: 48%;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            flex: 1;
         }
         
         button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
         }
         
         button:active {
@@ -135,11 +138,20 @@
         
         #reset-btn {
             background: linear-gradient(to right, #4ecdc4, #88d3ce);
-            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
         }
         
         #reset-btn:hover {
-            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.6);
+        }
+        
+        #lang-btn {
+            background: linear-gradient(to right, #6a5af9, #d66efd);
+            box-shadow: 0 5px 15px rgba(106, 90, 249, 0.4);
+        }
+        
+        #lang-btn:hover {
+            box-shadow: 0 8px 20px rgba(106, 90, 249, 0.6);
         }
         
         .target {
@@ -149,102 +161,104 @@
             background: radial-gradient(circle, #ff6b6b, #d32f2f);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
             transition: transform 0.1s ease;
             border: 2px solid #ff8e53;
-        }
-        
-        .target:hover {
-            transform: scale(1.1);
+            z-index: 10;
         }
         
         .target.hit {
-            animation: hitAnimation 0.2s forwards;
+            animation: hitAnimation 0.15s forwards;
         }
         
         @keyframes hitAnimation {
             0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
+            50% { transform: scale(1.4); opacity: 0.7; }
             100% { transform: scale(0); opacity: 0; }
         }
         
         .crosshair {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             pointer-events: none;
             z-index: 100;
+            transition: transform 0.05s ease;
         }
         
         .crosshair::before, .crosshair::after {
             content: '';
             position: absolute;
             background-color: #00ff00;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
         }
         
         .crosshair::before {
-            width: 20px;
+            width: 24px;
             height: 2px;
-            top: 9px;
+            top: 11px;
             left: 0;
         }
         
         .crosshair::after {
             width: 2px;
-            height: 20px;
+            height: 24px;
             top: 0;
-            left: 9px;
+            left: 11px;
         }
         
         .crosshair.center-dot::after {
             content: '';
             position: absolute;
-            width: 4px;
-            height: 4px;
+            width: 5px;
+            height: 5px;
             background-color: #00ff00;
             border-radius: 50%;
-            top: 8px;
-            left: 8px;
+            top: 9.5px;
+            left: 9.5px;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
         }
         
         .hit-effect {
             position: absolute;
-            width: 15px;
-            height: 15px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             pointer-events: none;
-            animation: spread 0.3s forwards;
+            animation: spread 0.25s forwards;
+            z-index: 20;
         }
         
         @keyframes spread {
             0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(2.5); opacity: 0; }
+            100% { transform: scale(2.2); opacity: 0; }
         }
         
         .instructions {
-            background: rgba(10, 15, 35, 0.85);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: rgba(10, 15, 35, 0.9);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
             border: 1px solid #2d3047;
         }
         
         .instructions h2 {
             color: #ffd166;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: center;
-            text-shadow: 0 0 5px rgba(255, 209, 102, 0.5);
+            text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
         }
         
         .instructions ul {
-            padding-left: 20px;
+            padding-left: 25px;
         }
         
         .instructions li {
-            margin-bottom: 10px;
-            line-height: 1.6;
+            margin-bottom: 12px;
+            line-height: 1.7;
+            font-size: 1.05rem;
         }
         
         .highlight {
@@ -254,81 +268,124 @@
         
         footer {
             text-align: center;
-            padding: 15px;
+            padding: 18px;
             color: #a9a9c5;
-            font-size: 0.9rem;
-            margin-top: 20px;
-            background: rgba(10, 15, 35, 0.7);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            font-size: 1rem;
+            margin-top: 25px;
+            background: rgba(10, 15, 35, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
             border: 1px solid #2d3047;
         }
         
         .difficulty {
             display: flex;
             justify-content: space-between;
-            margin: 15px 0;
+            margin: 20px 0;
+            gap: 10px;
         }
         
         .difficulty-btn {
-            background: rgba(40, 45, 70, 0.8);
+            background: rgba(40, 45, 70, 0.9);
             color: #a9a9c5;
             border: 1px solid #2d3047;
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 10px 15px;
+            border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
+            transition: all 0.2s;
+            font-size: 1rem;
+            flex: 1;
+            text-align: center;
         }
         
         .difficulty-btn.active {
             background: linear-gradient(to right, #ff6b6b, #ff8e53);
             color: white;
             border-color: #ff6b6b;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
         }
         
         .difficulty-btn:hover:not(.active) {
-            background: rgba(60, 65, 90, 0.8);
+            background: rgba(60, 65, 90, 0.9);
         }
         
         .combo-display {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.5rem;
+            top: 25px;
+            right: 25px;
+            font-size: 1.7rem;
             font-weight: bold;
             color: #ffd166;
-            text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
+            text-shadow: 0 0 12px rgba(255, 209, 102, 0.8);
             z-index: 50;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
         }
         
         .score-display {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 1.5rem;
+            top: 25px;
+            left: 25px;
+            font-size: 1.7rem;
             font-weight: bold;
             color: #4ecdc4;
-            text-shadow: 0 0 10px rgba(78, 205, 196, 0.7);
+            text-shadow: 0 0 12px rgba(78, 205, 196, 0.8);
             z-index: 50;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
         }
         
-        @media (max-width: 768px) {
+        .progress-bar {
+            height: 8px;
+            background: rgba(40, 45, 70, 0.8);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4ecdc4, #88d3ce);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 992px) {
             .game-container {
                 flex-direction: column;
             }
             
             .training-area {
-                height: 400px;
+                height: 500px;
             }
             
             .controls {
                 flex-direction: column;
-                gap: 10px;
             }
             
             button {
                 width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .training-area {
+                height: 400px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .stat-label, .stat-value {
+                font-size: 1rem;
             }
         }
     </style>
@@ -336,8 +393,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>CS2 精准度训练模拟器</h1>
-            <p class="subtitle">提升你的射击精准度和反应速度</p>
+            <h1 id="title">CS2 精准度训练模拟器</h1>
+            <p class="subtitle" id="subtitle">提升你的射击精准度和反应速度</p>
         </header>
         
         <div class="game-container">
@@ -349,61 +406,62 @@
             </div>
             
             <div class="stats-panel">
-                <h2 class="stats-title">训练数据</h2>
+                <h2 class="stats-title" id="stats-title">训练数据</h2>
                 <div class="stat-item">
-                    <span class="stat-label">射击次数:</span>
+                    <span class="stat-label" id="shots-label">射击次数:</span>
                     <span class="stat-value" id="shots">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">命中次数:</span>
+                    <span class="stat-label" id="hits-label">命中次数:</span>
                     <span class="stat-value" id="hits">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">命中率:</span>
+                    <span class="stat-label" id="accuracy-label">命中率:</span>
                     <span class="stat-value" id="accuracy">0%</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">反应时间:</span>
+                    <span class="stat-label" id="reaction-label">反应时间:</span>
                     <span class="stat-value" id="reaction">0ms</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">最高连击:</span>
+                    <span class="stat-label" id="max-combo-label">最高连击:</span>
                     <span class="stat-value" id="max-combo">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">当前得分:</span>
+                    <span class="stat-label" id="score-label">当前得分:</span>
                     <span class="stat-value" id="score">0</span>
                 </div>
                 
                 <div class="difficulty">
-                    <div class="difficulty-btn active" data-level="easy">简单</div>
-                    <div class="difficulty-btn" data-level="medium">中等</div>
-                    <div class="difficulty-btn" data-level="hard">困难</div>
+                    <div class="difficulty-btn active" data-level="easy" id="easy-btn">简单</div>
+                    <div class="difficulty-btn" data-level="medium" id="medium-btn">中等</div>
+                    <div class="difficulty-btn" data-level="hard" id="hard-btn">困难</div>
                 </div>
                 
                 <div class="controls">
                     <button id="start-btn">开始训练</button>
                     <button id="reset-btn">重置数据</button>
+                    <button id="lang-btn">EN/中文</button>
                 </div>
             </div>
         </div>
         
         <div class="instructions">
-            <h2>训练说明</h2>
+            <h2 id="instructions-title">训练说明</h2>
             <ul>
-                <li>点击 <span class="highlight">开始训练</span> 按钮开始训练</li>
-                <li>红色目标出现后，尽快点击它们进行射击</li>
-                <li>每次命中目标会获得 <span class="highlight">10分</span></li>
-                <li>连续命中会获得额外分数加成</li>
-                <li>训练时间无限制，可以随时 <span class="highlight">重置数据</span></li>
-                <li>移动鼠标控制准星位置</li>
-                <li>按 <span class="highlight">空格键</span> 可以快速重置训练</li>
-                <li>选择不同难度调整目标大小和速度</li>
+                <li id="instruction-1">点击 <span class="highlight">开始训练</span> 按钮开始训练</li>
+                <li id="instruction-2">红色目标出现后，尽快点击它们进行射击</li>
+                <li id="instruction-3">每次命中目标会获得 <span class="highlight">10分</span></li>
+                <li id="instruction-4">连续命中会获得额外分数加成</li>
+                <li id="instruction-5">训练时间无限制，可以随时 <span class="highlight">重置数据</span></li>
+                <li id="instruction-6">移动鼠标控制准星位置</li>
+                <li id="instruction-7">按 <span class="highlight">空格键</span> 可以快速重置训练</li>
+                <li id="instruction-8">选择不同难度调整目标大小和速度</li>
             </ul>
         </div>
         
         <footer>
-            <p>CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
+            <p id="footer-text">CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
         </footer>
     </div>
 
@@ -413,6 +471,7 @@
             const crosshair = document.getElementById('crosshair');
             const startBtn = document.getElementById('start-btn');
             const resetBtn = document.getElementById('reset-btn');
+            const langBtn = document.getElementById('lang-btn');
             const difficultyBtns = document.querySelectorAll('.difficulty-btn');
             
             // Stats elements
@@ -425,6 +484,30 @@
             const scoreElement = document.getElementById('score');
             const comboDisplay = document.getElementById('combo-display');
             const scoreDisplay = document.getElementById('score-display');
+            
+            // Language elements
+            const titleElement = document.getElementById('title');
+            const subtitleElement = document.getElementById('subtitle');
+            const statsTitleElement = document.getElementById('stats-title');
+            const shotsLabel = document.getElementById('shots-label');
+            const hitsLabel = document.getElementById('hits-label');
+            const accuracyLabel = document.getElementById('accuracy-label');
+            const reactionLabel = document.getElementById('reaction-label');
+            const maxComboLabel = document.getElementById('max-combo-label');
+            const scoreLabel = document.getElementById('score-label');
+            const instructionsTitle = document.getElementById('instructions-title');
+            const instruction1 = document.getElementById('instruction-1');
+            const instruction2 = document.getElementById('instruction-2');
+            const instruction3 = document.getElementById('instruction-3');
+            const instruction4 = document.getElementById('instruction-4');
+            const instruction5 = document.getElementById('instruction-5');
+            const instruction6 = document.getElementById('instruction-6');
+            const instruction7 = document.getElementById('instruction-7');
+            const instruction8 = document.getElementById('instruction-8');
+            const footerText = document.getElementById('footer-text');
+            const easyBtn = document.getElementById('easy-btn');
+            const mediumBtn = document.getElementById('medium-btn');
+            const hardBtn = document.getElementById('hard-btn');
             
             // Game state
             let gameActive = false;
@@ -440,12 +523,71 @@
             let targetSpawnInterval;
             let lastTargetTime = 0;
             let difficulty = 'easy'; // easy, medium, hard
+            let language = 'zh'; // zh, en
             
             // Difficulty settings
             const difficultySettings = {
-                easy: { size: 35, speed: 1200, spawnRate: 1500 },
-                medium: { size: 25, speed: 900, spawnRate: 1200 },
-                hard: { size: 18, speed: 600, spawnRate: 900 }
+                easy: { size: 40, speed: 1500, spawnRate: 1800 },
+                medium: { size: 30, speed: 1000, spawnRate: 1300 },
+                hard: { size: 22, speed: 700, spawnRate: 900 }
+            };
+            
+            // Language translations
+            const translations = {
+                en: {
+                    title: "CS2 Aim Trainer",
+                    subtitle: "Improve your shooting accuracy and reaction speed",
+                    statsTitle: "Training Stats",
+                    shotsLabel: "Shots Fired:",
+                    hitsLabel: "Hits:",
+                    accuracyLabel: "Accuracy:",
+                    reactionLabel: "Reaction Time:",
+                    maxComboLabel: "Max Combo:",
+                    scoreLabel: "Current Score:",
+                    easyBtn: "Easy",
+                    mediumBtn: "Medium",
+                    hardBtn: "Hard",
+                    startBtn: "Start Training",
+                    resetBtn: "Reset Stats",
+                    langBtn: "EN/中文",
+                    instructionsTitle: "Training Instructions",
+                    instruction1: "Click <span class='highlight'>Start Training</span> button to begin",
+                    instruction2: "Click on red targets as they appear",
+                    instruction3: "Each hit gives <span class='highlight'>10 points</span>",
+                    instruction4: "Consecutive hits earn bonus points",
+                    instruction5: "Training is unlimited, <span class='highlight'>Reset Stats</span> anytime",
+                    instruction6: "Move mouse to control crosshair",
+                    instruction7: "Press <span class='highlight'>Space</span> to quickly reset",
+                    instruction8: "Choose difficulty to adjust target size and speed",
+                    footerText: "CS2 Aim Trainer | Improve your shooting skills | Press F11 for fullscreen"
+                },
+                zh: {
+                    title: "CS2 精准度训练模拟器",
+                    subtitle: "提升你的射击精准度和反应速度",
+                    statsTitle: "训练数据",
+                    shotsLabel: "射击次数:",
+                    hitsLabel: "命中次数:",
+                    accuracyLabel: "命中率:",
+                    reactionLabel: "反应时间:",
+                    maxComboLabel: "最高连击:",
+                    scoreLabel: "当前得分:",
+                    easyBtn: "简单",
+                    mediumBtn: "中等",
+                    hardBtn: "困难",
+                    startBtn: "开始训练",
+                    resetBtn: "重置数据",
+                    langBtn: "EN/中文",
+                    instructionsTitle: "训练说明",
+                    instruction1: "点击 <span class='highlight'>开始训练</span> 按钮开始训练",
+                    instruction2: "红色目标出现后，尽快点击它们进行射击",
+                    instruction3: "每次命中目标会获得 <span class='highlight'>10分</span>",
+                    instruction4: "连续命中会获得额外分数加成",
+                    instruction5: "训练时间无限制，可以随时 <span class='highlight'>重置数据</span>",
+                    instruction6: "移动鼠标控制准星位置",
+                    instruction7: "按 <span class='highlight'>空格键</span> 可以快速重置训练",
+                    instruction8: "选择不同难度调整目标大小和速度",
+                    footerText: "CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验"
+                }
             };
             
             // Update crosshair position with mouse movement
@@ -454,15 +596,14 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 
-                crosshair.style.left = (x - 10) + 'px';
-                crosshair.style.top = (y - 10) + 'px';
+                crosshair.style.left = (x - 12) + 'px';
+                crosshair.style.top = (y - 12) + 'px';
             });
             
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
                 if (!gameActive) return;
                 
-                const clickTime = Date.now();
                 shots++;
                 updateStats();
                 
@@ -473,14 +614,14 @@
                 
                 const hitEffect = document.createElement('div');
                 hitEffect.className = 'hit-effect';
-                hitEffect.style.left = (x - 7.5) + 'px';
-                hitEffect.style.top = (y - 7.5) + 'px';
+                hitEffect.style.left = (x - 9) + 'px';
+                hitEffect.style.top = (y - 9) + 'px';
                 trainingArea.appendChild(hitEffect);
                 
                 // Remove hit effect after animation
                 setTimeout(() => {
                     hitEffect.remove();
-                }, 300);
+                }, 250);
                 
                 // Check if target was hit
                 const targets = document.querySelectorAll('.target:not(.hit)');
@@ -514,11 +655,11 @@
             startBtn.addEventListener('click', function() {
                 if (gameActive) {
                     gameActive = false;
-                    startBtn.textContent = '开始训练';
+                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                     clearInterval(targetSpawnInterval);
                 } else {
                     gameActive = true;
-                    startBtn.textContent = '停止训练';
+                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                     spawnTargets();
                     targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
                 }
@@ -532,6 +673,12 @@
                 if (e.code === 'Space') {
                     resetGame();
                 }
+            });
+            
+            // Language toggle
+            langBtn.addEventListener('click', function() {
+                language = language === 'zh' ? 'en' : 'zh';
+                updateLanguage();
             });
             
             // Difficulty selection
@@ -557,7 +704,7 @@
                 oldTargets.forEach(target => target.remove());
                 
                 // Create new targets
-                const maxTargets = 8;
+                const maxTargets = 10;
                 const currentTargets = document.querySelectorAll('.target:not(.hit)').length;
                 
                 if (currentTargets < maxTargets) {
@@ -626,7 +773,7 @@
                 // Remove target after animation
                 setTimeout(() => {
                     target.remove();
-                }, 200);
+                }, 150);
             }
             
             // Update statistics display
@@ -644,7 +791,7 @@
             // Reset game
             function resetGame() {
                 gameActive = false;
-                startBtn.textContent = '开始训练';
+                startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 clearInterval(targetSpawnInterval);
                 
                 // Reset stats
@@ -667,8 +814,47 @@
                 maxComboElement.textContent = maxCombo;
             }
             
+            // Update language
+            function updateLanguage() {
+                const t = translations[language];
+                
+                titleElement.innerHTML = t.title;
+                subtitleElement.innerHTML = t.subtitle;
+                statsTitleElement.innerHTML = t.statsTitle;
+                shotsLabel.innerHTML = t.shotsLabel;
+                hitsLabel.innerHTML = t.hitsLabel;
+                accuracyLabel.innerHTML = t.accuracyLabel;
+                reactionLabel.innerHTML = t.reactionLabel;
+                maxComboLabel.innerHTML = t.maxComboLabel;
+                scoreLabel.innerHTML = t.scoreLabel;
+                easyBtn.innerHTML = t.easyBtn;
+                mediumBtn.innerHTML = t.mediumBtn;
+                hardBtn.innerHTML = t.hardBtn;
+                startBtn.innerHTML = t.startBtn;
+                resetBtn.innerHTML = t.resetBtn;
+                langBtn.innerHTML = t.langBtn;
+                instructionsTitle.innerHTML = t.instructionsTitle;
+                instruction1.innerHTML = t.instruction1;
+                instruction2.innerHTML = t.instruction2;
+                instruction3.innerHTML = t.instruction3;
+                instruction4.innerHTML = t.instruction4;
+                instruction5.innerHTML = t.instruction5;
+                instruction6.innerHTML = t.instruction6;
+                instruction7.innerHTML = t.instruction7;
+                instruction8.innerHTML = t.instruction8;
+                footerText.innerHTML = t.footerText;
+                
+                // Update button text based on game state
+                if (gameActive) {
+                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                } else {
+                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
+                }
+            }
+            
             // Initialize
             updateStats();
+            updateLanguage();
         });
     </script>
 </body>
