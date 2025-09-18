@@ -609,20 +609,15 @@
             let snakeTrail = []; // 贪吃蛇轨迹
             let snakeLength = 8; // 贪吃蛇长度
             let lastSpawnTime = 0;
-            let direction = { x: 1, y: 0 }; // 初始方向向右
-            let directions = [
-                { x: 1, y: 0 },  // 右
-                { x: 0, y: 1 },  // 下
-                { x: -1, y: 0 }, // 左
-                { x: 0, y: -1 }  // 上
-            ];
-            let currentDirectionIndex = 0;
-            let turnCounter = 0;
-            let turnFrequency = 3; // 每3个目标改变一次方向
+            let currentAngle = 0; // 当前运动角度（0-360度）
+            let angleChangeFrequency = 5; // 每5个目标改变一次角度
+            let angleChangeCounter = 0;
+            let minAngleChange = -30; // 最小角度变化
+            let maxAngleChange = 30; // 最大角度变化
             
             // Difficulty settings
             const difficultySettings = {
-                easy: { size: 40, speed: 5000, spawnRate: 300 } // 延长消失时间到5000ms
+                easy: { size: 40, speed: 5000, spawnRate: 800 } // 减慢生成速度到800ms
             };
             // Language translations
             const translations = {
@@ -810,9 +805,8 @@
                             startBtn.disabled = false;
                             gameActive = true; // 倒计时结束，正式开始游戏
                             snakeTrail = []; // 重置贪吃蛇轨迹
-                            direction = { x: 1, y: 0 }; // 重置方向
-                            currentDirectionIndex = 0;
-                            turnCounter = 0;
+                            currentAngle = Math.random() * 360; // 随机初始角度
+                            angleChangeCounter = 0;
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
                             showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
@@ -844,7 +838,7 @@
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
-            // Spawn targets - 贪吃蛇式目标生成
+            // Spawn targets - 360°随机轨迹生成
             function spawnTargets() {
                 if (!gameActive) return;
                 
@@ -864,16 +858,17 @@
                     x = Math.floor(trainingArea.clientWidth / 2 - size / 2);
                     y = Math.floor(trainingArea.clientHeight / 2 - size / 2);
                 } else {
-                    // 后续目标按照贪吃蛇轨迹生成
+                    // 后续目标按照360°随机轨迹生成
                     const lastPos = snakeTrail[snakeTrail.length - 1];
                     
-                    // 每隔几个目标改变方向
-                    turnCounter++;
-                    if (turnCounter >= turnFrequency) {
-                        turnCounter = 0;
-                        // 顺时针改变方向
-                        currentDirectionIndex = (currentDirectionIndex + 1) % 4;
-                        direction = directions[currentDirectionIndex];
+                    // 每隔几个目标改变角度
+                    angleChangeCounter++;
+                    if (angleChangeCounter >= angleChangeFrequency) {
+                        angleChangeCounter = 0;
+                        // 随机改变角度（-30°到+30°）
+                        const angleChange = Math.random() * (maxAngleChange - minAngleChange) + minAngleChange;
+                        currentAngle = (currentAngle + angleChange) % 360;
+                        if (currentAngle < 0) currentAngle += 360;
                     }
                     
                     // 计算新位置 - 使用随机间距
@@ -881,29 +876,27 @@
                     const maxStep = 80; // 最大步长
                     const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
                     
-                    let newX = lastPos.x + direction.x * step;
-                    let newY = lastPos.y + direction.y * step;
+                    // 将角度转换为弧度
+                    const radians = currentAngle * Math.PI / 180;
+                    let newX = lastPos.x + Math.cos(radians) * step;
+                    let newY = lastPos.y + Math.sin(radians) * step;
                     
                     // 边界检测
                     const padding = 40;
                     if (newX < padding) {
                         newX = padding;
-                        direction = directions[0]; // 改为向右
-                        currentDirectionIndex = 0;
+                        currentAngle = 0; // 改为向右
                     } else if (newX > trainingArea.clientWidth - size - padding) {
                         newX = trainingArea.clientWidth - size - padding;
-                        direction = directions[2]; // 改为向左
-                        currentDirectionIndex = 2;
+                        currentAngle = 180; // 改为向左
                     }
                     
                     if (newY < padding) {
                         newY = padding;
-                        direction = directions[1]; // 改为向下
-                        currentDirectionIndex = 1;
+                        currentAngle = 90; // 改为向下
                     } else if (newY > trainingArea.clientHeight - size - padding) {
                         newY = trainingArea.clientHeight - size - padding;
-                        direction = directions[3]; // 改为向上
-                        currentDirectionIndex = 3;
+                        currentAngle = 270; // 改为向上
                     }
                     
                     x = newX;
@@ -1028,9 +1021,8 @@
                 scoreDisplay.textContent = score;
                 // Reset snake trail
                 snakeTrail = [];
-                direction = { x: 1, y: 0 };
-                currentDirectionIndex = 0;
-                turnCounter = 0;
+                currentAngle = 0;
+                angleChangeCounter = 0;
                 // Remove all targets
                 const allTargets = document.querySelectorAll('.target');
                 allTargets.forEach(target => {
