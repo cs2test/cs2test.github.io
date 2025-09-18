@@ -13,34 +13,41 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background: linear-gradient(135deg, #0c0c1d, #1a1a2e);
             color: #e0e0e0;
             min-height: 100vh;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .container {
+            width: 100%;
             max-width: 1200px;
-            margin: 0 auto;
             padding: 20px;
         }
         
         header {
             text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #4a4a8a;
+            padding: 15px 0;
             margin-bottom: 20px;
+            background: rgba(10, 15, 35, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2d3047;
         }
         
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
             color: #ff6b6b;
             text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            letter-spacing: 1px;
         }
         
         .subtitle {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #a9a9c5;
         }
         
@@ -52,21 +59,23 @@
         
         .training-area {
             flex: 3;
-            background: rgba(10, 15, 35, 0.7);
+            background: rgba(5, 10, 25, 0.9);
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
             position: relative;
             overflow: hidden;
             height: 600px;
+            border: 2px solid #2d3047;
         }
         
         .stats-panel {
             flex: 1;
-            background: rgba(10, 15, 35, 0.7);
+            background: rgba(10, 15, 35, 0.85);
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2d3047;
         }
         
         .stats-title {
@@ -74,28 +83,31 @@
             margin-bottom: 20px;
             color: #4ecdc4;
             font-size: 1.5rem;
+            text-shadow: 0 0 5px rgba(78, 205, 196, 0.5);
         }
         
         .stat-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid #2d3047;
         }
         
         .stat-label {
             color: #a9a9c5;
+            font-size: 1.1rem;
         }
         
         .stat-value {
             font-weight: bold;
             color: #ffd166;
+            font-size: 1.2rem;
         }
         
         .controls {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 25px;
         }
         
         button {
@@ -109,6 +121,7 @@
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            width: 48%;
         }
         
         button:hover {
@@ -131,13 +144,14 @@
         
         .target {
             position: absolute;
-            width: 60px;
-            height: 60px;
+            width: 30px;
+            height: 30px;
             background: radial-gradient(circle, #ff6b6b, #d32f2f);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
-            transition: transform 0.2s ease;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
+            transition: transform 0.1s ease;
+            border: 2px solid #ff8e53;
         }
         
         .target:hover {
@@ -145,19 +159,19 @@
         }
         
         .target.hit {
-            animation: hitAnimation 0.3s forwards;
+            animation: hitAnimation 0.2s forwards;
         }
         
         @keyframes hitAnimation {
             0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.7; }
+            50% { transform: scale(1.3); opacity: 0.7; }
             100% { transform: scale(0); opacity: 0; }
         }
         
         .crosshair {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 20px;
+            height: 20px;
             pointer-events: none;
             z-index: 100;
         }
@@ -169,27 +183,17 @@
         }
         
         .crosshair::before {
-            width: 30px;
+            width: 20px;
             height: 2px;
-            top: 14px;
+            top: 9px;
             left: 0;
         }
         
         .crosshair::after {
             width: 2px;
-            height: 30px;
-            top: 0;
-            left: 14px;
-        }
-        
-        .crosshair.center-dot::before {
-            width: 20px;
-            left: 5px;
-        }
-        
-        .crosshair.center-dot::after {
             height: 20px;
-            top: 5px;
+            top: 0;
+            left: 9px;
         }
         
         .crosshair.center-dot::after {
@@ -199,37 +203,39 @@
             height: 4px;
             background-color: #00ff00;
             border-radius: 50%;
-            top: 13px;
-            left: 13px;
+            top: 8px;
+            left: 8px;
         }
         
         .hit-effect {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 15px;
+            height: 15px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.7);
             pointer-events: none;
-            animation: spread 0.5s forwards;
+            animation: spread 0.3s forwards;
         }
         
         @keyframes spread {
             0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(3); opacity: 0; }
+            100% { transform: scale(2.5); opacity: 0; }
         }
         
         .instructions {
-            background: rgba(10, 15, 35, 0.7);
+            background: rgba(10, 15, 35, 0.85);
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2d3047;
         }
         
         .instructions h2 {
             color: #ffd166;
             margin-bottom: 15px;
             text-align: center;
+            text-shadow: 0 0 5px rgba(255, 209, 102, 0.5);
         }
         
         .instructions ul {
@@ -248,10 +254,63 @@
         
         footer {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             color: #a9a9c5;
             font-size: 0.9rem;
             margin-top: 20px;
+            background: rgba(10, 15, 35, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2d3047;
+        }
+        
+        .difficulty {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        
+        .difficulty-btn {
+            background: rgba(40, 45, 70, 0.8);
+            color: #a9a9c5;
+            border: 1px solid #2d3047;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .difficulty-btn.active {
+            background: linear-gradient(to right, #ff6b6b, #ff8e53);
+            color: white;
+            border-color: #ff6b6b;
+        }
+        
+        .difficulty-btn:hover:not(.active) {
+            background: rgba(60, 65, 90, 0.8);
+        }
+        
+        .combo-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd166;
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
+            z-index: 50;
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.7);
+            z-index: 50;
         }
         
         @media (max-width: 768px) {
@@ -261,6 +320,15 @@
             
             .training-area {
                 height: 400px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
             }
         }
     </style>
@@ -275,6 +343,8 @@
         <div class="game-container">
             <div class="training-area" id="training-area">
                 <div class="crosshair" id="crosshair"></div>
+                <div class="combo-display">连击: <span id="combo-display">0</span></div>
+                <div class="score-display">得分: <span id="score-display">0</span></div>
                 <!-- Targets will be generated here -->
             </div>
             
@@ -298,11 +368,17 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">最高连击:</span>
-                    <span class="stat-value" id="combo">0</span>
+                    <span class="stat-value" id="max-combo">0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">当前得分:</span>
                     <span class="stat-value" id="score">0</span>
+                </div>
+                
+                <div class="difficulty">
+                    <div class="difficulty-btn active" data-level="easy">简单</div>
+                    <div class="difficulty-btn" data-level="medium">中等</div>
+                    <div class="difficulty-btn" data-level="hard">困难</div>
                 </div>
                 
                 <div class="controls">
@@ -322,6 +398,7 @@
                 <li>训练时间无限制，可以随时 <span class="highlight">重置数据</span></li>
                 <li>移动鼠标控制准星位置</li>
                 <li>按 <span class="highlight">空格键</span> 可以快速重置训练</li>
+                <li>选择不同难度调整目标大小和速度</li>
             </ul>
         </div>
         
@@ -336,6 +413,7 @@
             const crosshair = document.getElementById('crosshair');
             const startBtn = document.getElementById('start-btn');
             const resetBtn = document.getElementById('reset-btn');
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
             
             // Stats elements
             const shotsElement = document.getElementById('shots');
@@ -343,7 +421,10 @@
             const accuracyElement = document.getElementById('accuracy');
             const reactionElement = document.getElementById('reaction');
             const comboElement = document.getElementById('combo');
+            const maxComboElement = document.getElementById('max-combo');
             const scoreElement = document.getElementById('score');
+            const comboDisplay = document.getElementById('combo-display');
+            const scoreDisplay = document.getElementById('score-display');
             
             // Game state
             let gameActive = false;
@@ -357,6 +438,15 @@
             let targetCount = 0;
             let targets = [];
             let targetSpawnInterval;
+            let lastTargetTime = 0;
+            let difficulty = 'easy'; // easy, medium, hard
+            
+            // Difficulty settings
+            const difficultySettings = {
+                easy: { size: 35, speed: 1200, spawnRate: 1500 },
+                medium: { size: 25, speed: 900, spawnRate: 1200 },
+                hard: { size: 18, speed: 600, spawnRate: 900 }
+            };
             
             // Update crosshair position with mouse movement
             trainingArea.addEventListener('mousemove', function(e) {
@@ -364,14 +454,15 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 
-                crosshair.style.left = (x - 15) + 'px';
-                crosshair.style.top = (y - 15) + 'px';
+                crosshair.style.left = (x - 10) + 'px';
+                crosshair.style.top = (y - 10) + 'px';
             });
             
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
                 if (!gameActive) return;
                 
+                const clickTime = Date.now();
                 shots++;
                 updateStats();
                 
@@ -382,14 +473,14 @@
                 
                 const hitEffect = document.createElement('div');
                 hitEffect.className = 'hit-effect';
-                hitEffect.style.left = (x - 10) + 'px';
-                hitEffect.style.top = (y - 10) + 'px';
+                hitEffect.style.left = (x - 7.5) + 'px';
+                hitEffect.style.top = (y - 7.5) + 'px';
                 trainingArea.appendChild(hitEffect);
                 
                 // Remove hit effect after animation
                 setTimeout(() => {
                     hitEffect.remove();
-                }, 500);
+                }, 300);
                 
                 // Check if target was hit
                 const targets = document.querySelectorAll('.target:not(.hit)');
@@ -406,12 +497,15 @@
                     
                     if (distance < targetRect.width/2) {
                         hitTarget = true;
+                        const hitTime = Date.now();
+                        reactionTime = hitTime - parseInt(target.dataset.spawnTime);
                         targetHit(target);
                     }
                 });
                 
                 if (!hitTarget) {
                     combo = 0;
+                    comboDisplay.textContent = combo;
                     updateStats();
                 }
             });
@@ -426,7 +520,7 @@
                     gameActive = true;
                     startBtn.textContent = '停止训练';
                     spawnTargets();
-                    targetSpawnInterval = setInterval(spawnTargets, 1500);
+                    targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
                 }
             });
             
@@ -440,6 +534,20 @@
                 }
             });
             
+            // Difficulty selection
+            difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    difficultyBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    difficulty = this.dataset.level;
+                    
+                    if (gameActive) {
+                        clearInterval(targetSpawnInterval);
+                        targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
+                    }
+                });
+            });
+            
             // Spawn targets
             function spawnTargets() {
                 if (!gameActive) return;
@@ -449,7 +557,7 @@
                 oldTargets.forEach(target => target.remove());
                 
                 // Create new targets
-                const maxTargets = 5;
+                const maxTargets = 8;
                 const currentTargets = document.querySelectorAll('.target:not(.hit)').length;
                 
                 if (currentTargets < maxTargets) {
@@ -457,23 +565,38 @@
                     target.className = 'target';
                     
                     // Random position within training area
-                    const maxX = trainingArea.clientWidth - 60;
-                    const maxY = trainingArea.clientHeight - 60;
+                    const size = difficultySettings[difficulty].size;
+                    const maxX = trainingArea.clientWidth - size;
+                    const maxY = trainingArea.clientHeight - size;
                     
                     const x = Math.floor(Math.random() * maxX);
                     const y = Math.floor(Math.random() * maxY);
                     
+                    target.style.width = size + 'px';
+                    target.style.height = size + 'px';
                     target.style.left = x + 'px';
                     target.style.top = y + 'px';
+                    target.dataset.spawnTime = Date.now().toString();
                     
                     // Add click event to target
                     target.addEventListener('click', function(e) {
                         e.stopPropagation();
+                        const hitTime = Date.now();
+                        reactionTime = hitTime - parseInt(this.dataset.spawnTime);
                         targetHit(target);
                     });
                     
                     trainingArea.appendChild(target);
                     targets.push(target);
+                    
+                    // Auto-remove target after timeout
+                    setTimeout(() => {
+                        if (!target.classList.contains('hit')) {
+                            target.remove();
+                            combo = 0;
+                            comboDisplay.textContent = combo;
+                        }
+                    }, difficultySettings[difficulty].speed);
                 }
             }
             
@@ -484,20 +607,26 @@
                 target.classList.add('hit');
                 hits++;
                 combo++;
-                if (combo > maxCombo) maxCombo = combo;
+                comboDisplay.textContent = combo;
+                
+                if (combo > maxCombo) {
+                    maxCombo = combo;
+                    maxComboElement.textContent = maxCombo;
+                }
                 
                 // Calculate points
                 const basePoints = 10;
                 const comboBonus = Math.min(combo, 10) * 2;
                 const points = basePoints + comboBonus;
                 score += points;
+                scoreDisplay.textContent = score;
                 
                 updateStats();
                 
                 // Remove target after animation
                 setTimeout(() => {
                     target.remove();
-                }, 300);
+                }, 200);
             }
             
             // Update statistics display
@@ -508,7 +637,7 @@
                 hitsElement.textContent = hits;
                 accuracyElement.textContent = accuracy + '%';
                 reactionElement.textContent = reactionTime + 'ms';
-                comboElement.textContent = combo + ' (最高: ' + maxCombo + ')';
+                comboElement.textContent = combo;
                 scoreElement.textContent = score;
             }
             
@@ -527,11 +656,15 @@
                 maxCombo = 0;
                 score = 0;
                 
+                comboDisplay.textContent = combo;
+                scoreDisplay.textContent = score;
+                
                 // Remove all targets
                 const allTargets = document.querySelectorAll('.target');
                 allTargets.forEach(target => target.remove());
                 
                 updateStats();
+                maxComboElement.textContent = maxCombo;
             }
             
             // Initialize
