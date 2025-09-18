@@ -236,7 +236,8 @@
             height: 28px;
             pointer-events: none;
             z-index: 100;
-            /* Removed transition for smoother movement */
+            /* 确保没有过渡动画 */
+            transition: none !important;
         }
         .crosshair::before, .crosshair::after {
             content: '';
@@ -644,9 +645,6 @@
             let targetSpawnInterval;
             let difficulty = 'easy'; // easy, medium, hard
             let language = 'zh'; // zh, en
-            let mouseX = 0;
-            let mouseY = 0;
-            let lastUpdateTime = 0;
             // Difficulty settings
             const difficultySettings = {
                 easy: { size: 40, speed: 1500, spawnRate: 1800 },
@@ -720,17 +718,18 @@
                     stopped: "已停止"
                 }
             };
-            // 鼠标移动事件监听器（优化性能）
-            let mouseThrottle = false;
+            // ==================== 零延迟准星核心代码 ====================
+            // 移除所有节流和动画帧，直接在 mousemove 中同步更新
             trainingArea.addEventListener('mousemove', function(e) {
-                if (mouseThrottle) return;
-                mouseThrottle = true;
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                // 16ms 节流，避免过多的事件处理
-                setTimeout(() => {
-                    mouseThrottle = false;
-                }, 16);
+                if (!gameActive) return;
+                
+                // 获取训练区域的边界
+                const rect = trainingArea.getBoundingClientRect();
+                
+                // 直接计算并设置准星位置 - 确保中心点对齐
+                // 减去14px是因为准星是28x28px，中心点在(14,14)
+                crosshair.style.left = (e.clientX - rect.left - 14) + 'px';
+                crosshair.style.top = (e.clientY - rect.top - 14) + 'px';
             }, { passive: true });
             // 鼠标进入时隐藏系统光标
             trainingArea.addEventListener('mouseenter', function() {
@@ -738,30 +737,14 @@
                     trainingArea.style.cursor = 'none';
                 }
             });
-            // 鼠标离开时显示系统光标
+            // 鼠标离开时显示系统光标并隐藏准星
             trainingArea.addEventListener('mouseleave', function() {
                 trainingArea.style.cursor = 'default';
+                // 将准星移出可视区域
+                crosshair.style.left = '-100px';
+                crosshair.style.top = '-100px';
             });
-            // 实时更新准星位置（极速版）
-            function updateCrosshair() {
-                if (!gameActive || !trainingArea) return;
-                const rect = trainingArea.getBoundingClientRect();
-                // 直接设置 left 和 top，确保准星中心与鼠标位置完全一致
-                // 减去 14px 是因为准星是 28x28px，其几何中心在 (14, 14)
-                crosshair.style.left = (mouseX - rect.left - 14) + 'px';
-                crosshair.style.top = (mouseY - rect.top - 14) + 'px';
-            }
-            // 启动准星动画
-            // 使用一个独立的函数来调用 updateCrosshair，确保它能被正确触发
-            function startCrosshairUpdate() {
-                // 这里我们不再使用 requestAnimationFrame 的复杂循环
-                // 而是依赖于 mousemove 事件，这已经足够快了
-                // 在 mousemove 事件中我们已经设置了节流，所以这里不需要额外的循环
-            }
-            // 在 mousemove 事件中，我们已经更新了 mouseX 和 mouseY
-            // 因此我们需要一个机制来触发 updateCrosshair
-            // 我们使用一个定时器来定期检查并更新准星位置
-            setInterval(updateCrosshair, 10); // 每 10ms 更新一次，保证极低延迟
+            // ==================== 零延迟准星代码结束 ====================
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
                 if (!gameActive) return;
