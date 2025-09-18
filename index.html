@@ -513,15 +513,13 @@
             let gameActive = false;
             let shots = 0;
             let hits = 0;
-            let totalReactionTime = 0; // Total reaction time for all hits
-            let reactionCount = 0; // Count of successful hits for average calculation
+            let totalReactionTime = 0; // Total reaction time for all targets (hit or missed)
+            let targetCount = 0; // Total number of targets that appeared
             let combo = 0;
             let maxCombo = 0;
             let score = 0;
-            let targetCount = 0;
             let targets = [];
             let targetSpawnInterval;
-            let lastTargetTime = 0;
             let difficulty = 'easy'; // easy, medium, hard
             let language = 'zh'; // zh, en
             
@@ -641,7 +639,6 @@
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(target.dataset.spawnTime);
                         totalReactionTime += reactionTime;
-                        reactionCount++;
                         
                         targetHit(target);
                     }
@@ -734,13 +731,13 @@
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
                         totalReactionTime += reactionTime;
-                        reactionCount++;
                         
                         targetHit(target);
                     });
                     
                     trainingArea.appendChild(target);
                     targets.push(target);
+                    targetCount++; // Increment target count when a new target appears
                     
                     // Auto-remove target after timeout
                     setTimeout(() => {
@@ -748,6 +745,8 @@
                             target.remove();
                             combo = 0;
                             comboDisplay.textContent = combo;
+                            // For missed targets, we still count the time until it disappears
+                            totalReactionTime += difficultySettings[difficulty].speed;
                         }
                     }, difficultySettings[difficulty].speed);
                 }
@@ -785,10 +784,10 @@
             // Update statistics display
             function updateStats() {
                 // Calculate accuracy
-                accuracy = shots > 0 ? Math.round((hits / shots) * 100) : 0;
+                const accuracy = shots > 0 ? Math.round((hits / shots) * 100) : 0;
                 
                 // Calculate average reaction time
-                const averageReactionTime = reactionCount > 0 ? Math.round(totalReactionTime / reactionCount) : 0;
+                const averageReactionTime = targetCount > 0 ? Math.round(totalReactionTime / targetCount) : 0;
                 
                 shotsElement.textContent = shots;
                 hitsElement.textContent = hits;
@@ -808,7 +807,7 @@
                 shots = 0;
                 hits = 0;
                 totalReactionTime = 0;
-                reactionCount = 0;
+                targetCount = 0;
                 combo = 0;
                 maxCombo = 0;
                 score = 0;
