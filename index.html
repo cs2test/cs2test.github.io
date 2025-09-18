@@ -513,7 +513,7 @@
             let gameActive = false;
             let shots = 0;
             let hits = 0;
-            let totalReactionTime = 0; // Total reaction time for all targets (hit or missed)
+            let totalReactionTime = 0; // Total reaction time for all targets
             let targetCount = 0; // Total number of targets that appeared
             let combo = 0;
             let maxCombo = 0;
@@ -742,11 +742,13 @@
                     // Auto-remove target after timeout
                     setTimeout(() => {
                         if (!target.classList.contains('hit')) {
+                            // For missed targets, add the full duration to total reaction time
+                            totalReactionTime += difficultySettings[difficulty].speed;
+                            
+                            // Remove target
                             target.remove();
                             combo = 0;
                             comboDisplay.textContent = combo;
-                            // For missed targets, we still count the time until it disappears
-                            totalReactionTime += difficultySettings[difficulty].speed;
                         }
                     }, difficultySettings[difficulty].speed);
                 }
@@ -860,6 +862,17 @@
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
+            
+            // Hide cursor when inside training area
+            trainingArea.addEventListener('mouseenter', function() {
+                if (gameActive) {
+                    document.body.style.cursor = 'none';
+                }
+            });
+            
+            trainingArea.addEventListener('mouseleave', function() {
+                document.body.style.cursor = 'default';
+            });
             
             // Initialize
             updateStats();
