@@ -85,7 +85,7 @@
             height: 70vh;
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
-            /* 始终隐藏鼠标图标 */
+            /* 始终隐藏系统鼠标图标 */
             cursor: none !important;
         }
         .stats-panel {
@@ -214,7 +214,7 @@
         .target {
             position: absolute;
             border-radius: 50%;
-            cursor: none !important; /* 确保目标上也不显示鼠标 */
+            cursor: none !important;
             box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
             border: 2px solid #ff8e53;
             z-index: 10;
@@ -583,7 +583,7 @@
                 <li id="instruction-4">连续命中会获得额外分数加成</li>
                 <li id="instruction-5">训练时间无限制，可以随时 <span class="highlight">重置数据</span></li>
                 <li id="instruction-6">移动鼠标控制准星位置</li>
-                <li id="instruction-7">按 <span class="highlight">空格键</span> 可以快速重置训练</li>
+                <li id="instruction-7">按 <span class="highlight">空格键</span> 可以开始和暂停训练</li>
                 <li id="instruction-8">选择不同难度调整目标大小和速度</li>
             </ul>
         </div>
@@ -645,6 +645,7 @@
             let score = 0;
             let targets = [];
             let targetSpawnInterval;
+            let countdownTimer = null;
             let difficulty = 'easy'; // easy, medium, hard
             let language = 'zh'; // zh, en
             // Difficulty settings
@@ -680,7 +681,7 @@
                     instruction4: "Consecutive hits earn bonus points",
                     instruction5: "Training is unlimited, <span class='highlight'>Reset Stats</span> anytime",
                     instruction6: "Move mouse to control crosshair",
-                    instruction7: "Press <span class='highlight'>Space</span> to quickly reset",
+                    instruction7: "Press <span class='highlight'>Space</span> to start/pause training",
                     instruction8: "Choose difficulty to adjust target size and speed",
                     footerText: "CS2 Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
                     ready: "READY",
@@ -712,7 +713,7 @@
                     instruction4: "连续命中会获得额外分数加成",
                     instruction5: "训练时间无限制，可以随时 <span class='highlight'>重置数据</span>",
                     instruction6: "移动鼠标控制准星位置",
-                    instruction7: "按 <span class='highlight'>空格键</span> 可以快速重置训练",
+                    instruction7: "按 <span class='highlight'>空格键</span> 可以开始和暂停训练",
                     instruction8: "选择不同难度调整目标大小和速度",
                     footerText: "CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
@@ -721,10 +722,8 @@
                 }
             };
             // ==================== 终极0延迟准星核心代码 ====================
-            // 直接在 mousemove 事件中同步更新，无任何节流或动画帧
+            // 准星始终跟随鼠标移动，无论游戏是否开始
             trainingArea.addEventListener('mousemove', function(e) {
-                if (!gameActive) return;
-                
                 // 获取训练区域的边界
                 const rect = trainingArea.getBoundingClientRect();
                 
@@ -736,13 +735,14 @@
             // 始终隐藏系统鼠标图标
             trainingArea.style.cursor = 'none';
             // ==================== 终极0延迟准星代码结束 ====================
-            // Handle shooting - 修复点击计数问题
+            // Handle shooting - 修复射击次数计数问题
             trainingArea.addEventListener('click', function(e) {
-                if (!gameActive) return;
-                
-                // 修复问题1: 无论是否击中目标，都计入射击次数
+                // 修复问题1: 无论游戏是否激活，点击都计入射击次数
+                // 但只有游戏激活时才处理目标命中逻辑
                 shots++;
                 updateStats();
+                
+                if (!gameActive) return;
                 
                 // Create hit effect
                 const rect = trainingArea.getBoundingClientRect();
@@ -785,7 +785,12 @@
                 }
             });
             // Start training with countdown
-            startBtn.addEventListener('click', function() {
+            function toggleTraining() {
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+                
                 if (gameActive) {
                     gameActive = false;
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
@@ -799,13 +804,14 @@
                     startBtn.textContent = `${count}`;
                     showGameStatus(`${count}`);
                     
-                    const countdownTimer = setInterval(() => {
+                    countdownTimer = setInterval(() => {
                         count--;
                         if (count > 0) {
                             startBtn.textContent = count;
                             showGameStatus(`${count}`);
                         } else {
                             clearInterval(countdownTimer);
+                            countdownTimer = null;
                             startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                             startBtn.disabled = false;
                             gameActive = true; // 倒计时结束，正式开始游戏
@@ -814,6 +820,15 @@
                             showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                         }
                     }, 1000);
+                }
+            }
+            // Start button event
+            startBtn.addEventListener('click', toggleTraining);
+            // Space key event - 修改为空格键开始/暂停
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    toggleTraining();
                 }
             });
             // Show game status message
@@ -826,13 +841,6 @@
             }
             // Reset stats
             resetBtn.addEventListener('click', resetGame);
-            // Reset with spacebar
-            document.addEventListener('keydown', function(e) {
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    resetGame();
-                }
-            });
             // Language toggle
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
@@ -906,12 +914,12 @@
                     }, settings.speed);
                 }
             }
-            // Handle target hit
+            // Handle target hit - 修复连击系统
             function targetHit(target) {
                 if (target.classList.contains('hit')) return;
                 target.classList.add('hit');
                 hits++;
-                combo++;
+                combo++; // 修复连击系统：每次命中都增加连击数
                 comboDisplay.textContent = combo;
                 if (combo > maxCombo) {
                     maxCombo = combo;
@@ -948,6 +956,11 @@
                 gameActive = false;
                 startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 clearInterval(targetSpawnInterval);
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+                startBtn.disabled = false;
                 // Reset stats
                 shots = 0;
                 hits = 0;
