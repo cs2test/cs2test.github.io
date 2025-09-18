@@ -163,17 +163,16 @@
             background: linear-gradient(135deg, #ff6b6b, #ff8e53);
             color: white;
             border: none;
-            padding: 12px 20px; /* 减小了内边距 */
+            padding: 16px 30px;
             border-radius: 50px;
             cursor: pointer;
-            font-size: 1rem; /* 减小了字体大小 */
+            font-size: 1.15rem;
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
             flex: 1;
             position: relative;
             overflow: hidden;
-            width: auto; /* 允许宽度自适应 */
         }
         button::before {
             content: '';
@@ -268,7 +267,6 @@
             left: 11px;
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
-        /* Removed the hit-effect class and related styles */
         .combo-display {
             position: absolute;
             top: 30px;
@@ -509,10 +507,9 @@
             const hardBtn = document.getElementById('hard-btn');
             // Game state
             let gameActive = false;
-            let gameStarted = false; // 新增变量，用于跟踪游戏是否已真正开始（倒计时后）
             let shots = 0;
             let hits = 0;
-            let totalReactionTime = 0; // Total reaction time for all targets
+            let totalReactionTime = 0; // Total reaction time for all targets (including missed ones)
             let targetCount = 0; // Total number of targets that appeared (including missed ones)
             let combo = 0;
             let maxCombo = 0;
@@ -636,7 +633,7 @@
             requestAnimationFrame(updateCrosshair);
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
-                if (!gameActive || !gameStarted) return;
+                if (!gameActive) return;
                 shots++;
                 updateStats();
                 // Check if target was hit
@@ -668,40 +665,51 @@
             startBtn.addEventListener('click', function() {
                 if (gameActive) {
                     gameActive = false;
-                    gameStarted = false;
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
                     gameActive = true;
+                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                     // Show countdown
                     showCountdown();
-                }
-            });
-            // Show countdown before starting the actual game
-            function showCountdown() {
-                // Hide the current game status
-                gameStatus.classList.remove('visible');
-                // Show countdown numbers
-                const countdownNumbers = ['3', '2', '1'];
-                let count = 0;
-                const intervalId = setInterval(() => {
-                    gameStatus.textContent = countdownNumbers[count];
-                    gameStatus.classList.add('visible');
-                    count++;
-                    if (count >= countdownNumbers.length) {
-                        clearInterval(intervalId);
-                        // After countdown finishes, start the game properly
-                        gameStarted = true;
-                        startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                    // Start the actual spawning after countdown
+                    setTimeout(() => {
                         spawnTargets();
                         targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
                         showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
-                    } else {
-                        // Reset the status after each number
-                        setTimeout(() => {
-                            gameStatus.classList.remove('visible');
-                        }, 1000);
+                    }, 3000);
+                }
+            });
+            // Show countdown
+            function showCountdown() {
+                // Clear any existing countdown
+                const existingCountdown = document.querySelector('.countdown');
+                if (existingCountdown) {
+                    existingCountdown.remove();
+                }
+                // Create countdown element
+                const countdown = document.createElement('div');
+                countdown.className = 'countdown';
+                countdown.style.position = 'absolute';
+                countdown.style.top = '50%';
+                countdown.style.left = '50%';
+                countdown.style.transform = 'translate(-50%, -50%)';
+                countdown.style.fontSize = '6rem';
+                countdown.style.fontWeight = 'bold';
+                countdown.style.color = 'rgba(255, 255, 255, 0.8)';
+                countdown.style.textShadow = '0 0 30px rgba(255, 255, 255, 0.5)';
+                countdown.style.zIndex = '100';
+                countdown.style.pointerEvents = 'none';
+                trainingArea.appendChild(countdown);
+                // Update countdown
+                let count = 3;
+                const interval = setInterval(() => {
+                    countdown.textContent = count;
+                    count--;
+                    if (count < 0) {
+                        clearInterval(interval);
+                        countdown.remove();
                     }
                 }, 1000);
             }
@@ -741,7 +749,7 @@
             });
             // Spawn targets
             function spawnTargets() {
-                if (!gameActive || !gameStarted) return;
+                if (!gameActive) return;
                 // Remove old targets
                 const oldTargets = document.querySelectorAll('.target.hit');
                 oldTargets.forEach(target => {
@@ -784,7 +792,6 @@
                     setTimeout(() => {
                         if (!target.classList.contains('hit') && target.parentNode) {
                             // For missed targets, add the full duration to total reaction time
-                            // This ensures that even if you don't click, the time is counted
                             totalReactionTime += settings.speed;
                             targetCount++; // Count this as a target that was processed (missed)
                             target.remove();
@@ -835,7 +842,6 @@
             // Reset game
             function resetGame() {
                 gameActive = false;
-                gameStarted = false;
                 startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 clearInterval(targetSpawnInterval);
                 // Reset stats
@@ -895,7 +901,7 @@
                 if (newComboDisplay) comboDisplay = newComboDisplay;
                 if (newScoreDisplay) scoreDisplay = newScoreDisplay;
                 // Update button text based on game state
-                if (gameActive && gameStarted) {
+                if (gameActive) {
                     startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                 } else {
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
