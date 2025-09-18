@@ -181,10 +181,10 @@
             background: linear-gradient(135deg, #ff6b6b, #ff8e53);
             color: white;
             border: none;
-            padding: 16px 30px;
-            border-radius: 50px;
+            padding: 12px 20px;
+            border-radius: 30px;
             cursor: pointer;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
@@ -243,22 +243,11 @@
             box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
             border: 2px solid #ff8e53;
             z-index: 10;
-            animation: pulse 2s infinite ease-in-out;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
         }
         
         .target.hit {
-            animation: hitAnimation 0.2s forwards;
-        }
-        
-        @keyframes hitAnimation {
-            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
-            50% { transform: scale(1.5); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
-            100% { transform: scale(0); opacity: 0; }
+            opacity: 0;
+            transition: opacity 0.1s ease;
         }
         
         .crosshair {
@@ -642,8 +631,8 @@
                 </div>
                 
                 <div class="controls">
-                    <button id="start-btn">开始训练</button>
-                    <button id="reset-btn">重置数据</button>
+                    <button id="start-btn">开始</button>
+                    <button id="reset-btn">重置</button>
                     <button id="lang-btn">EN/中文</button>
                 </div>
             </div>
@@ -755,8 +744,8 @@
                     easyBtn: "Easy",
                     mediumBtn: "Medium",
                     hardBtn: "Hard",
-                    startBtn: "Start Training",
-                    resetBtn: "Reset Stats",
+                    startBtn: "Start",
+                    resetBtn: "Reset",
                     langBtn: "EN/中文",
                     instructionsTitle: "Training Instructions",
                     instruction1: "Click <span class='highlight'>Start Training</span> button to begin",
@@ -787,8 +776,8 @@
                     easyBtn: "简单",
                     mediumBtn: "中等",
                     hardBtn: "困难",
-                    startBtn: "开始训练",
-                    resetBtn: "重置数据",
+                    startBtn: "开始",
+                    resetBtn: "重置",
                     langBtn: "EN/中文",
                     instructionsTitle: "训练说明",
                     instruction1: "点击 <span class='highlight'>开始训练</span> 按钮开始训练",
@@ -914,12 +903,12 @@
             startBtn.addEventListener('click', function() {
                 if (gameActive) {
                     gameActive = false;
-                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
+                    startBtn.textContent = language === 'zh' ? '开始' : 'Start';
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
                     gameActive = true;
-                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                    startBtn.textContent = language === 'zh' ? '停止' : 'Stop';
                     spawnTargets();
                     targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
                     showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
@@ -1023,7 +1012,6 @@
                     setTimeout(() => {
                         if (!target.classList.contains('hit') && target.parentNode) {
                             // For missed targets, add the full duration to total reaction time
-                            // This ensures that even if you don't click, the time is counted
                             totalReactionTime += settings.speed;
                             targetCount++; // Count this as a target that was processed (missed)
                             
@@ -1085,7 +1073,7 @@
             // Reset game
             function resetGame() {
                 gameActive = false;
-                startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
+                startBtn.textContent = language === 'zh' ? '开始' : 'Start';
                 clearInterval(targetSpawnInterval);
                 
                 // Reset stats
@@ -1153,9 +1141,9 @@
                 
                 // Update button text based on game state
                 if (gameActive) {
-                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                    startBtn.textContent = language === 'zh' ? '停止' : 'Stop';
                 } else {
-                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
+                    startBtn.textContent = language === 'zh' ? '开始' : 'Start';
                 }
             }
             
