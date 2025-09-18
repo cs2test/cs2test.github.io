@@ -16,10 +16,11 @@
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #e0e0e0;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-y: auto;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            padding: 20px 0;
             cursor: default;
         }
         
@@ -88,7 +89,8 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            height: 680px;
+            min-height: 680px;
+            height: 70vh;
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
         }
@@ -101,6 +103,11 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: 80vh;
+            overflow-y: auto;
         }
         
         .stats-title {
@@ -234,7 +241,6 @@
             border-radius: 50%;
             cursor: pointer;
             box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
-            transition: transform 0.1s ease;
             border: 2px solid #ff8e53;
             z-index: 10;
             animation: pulse 2s infinite ease-in-out;
@@ -261,7 +267,7 @@
             height: 28px;
             pointer-events: none;
             z-index: 100;
-            transition: transform 0.05s ease;
+            /* Removed transition for smoother movement */
         }
         
         .crosshair::before, .crosshair::after {
@@ -521,13 +527,33 @@
             opacity: 1;
         }
         
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(78, 205, 196, 0.5);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(78, 205, 196, 0.8);
+        }
+        
         @media (max-width: 992px) {
             .game-container {
                 flex-direction: column;
             }
             
             .training-area {
-                height: 550px;
+                min-height: 550px;
+                height: 60vh;
             }
             
             .controls {
@@ -542,7 +568,8 @@
         
         @media (max-width: 576px) {
             .training-area {
-                height: 450px;
+                min-height: 450px;
+                height: 50vh;
                 padding: 15px;
             }
             
@@ -698,6 +725,9 @@
             let targetSpawnInterval;
             let difficulty = 'easy'; // easy, medium, hard
             let language = 'zh'; // zh, en
+            let lastFrameTime = 0;
+            let mouseX = 0;
+            let mouseY = 0;
             
             // Difficulty settings
             const difficultySettings = {
@@ -770,15 +800,24 @@
                 }
             };
             
-            // Update crosshair position with mouse movement
+            // 使用 requestAnimationFrame 实现流畅的准星移动
+            function updateCrosshair() {
+                if (gameActive) {
+                    const rect = trainingArea.getBoundingClientRect();
+                    crosshair.style.left = (mouseX - rect.left - 14) + 'px';
+                    crosshair.style.top = (mouseY - rect.top - 14) + 'px';
+                }
+                requestAnimationFrame(updateCrosshair);
+            }
+            
+            // 鼠标移动事件监听器
             trainingArea.addEventListener('mousemove', function(e) {
-                const rect = trainingArea.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                crosshair.style.left = (x - 14) + 'px';
-                crosshair.style.top = (y - 14) + 'px';
+                mouseX = e.clientX;
+                mouseY = e.clientY;
             });
+            
+            // 启动准星动画
+            requestAnimationFrame(updateCrosshair);
             
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
@@ -950,8 +989,11 @@
                     // Auto-remove target after timeout (missed target)
                     setTimeout(() => {
                         if (!target.classList.contains('hit') && target.parentNode) {
-                            // For missed targets, add the full duration to total reaction time
-                            totalReactionTime += settings.speed;
+                            // For missed targets, add a significant penalty to reaction time
+                            // This will substantially increase the average reaction time
+                            const penaltyMultiplier = 2; // Increase this for more penalty
+                            const penaltyTime = settings.speed * penaltyMultiplier;
+                            totalReactionTime += penaltyTime;
                             targetCount++; // Count this as a target that was processed (missed)
                             
                             target.remove();
