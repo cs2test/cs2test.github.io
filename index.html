@@ -20,6 +20,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            cursor: default;
         }
         
         .container {
@@ -32,12 +33,24 @@
             text-align: center;
             padding: 20px 0;
             margin-bottom: 25px;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 15, 35, 0.9);
             border-radius: 16px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-            border: 1px solid #4c566a;
-            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
+            z-index: 0;
         }
         
         h1 {
@@ -46,129 +59,190 @@
             color: #ff6b6b;
             text-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
             letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .subtitle {
             font-size: 1.3rem;
             color: #a9a9c5;
+            position: relative;
+            z-index: 1;
         }
         
         .game-container {
             display: flex;
-            gap: 25px;
-            margin-bottom: 25px;
+            gap: 30px;
+            margin-bottom: 30px;
         }
         
         .training-area {
             flex: 3;
-            background: rgba(10, 15, 30, 0.95);
+            background: rgba(10, 10, 30, 0.95);
             border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            height: 650px;
-            border: 2px solid #4c566a;
+            height: 680px;
+            border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
         }
         
         .stats-panel {
             flex: 1;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 15, 40, 0.95);
             border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-            border: 1px solid #4c566a;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
         
         .stats-title {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             color: #4ecdc4;
             font-size: 1.8rem;
             text-shadow: 0 0 10px rgba(78, 205, 196, 0.7);
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .stats-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #4ecdc4, transparent);
+            border-radius: 3px;
         }
         
         .stat-item {
             display: flex;
             justify-content: space-between;
             padding: 16px 0;
-            border-bottom: 1px solid #2d3047;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 16px 10px;
+            margin: 0 -10px;
         }
         
         .stat-label {
             color: #a9a9c5;
             font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-label::before {
+            content: '•';
+            color: #4ecdc4;
+            margin-right: 8px;
+            font-size: 1.4rem;
         }
         
         .stat-value {
             font-weight: bold;
             color: #ffd166;
             font-size: 1.3rem;
-            text-shadow: 0 0 6px rgba(255, 209, 102, 0.6);
+            text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
+            min-width: 80px;
+            text-align: right;
         }
         
         .controls {
             display: flex;
             justify-content: space-between;
-            margin-top: 30px;
+            margin-top: 35px;
             gap: 15px;
         }
         
         button {
-            background: linear-gradient(to right, #ff6b6b, #ff8e53);
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
             color: white;
             border: none;
-            padding: 16px 28px;
-            border-radius: 40px;
+            padding: 16px 30px;
+            border-radius: 50px;
             cursor: pointer;
             font-size: 1.15rem;
             font-weight: bold;
-            transition: all 0.25s ease;
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.5);
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
             flex: 1;
-            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
         }
         
         button:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.7);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.6);
+        }
+        
+        button:hover::before {
+            left: 100%;
         }
         
         button:active {
-            transform: translateY(1px);
+            transform: translateY(2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
         
         #reset-btn {
-            background: linear-gradient(to right, #4ecdc4, #88d3ce);
-            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.5);
+            background: linear-gradient(135deg, #4ecdc4, #88d3ce);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
         }
         
         #reset-btn:hover {
-            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.7);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.6);
         }
         
         #lang-btn {
-            background: linear-gradient(to right, #6a5af9, #d66efd);
-            box-shadow: 0 5px 20px rgba(106, 90, 249, 0.5);
+            background: linear-gradient(135deg, #6a5af9, #d66efd);
+            box-shadow: 0 6px 20px rgba(106, 90, 249, 0.4);
         }
         
         #lang-btn:hover {
-            box-shadow: 0 8px 25px rgba(106, 90, 249, 0.7);
+            box-shadow: 0 10px 25px rgba(106, 90, 249, 0.6);
         }
         
         .target {
             position: absolute;
-            width: 30px;
-            height: 30px;
-            background: radial-gradient(circle, #ff6b6b, #d32f2f);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 107, 107, 0.9);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
             transition: transform 0.1s ease;
             border: 2px solid #ff8e53;
             z-index: 10;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         
         .target.hit {
@@ -176,15 +250,15 @@
         }
         
         @keyframes hitAnimation {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.7; }
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+            50% { transform: scale(1.5); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
             100% { transform: scale(0); opacity: 0; }
         }
         
         .crosshair {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             pointer-events: none;
             z-index: 100;
             transition: transform 0.05s ease;
@@ -193,22 +267,22 @@
         .crosshair::before, .crosshair::after {
             content: '';
             position: absolute;
-            background-color: #00ff00;
-            box-shadow: 0 0 8px rgba(0, 255, 0, 0.9);
+            background-color: #00ff88;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
         
         .crosshair::before {
-            width: 30px;
+            width: 28px;
             height: 3px;
-            top: 13.5px;
+            top: 12.5px;
             left: 0;
         }
         
         .crosshair::after {
             width: 3px;
-            height: 30px;
+            height: 28px;
             top: 0;
-            left: 13.5px;
+            left: 12.5px;
         }
         
         .crosshair.center-dot::after {
@@ -216,22 +290,23 @@
             position: absolute;
             width: 6px;
             height: 6px;
-            background-color: #00ff00;
+            background-color: #00ff88;
             border-radius: 50%;
-            top: 12px;
-            left: 12px;
-            box-shadow: 0 0 8px rgba(0, 255, 0, 0.9);
+            top: 11px;
+            left: 11px;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
         
         .hit-effect {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 70%, transparent 100%);
             pointer-events: none;
             animation: spread 0.3s forwards;
             z-index: 20;
+            border: 2px solid rgba(255, 255, 255, 0.7);
         }
         
         @keyframes spread {
@@ -240,21 +315,34 @@
         }
         
         .instructions {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 15, 40, 0.95);
             border-radius: 16px;
             padding: 30px;
-            margin-top: 25px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-            border: 1px solid #4c566a;
+            margin-top: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
         
         .instructions h2 {
             color: #ffd166;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             text-align: center;
             text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
             font-size: 1.8rem;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .instructions h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffd166, transparent);
         }
         
         .instructions ul {
@@ -265,11 +353,24 @@
             margin-bottom: 15px;
             line-height: 1.8;
             font-size: 1.1rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .instructions li::before {
+            content: '→';
+            color: #4ecdc4;
+            position: absolute;
+            left: -20px;
+            font-weight: bold;
         }
         
         .highlight {
             color: #4ecdc4;
             font-weight: bold;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
         }
         
         footer {
@@ -277,11 +378,11 @@
             padding: 20px;
             color: #a9a9c5;
             font-size: 1.1rem;
-            margin-top: 25px;
-            background: rgba(15, 23, 42, 0.85);
+            margin-top: 30px;
+            background: rgba(15, 15, 35, 0.9);
             border-radius: 16px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-            border: 1px solid #4c566a;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
         
@@ -293,35 +394,56 @@
         }
         
         .difficulty-btn {
-            background: rgba(40, 45, 70, 0.9);
+            background: rgba(40, 45, 80, 0.8);
             color: #a9a9c5;
-            border: 1px solid #4c566a;
-            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
             border-radius: 30px;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: all 0.3s;
             font-size: 1.05rem;
             flex: 1;
             text-align: center;
-            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .difficulty-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .difficulty-btn:hover::before {
+            opacity: 1;
         }
         
         .difficulty-btn.active {
-            background: linear-gradient(to right, #ff6b6b, #ff8e53);
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
             color: white;
-            border-color: #ff6b6b;
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
+            border-color: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+        
+        .difficulty-btn.active::before {
+            opacity: 0.2;
         }
         
         .difficulty-btn:hover:not(.active) {
-            background: rgba(60, 65, 90, 0.9);
+            background: rgba(60, 65, 100, 0.9);
             transform: translateY(-2px);
         }
         
         .combo-display {
             position: absolute;
-            top: 25px;
-            right: 25px;
+            top: 30px;
+            right: 30px;
             font-size: 1.8rem;
             font-weight: bold;
             color: #ffd166;
@@ -329,14 +451,21 @@
             z-index: 50;
             background: rgba(0, 0, 0, 0.6);
             padding: 8px 20px;
-            border-radius: 25px;
+            border-radius: 30px;
             backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 209, 102, 0.3);
+            animation: glow 1.5s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(255, 209, 102, 0.7); }
+            to { text-shadow: 0 0 20px rgba(255, 209, 102, 0.9); }
         }
         
         .score-display {
             position: absolute;
-            top: 25px;
-            left: 25px;
+            top: 30px;
+            left: 30px;
             font-size: 1.8rem;
             font-weight: bold;
             color: #4ecdc4;
@@ -344,23 +473,52 @@
             z-index: 50;
             background: rgba(0, 0, 0, 0.6);
             padding: 8px 20px;
-            border-radius: 25px;
+            border-radius: 30px;
             backdrop-filter: blur(5px);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            animation: glow2 1.5s infinite alternate;
+        }
+        
+        @keyframes glow2 {
+            from { text-shadow: 0 0 10px rgba(78, 205, 196, 0.7); }
+            to { text-shadow: 0 0 20px rgba(78, 205, 196, 0.9); }
         }
         
         .progress-bar {
             height: 10px;
-            background: rgba(40, 45, 70, 0.8);
+            background: rgba(40, 45, 80, 0.8);
             border-radius: 5px;
             margin-top: 8px;
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(to right, #4ecdc4, #88d3ce);
+            background: linear-gradient(90deg, #4ecdc4, #88d3ce);
             width: 0%;
             transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+        
+        /* Game status indicator */
+        .game-status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .game-status.visible {
+            opacity: 1;
         }
         
         @media (max-width: 992px) {
@@ -369,7 +527,7 @@
             }
             
             .training-area {
-                height: 500px;
+                height: 550px;
             }
             
             .controls {
@@ -378,13 +536,14 @@
             
             button {
                 width: 100%;
-                margin-bottom: 12px;
+                margin-bottom: 15px;
             }
         }
         
         @media (max-width: 576px) {
             .training-area {
-                height: 400px;
+                height: 450px;
+                padding: 15px;
             }
             
             h1 {
@@ -401,6 +560,7 @@
             
             .combo-display, .score-display {
                 font-size: 1.5rem;
+                padding: 6px 15px;
             }
         }
     </style>
@@ -417,6 +577,7 @@
                 <div class="crosshair" id="crosshair"></div>
                 <div class="combo-display">连击: <span id="combo-display">0</span></div>
                 <div class="score-display">得分: <span id="score-display">0</span></div>
+                <div class="game-status" id="game-status">准备就绪</div>
                 <!-- Targets will be generated here -->
             </div>
             
@@ -488,13 +649,13 @@
             const resetBtn = document.getElementById('reset-btn');
             const langBtn = document.getElementById('lang-btn');
             const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            const gameStatus = document.getElementById('game-status');
             
             // Stats elements
             const shotsElement = document.getElementById('shots');
             const hitsElement = document.getElementById('hits');
             const accuracyElement = document.getElementById('accuracy');
             const reactionElement = document.getElementById('reaction');
-            const comboElement = document.getElementById('combo');
             const maxComboElement = document.getElementById('max-combo');
             const scoreElement = document.getElementById('score');
             const comboDisplay = document.getElementById('combo-display');
@@ -572,7 +733,10 @@
                     instruction6: "Move mouse to control crosshair",
                     instruction7: "Press <span class='highlight'>Space</span> to quickly reset",
                     instruction8: "Choose difficulty to adjust target size and speed",
-                    footerText: "CS2 Aim Trainer | Improve your shooting skills | Press F11 for fullscreen"
+                    footerText: "CS2 Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
+                    ready: "READY",
+                    training: "TRAINING",
+                    stopped: "STOPPED"
                 },
                 zh: {
                     title: "CS2 精准度训练模拟器",
@@ -599,7 +763,10 @@
                     instruction6: "移动鼠标控制准星位置",
                     instruction7: "按 <span class='highlight'>空格键</span> 可以快速重置训练",
                     instruction8: "选择不同难度调整目标大小和速度",
-                    footerText: "CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验"
+                    footerText: "CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
+                    ready: "准备就绪",
+                    training: "训练中",
+                    stopped: "已停止"
                 }
             };
             
@@ -609,8 +776,8 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 
-                crosshair.style.left = (x - 15) + 'px';
-                crosshair.style.top = (y - 15) + 'px';
+                crosshair.style.left = (x - 14) + 'px';
+                crosshair.style.top = (y - 14) + 'px';
             });
             
             // Handle shooting
@@ -627,13 +794,15 @@
                 
                 const hitEffect = document.createElement('div');
                 hitEffect.className = 'hit-effect';
-                hitEffect.style.left = (x - 10) + 'px';
-                hitEffect.style.top = (y - 10) + 'px';
+                hitEffect.style.left = (x - 11) + 'px';
+                hitEffect.style.top = (y - 11) + 'px';
                 trainingArea.appendChild(hitEffect);
                 
                 // Remove hit effect after animation
                 setTimeout(() => {
-                    hitEffect.remove();
+                    if (hitEffect && hitEffect.parentNode) {
+                        hitEffect.remove();
+                    }
                 }, 300);
                 
                 // Check if target was hit
@@ -641,6 +810,8 @@
                 let hitTarget = false;
                 
                 targets.forEach(target => {
+                    if (hitTarget) return; // Only count one hit per click
+                    
                     const targetRect = target.getBoundingClientRect();
                     const areaRect = trainingArea.getBoundingClientRect();
                     
@@ -654,6 +825,7 @@
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(target.dataset.spawnTime);
                         totalReactionTime += reactionTime;
+                        targetCount++; // Count this as a target that was processed
                         
                         targetHit(target);
                     }
@@ -672,13 +844,24 @@
                     gameActive = false;
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                     clearInterval(targetSpawnInterval);
+                    showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
                     gameActive = true;
                     startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                     spawnTargets();
                     targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
+                    showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                 }
             });
+            
+            // Show game status message
+            function showGameStatus(text) {
+                gameStatus.textContent = text;
+                gameStatus.classList.add('visible');
+                setTimeout(() => {
+                    gameStatus.classList.remove('visible');
+                }, 2000);
+            }
             
             // Reset stats
             resetBtn.addEventListener('click', resetGame);
@@ -686,6 +869,7 @@
             // Reset with spacebar
             document.addEventListener('keydown', function(e) {
                 if (e.code === 'Space') {
+                    e.preventDefault();
                     resetGame();
                 }
             });
@@ -716,18 +900,25 @@
                 
                 // Remove old targets
                 const oldTargets = document.querySelectorAll('.target.hit');
-                oldTargets.forEach(target => target.remove());
+                oldTargets.forEach(target => {
+                    if (target.parentNode) {
+                        target.remove();
+                    }
+                });
                 
                 // Create new targets
-                const maxTargets = 10;
+                const maxTargets = 8;
                 const currentTargets = document.querySelectorAll('.target:not(.hit)').length;
                 
                 if (currentTargets < maxTargets) {
                     const target = document.createElement('div');
                     target.className = 'target';
                     
+                    // Get difficulty settings
+                    const settings = difficultySettings[difficulty];
+                    
                     // Random position within training area
-                    const size = difficultySettings[difficulty].size;
+                    const size = settings.size;
                     const maxX = trainingArea.clientWidth - size;
                     const maxY = trainingArea.clientHeight - size;
                     
@@ -743,31 +934,32 @@
                     // Add click event to target
                     target.addEventListener('click', function(e) {
                         e.stopPropagation();
+                        if (this.classList.contains('hit')) return;
+                        
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
                         totalReactionTime += reactionTime;
+                        targetCount++; // Count this as a target that was processed
                         
-                        targetHit(target);
+                        targetHit(this);
                     });
                     
                     trainingArea.appendChild(target);
                     targets.push(target);
-                    targetCount++; // Increment target count when a new target appears
                     
-                    // Auto-remove target after timeout
+                    // Auto-remove target after timeout (missed target)
                     setTimeout(() => {
-                        if (!target.classList.contains('hit')) {
+                        if (!target.classList.contains('hit') && target.parentNode) {
                             // For missed targets, add the full duration to total reaction time
-                            totalReactionTime += difficultySettings[difficulty].speed;
-                            targetCount++; // Increment target count for missed targets
+                            totalReactionTime += settings.speed;
+                            targetCount++; // Count this as a target that was processed (missed)
                             
-                            // Remove target
                             target.remove();
                             combo = 0;
                             comboDisplay.textContent = combo;
-                            updateStats(); // Update stats when target is missed
+                            updateStats();
                         }
-                    }, difficultySettings[difficulty].speed);
+                    }, settings.speed);
                 }
             }
             
@@ -796,14 +988,16 @@
                 
                 // Remove target after animation
                 setTimeout(() => {
-                    target.remove();
+                    if (target && target.parentNode) {
+                        target.remove();
+                    }
                 }, 200);
             }
             
             // Update statistics display
             function updateStats() {
-                // Calculate accuracy
-                const accuracy = shots > 0 ? Math.round((hits / shots) * 100) : 0;
+                // Calculate accuracy - now can't exceed 100%
+                const accuracy = shots > 0 ? Math.min(100, Math.round((hits / shots) * 100)) : 0;
                 
                 // Calculate average reaction time
                 const averageReactionTime = targetCount > 0 ? Math.round(totalReactionTime / targetCount) : 0;
@@ -812,7 +1006,6 @@
                 hitsElement.textContent = hits;
                 accuracyElement.textContent = accuracy + '%';
                 reactionElement.textContent = averageReactionTime + 'ms';
-                comboElement.textContent = combo;
                 scoreElement.textContent = score;
             }
             
@@ -836,10 +1029,15 @@
                 
                 // Remove all targets
                 const allTargets = document.querySelectorAll('.target');
-                allTargets.forEach(target => target.remove());
+                allTargets.forEach(target => {
+                    if (target.parentNode) {
+                        target.remove();
+                    }
+                });
                 
                 updateStats();
                 maxComboElement.textContent = maxCombo;
+                showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
             }
             
             // Update language
@@ -894,6 +1092,7 @@
             // Initialize
             updateStats();
             updateLanguage();
+            showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
         });
     </script>
 </body>
