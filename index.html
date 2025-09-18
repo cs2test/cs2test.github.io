@@ -85,6 +85,8 @@
             height: 70vh;
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
+            /* 始终隐藏鼠标图标 */
+            cursor: none !important;
         }
         .stats-panel {
             flex: 1;
@@ -212,7 +214,7 @@
         .target {
             position: absolute;
             border-radius: 50%;
-            cursor: pointer;
+            cursor: none !important; /* 确保目标上也不显示鼠标 */
             box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
             border: 2px solid #ff8e53;
             z-index: 10;
@@ -731,25 +733,17 @@
                 crosshair.style.left = (e.clientX - rect.left - 14) + 'px';
                 crosshair.style.top = (e.clientY - rect.top - 14) + 'px';
             }, { passive: true });
-            // 鼠标进入时隐藏系统光标
-            trainingArea.addEventListener('mouseenter', function() {
-                if (gameActive) {
-                    trainingArea.style.cursor = 'none';
-                }
-            });
-            // 鼠标离开时显示系统光标并隐藏准星
-            trainingArea.addEventListener('mouseleave', function() {
-                trainingArea.style.cursor = 'default';
-                // 将准星移出可视区域
-                crosshair.style.left = '-100px';
-                crosshair.style.top = '-100px';
-            });
+            // 始终隐藏系统鼠标图标
+            trainingArea.style.cursor = 'none';
             // ==================== 终极0延迟准星代码结束 ====================
-            // Handle shooting
+            // Handle shooting - 修复点击计数问题
             trainingArea.addEventListener('click', function(e) {
                 if (!gameActive) return;
+                
+                // 修复问题1: 无论是否击中目标，都计入射击次数
                 shots++;
                 updateStats();
+                
                 // Create hit effect
                 const rect = trainingArea.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -798,7 +792,7 @@
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
-                    // 倒计时逻辑 - 修复321倒计时
+                    // 倒计时逻辑
                     let count = 3;
                     gameActive = false; // 暂时设为false，倒计时结束后再设为true
                     startBtn.disabled = true;
