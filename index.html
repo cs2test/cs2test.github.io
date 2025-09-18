@@ -86,9 +86,9 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            min-height: 500px;
-            height: 500px; /* 改为正方形 */
-            width: 500px; /* 改为正方形 */
+            min-height: 600px;
+            height: 600px; /* 增大正方形框 */
+            width: 600px; /* 增大正方形框 */
             margin: 0 auto; /* 居中显示 */
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
@@ -449,8 +449,8 @@
                 flex-direction: column;
             }
             .training-area {
-                min-height: 400px;
-                height: 400px;
+                min-height: 500px;
+                height: 500px;
                 width: 90%;
                 margin: 0 auto;
             }
@@ -464,8 +464,8 @@
         }
         @media (max-width: 576px) {
             .training-area {
-                min-height: 350px;
-                height: 350px;
+                min-height: 400px;
+                height: 400px;
                 width: 95%;
                 padding: 15px;
             }
@@ -622,7 +622,7 @@
             
             // Difficulty settings
             const difficultySettings = {
-                easy: { size: 40, speed: 3000, spawnRate: 300 } // 延长消失时间，缩短刷新时间
+                easy: { size: 40, speed: 5000, spawnRate: 300 } // 延长消失时间到5000ms
             };
             // Language translations
             const translations = {
@@ -876,9 +876,13 @@
                         direction = directions[currentDirectionIndex];
                     }
                     
-                    // 计算新位置
-                    let newX = lastPos.x + direction.x * 60;
-                    let newY = lastPos.y + direction.y * 60;
+                    // 计算新位置 - 使用随机间距
+                    const minStep = 30; // 最小步长
+                    const maxStep = 80; // 最大步长
+                    const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
+                    
+                    let newX = lastPos.x + direction.x * step;
+                    let newY = lastPos.y + direction.y * step;
                     
                     // 边界检测
                     const padding = 40;
