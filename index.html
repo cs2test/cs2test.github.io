@@ -601,6 +601,8 @@
             let targetSpawnInterval;
             let countdownTimer = null;
             let language = 'zh'; // zh, en
+            let lastTargetPosition = { x: 0, y: 0 }; // 用于贪吃蛇式目标生成
+            let isFirstTarget = true; // 是否是第一个目标
             // Difficulty settings (only easy now)
             const difficultySettings = {
                 easy: { size: 40, speed: 1500, spawnRate: 1800 }
@@ -728,7 +730,7 @@
                         // 显示得分
                         showScoreIndicator(points, x, y);
                         
-                        // 处理目标命中
+                        // 处理目标命中 - 确保射击次数和命中次数同步增加
                         targetHit(target, points);
                     }
                 });
@@ -822,7 +824,7 @@
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
-            // Spawn targets
+            // Spawn targets - 贪吃蛇式目标生成
             function spawnTargets() {
                 if (!gameActive) return;
                 // Remove old targets
@@ -840,12 +842,29 @@
                     target.className = 'target';
                     // Get difficulty settings
                     const settings = difficultySettings.easy;
-                    // Random position within training area (avoiding score/combo areas)
                     const size = settings.size;
-                    const maxX = trainingArea.clientWidth - size - 40; // 减去边距
-                    const maxY = trainingArea.clientHeight - size - 80; // 减去底部边距
-                    const x = Math.floor(Math.random() * maxX) + 20;
-                    const y = Math.floor(Math.random() * maxY) + 20;
+                    
+                    let x, y;
+                    if (isFirstTarget || !lastTargetPosition) {
+                        // 第一个目标随机生成
+                        const maxX = trainingArea.clientWidth - size - 40;
+                        const maxY = trainingArea.clientHeight - size - 80;
+                        x = Math.floor(Math.random() * maxX) + 20;
+                        y = Math.floor(Math.random() * maxY) + 20;
+                        isFirstTarget = false;
+                    } else {
+                        // 后续目标在上一个目标附近生成（贪吃蛇式）
+                        const maxOffset = 100; // 最大偏移量
+                        const offsetX = Math.floor(Math.random() * maxOffset * 2) - maxOffset;
+                        const offsetY = Math.floor(Math.random() * maxOffset * 2) - maxOffset;
+                        
+                        x = Math.max(20, Math.min(trainingArea.clientWidth - size - 20, lastTargetPosition.x + offsetX));
+                        y = Math.max(20, Math.min(trainingArea.clientHeight - size - 80, lastTargetPosition.y + offsetY));
+                    }
+                    
+                    // 保存当前位置作为下一个目标的参考
+                    lastTargetPosition = { x: x, y: y };
+                    
                     target.style.width = size + 'px';
                     target.style.height = size + 'px';
                     target.style.left = x + 'px';
@@ -949,6 +968,9 @@
                 score = 0;
                 comboDisplay.textContent = combo;
                 scoreDisplay.textContent = score;
+                // Reset target position tracking
+                isFirstTarget = true;
+                lastTargetPosition = { x: 0, y: 0 };
                 // Remove all targets
                 const allTargets = document.querySelectorAll('.target');
                 allTargets.forEach(target => {
