@@ -420,7 +420,7 @@
                     <span class="stat-value" id="accuracy">0%</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label" id="reaction-label">反应时间:</span>
+                    <span class="stat-label" id="reaction-label">平均反应时间:</span>
                     <span class="stat-value" id="reaction">0ms</span>
                 </div>
                 <div class="stat-item">
@@ -513,8 +513,8 @@
             let gameActive = false;
             let shots = 0;
             let hits = 0;
-            let accuracy = 0;
-            let reactionTime = 0;
+            let totalReactionTime = 0; // Total reaction time for all hits
+            let reactionCount = 0; // Count of successful hits for average calculation
             let combo = 0;
             let maxCombo = 0;
             let score = 0;
@@ -541,7 +541,7 @@
                     shotsLabel: "Shots Fired:",
                     hitsLabel: "Hits:",
                     accuracyLabel: "Accuracy:",
-                    reactionLabel: "Reaction Time:",
+                    reactionLabel: "Average Reaction Time:",
                     maxComboLabel: "Max Combo:",
                     scoreLabel: "Current Score:",
                     easyBtn: "Easy",
@@ -568,7 +568,7 @@
                     shotsLabel: "射击次数:",
                     hitsLabel: "命中次数:",
                     accuracyLabel: "命中率:",
-                    reactionLabel: "反应时间:",
+                    reactionLabel: "平均反应时间:",
                     maxComboLabel: "最高连击:",
                     scoreLabel: "当前得分:",
                     easyBtn: "简单",
@@ -639,7 +639,10 @@
                     if (distance < targetRect.width/2) {
                         hitTarget = true;
                         const hitTime = Date.now();
-                        reactionTime = hitTime - parseInt(target.dataset.spawnTime);
+                        const reactionTime = hitTime - parseInt(target.dataset.spawnTime);
+                        totalReactionTime += reactionTime;
+                        reactionCount++;
+                        
                         targetHit(target);
                     }
                 });
@@ -729,7 +732,10 @@
                     target.addEventListener('click', function(e) {
                         e.stopPropagation();
                         const hitTime = Date.now();
-                        reactionTime = hitTime - parseInt(this.dataset.spawnTime);
+                        const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
+                        totalReactionTime += reactionTime;
+                        reactionCount++;
+                        
                         targetHit(target);
                     });
                     
@@ -778,12 +784,16 @@
             
             // Update statistics display
             function updateStats() {
+                // Calculate accuracy
                 accuracy = shots > 0 ? Math.round((hits / shots) * 100) : 0;
+                
+                // Calculate average reaction time
+                const averageReactionTime = reactionCount > 0 ? Math.round(totalReactionTime / reactionCount) : 0;
                 
                 shotsElement.textContent = shots;
                 hitsElement.textContent = hits;
                 accuracyElement.textContent = accuracy + '%';
-                reactionElement.textContent = reactionTime + 'ms';
+                reactionElement.textContent = averageReactionTime + 'ms';
                 comboElement.textContent = combo;
                 scoreElement.textContent = score;
             }
@@ -797,8 +807,8 @@
                 // Reset stats
                 shots = 0;
                 hits = 0;
-                accuracy = 0;
-                reactionTime = 0;
+                totalReactionTime = 0;
+                reactionCount = 0;
                 combo = 0;
                 maxCombo = 0;
                 score = 0;
