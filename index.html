@@ -11,7 +11,6 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
         body {
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #e0e0e0;
@@ -23,13 +22,11 @@
             padding: 20px 0;
             cursor: default;
         }
-        
         .container {
             width: 100%;
             max-width: 1400px;
             padding: 20px;
         }
-        
         header {
             text-align: center;
             padding: 20px 0;
@@ -42,7 +39,6 @@
             position: relative;
             overflow: hidden;
         }
-        
         header::before {
             content: '';
             position: absolute;
@@ -53,7 +49,6 @@
             background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
             z-index: 0;
         }
-        
         h1 {
             font-size: 2.8rem;
             margin-bottom: 10px;
@@ -67,20 +62,17 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
         .subtitle {
             font-size: 1.3rem;
             color: #a9a9c5;
             position: relative;
             z-index: 1;
         }
-        
         .game-container {
             display: flex;
             gap: 30px;
             margin-bottom: 30px;
         }
-        
         .training-area {
             flex: 3;
             background: rgba(10, 10, 30, 0.95);
@@ -94,7 +86,6 @@
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
         }
-        
         .stats-panel {
             flex: 1;
             background: rgba(15, 15, 40, 0.95);
@@ -109,7 +100,6 @@
             max-height: 80vh;
             overflow-y: auto;
         }
-        
         .stats-title {
             text-align: center;
             margin-bottom: 30px;
@@ -119,7 +109,6 @@
             position: relative;
             padding-bottom: 15px;
         }
-        
         .stats-title::after {
             content: '';
             position: absolute;
@@ -131,7 +120,6 @@
             background: linear-gradient(90deg, transparent, #4ecdc4, transparent);
             border-radius: 3px;
         }
-        
         .stat-item {
             display: flex;
             justify-content: space-between;
@@ -139,28 +127,24 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
-        
         .stat-item:hover {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 8px;
             padding: 16px 10px;
             margin: 0 -10px;
         }
-        
         .stat-label {
             color: #a9a9c5;
             font-size: 1.2rem;
             display: flex;
             align-items: center;
         }
-        
         .stat-label::before {
             content: '•';
             color: #4ecdc4;
             margin-right: 8px;
             font-size: 1.4rem;
         }
-        
         .stat-value {
             font-weight: bold;
             color: #ffd166;
@@ -169,30 +153,28 @@
             min-width: 80px;
             text-align: right;
         }
-        
         .controls {
             display: flex;
             justify-content: space-between;
             margin-top: 35px;
             gap: 15px;
         }
-        
         button {
             background: linear-gradient(135deg, #ff6b6b, #ff8e53);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 30px;
+            padding: 12px 20px; /* 减小了内边距 */
+            border-radius: 50px;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1rem; /* 减小了字体大小 */
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
             flex: 1;
             position: relative;
             overflow: hidden;
+            width: auto; /* 允许宽度自适应 */
         }
-        
         button::before {
             content: '';
             position: absolute;
@@ -203,39 +185,31 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
-        
         button:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(255, 107, 107, 0.6);
         }
-        
         button:hover::before {
             left: 100%;
         }
-        
         button:active {
             transform: translateY(2px);
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
-        
         #reset-btn {
             background: linear-gradient(135deg, #4ecdc4, #88d3ce);
             box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
         }
-        
         #reset-btn:hover {
             box-shadow: 0 10px 25px rgba(78, 205, 196, 0.6);
         }
-        
         #lang-btn {
             background: linear-gradient(135deg, #6a5af9, #d66efd);
             box-shadow: 0 6px 20px rgba(106, 90, 249, 0.4);
         }
-        
         #lang-btn:hover {
             box-shadow: 0 10px 25px rgba(106, 90, 249, 0.6);
         }
-        
         .target {
             position: absolute;
             border-radius: 50%;
@@ -243,13 +217,20 @@
             box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
             border: 2px solid #ff8e53;
             z-index: 10;
+            animation: pulse 2s infinite ease-in-out;
         }
-        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
         .target.hit {
-            opacity: 0;
-            transition: opacity 0.1s ease;
+            animation: hitAnimation 0.2s forwards;
         }
-        
+        @keyframes hitAnimation {
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+            50% { transform: scale(1.5); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+            100% { transform: scale(0); opacity: 0; }
+        }
         .crosshair {
             position: absolute;
             width: 28px;
@@ -258,28 +239,24 @@
             z-index: 100;
             /* Removed transition for smoother movement */
         }
-        
         .crosshair::before, .crosshair::after {
             content: '';
             position: absolute;
             background-color: #00ff88;
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
-        
         .crosshair::before {
             width: 28px;
             height: 3px;
             top: 12.5px;
             left: 0;
         }
-        
         .crosshair::after {
             width: 3px;
             height: 28px;
             top: 0;
             left: 12.5px;
         }
-        
         .crosshair.center-dot::after {
             content: '';
             position: absolute;
@@ -291,150 +268,7 @@
             left: 11px;
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
-        
-        .hit-effect {
-            position: absolute;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 70%, transparent 100%);
-            pointer-events: none;
-            animation: spread 0.3s forwards;
-            z-index: 20;
-            border: 2px solid rgba(255, 255, 255, 0.7);
-        }
-        
-        @keyframes spread {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(2.5); opacity: 0; }
-        }
-        
-        .instructions {
-            background: rgba(15, 15, 40, 0.95);
-            border-radius: 16px;
-            padding: 30px;
-            margin-top: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .instructions h2 {
-            color: #ffd166;
-            margin-bottom: 25px;
-            text-align: center;
-            text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
-            font-size: 1.8rem;
-            position: relative;
-            padding-bottom: 15px;
-        }
-        
-        .instructions h2::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #ffd166, transparent);
-        }
-        
-        .instructions ul {
-            padding-left: 30px;
-        }
-        
-        .instructions li {
-            margin-bottom: 15px;
-            line-height: 1.8;
-            font-size: 1.1rem;
-            position: relative;
-            padding-left: 15px;
-        }
-        
-        .instructions li::before {
-            content: '→';
-            color: #4ecdc4;
-            position: absolute;
-            left: -20px;
-            font-weight: bold;
-        }
-        
-        .highlight {
-            color: #4ecdc4;
-            font-weight: bold;
-            background: rgba(78, 205, 196, 0.2);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #a9a9c5;
-            font-size: 1.1rem;
-            margin-top: 30px;
-            background: rgba(15, 15, 35, 0.9);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .difficulty {
-            display: flex;
-            justify-content: space-between;
-            margin: 25px 0;
-            gap: 12px;
-        }
-        
-        .difficulty-btn {
-            background: rgba(40, 45, 80, 0.8);
-            color: #a9a9c5;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1.05rem;
-            flex: 1;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .difficulty-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .difficulty-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .difficulty-btn.active {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-            color: white;
-            border-color: rgba(255, 107, 107, 0.5);
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
-        }
-        
-        .difficulty-btn.active::before {
-            opacity: 0.2;
-        }
-        
-        .difficulty-btn:hover:not(.active) {
-            background: rgba(60, 65, 100, 0.9);
-            transform: translateY(-2px);
-        }
-        
+        /* Removed the hit-effect class and related styles */
         .combo-display {
             position: absolute;
             top: 30px;
@@ -451,12 +285,10 @@
             border: 1px solid rgba(255, 209, 102, 0.3);
             animation: glow 1.5s infinite alternate;
         }
-        
         @keyframes glow {
             from { text-shadow: 0 0 10px rgba(255, 209, 102, 0.7); }
             to { text-shadow: 0 0 20px rgba(255, 209, 102, 0.9); }
         }
-        
         .score-display {
             position: absolute;
             top: 30px;
@@ -473,12 +305,10 @@
             border: 1px solid rgba(78, 205, 196, 0.3);
             animation: glow2 1.5s infinite alternate;
         }
-        
         @keyframes glow2 {
             from { text-shadow: 0 0 10px rgba(78, 205, 196, 0.7); }
             to { text-shadow: 0 0 20px rgba(78, 205, 196, 0.9); }
         }
-        
         .progress-bar {
             height: 10px;
             background: rgba(40, 45, 80, 0.8);
@@ -487,7 +317,6 @@
             overflow: hidden;
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
-        
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #4ecdc4, #88d3ce);
@@ -495,7 +324,6 @@
             transition: width 0.3s ease;
             box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
         }
-        
         /* Game status indicator */
         .game-status {
             position: absolute;
@@ -511,69 +339,55 @@
             opacity: 0;
             transition: opacity 0.5s;
         }
-        
         .game-status.visible {
             opacity: 1;
         }
-        
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
         }
-        
         ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
-        
         ::-webkit-scrollbar-thumb {
             background: rgba(78, 205, 196, 0.5);
             border-radius: 10px;
         }
-        
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(78, 205, 196, 0.8);
         }
-        
         @media (max-width: 992px) {
             .game-container {
                 flex-direction: column;
             }
-            
             .training-area {
                 min-height: 550px;
                 height: 60vh;
             }
-            
             .controls {
                 flex-direction: column;
             }
-            
             button {
                 width: 100%;
                 margin-bottom: 15px;
             }
         }
-        
         @media (max-width: 576px) {
             .training-area {
                 min-height: 450px;
                 height: 50vh;
                 padding: 15px;
             }
-            
             h1 {
                 font-size: 2.2rem;
             }
-            
             .subtitle {
                 font-size: 1.1rem;
             }
-            
             .stat-label, .stat-value {
                 font-size: 1.05rem;
             }
-            
             .combo-display, .score-display {
                 font-size: 1.5rem;
                 padding: 6px 15px;
@@ -587,7 +401,6 @@
             <h1 id="title">CS2 精准度训练模拟器</h1>
             <p class="subtitle" id="subtitle">提升你的射击精准度和反应速度</p>
         </header>
-        
         <div class="game-container">
             <div class="training-area" id="training-area">
                 <div class="crosshair" id="crosshair"></div>
@@ -596,7 +409,6 @@
                 <div class="game-status" id="game-status">准备就绪</div>
                 <!-- Targets will be generated here -->
             </div>
-            
             <div class="stats-panel">
                 <h2 class="stats-title" id="stats-title">训练数据</h2>
                 <div class="stat-item">
@@ -623,21 +435,18 @@
                     <span class="stat-label" id="score-label">当前得分:</span>
                     <span class="stat-value" id="score">0</span>
                 </div>
-                
                 <div class="difficulty">
                     <div class="difficulty-btn active" data-level="easy" id="easy-btn">简单</div>
                     <div class="difficulty-btn" data-level="medium" id="medium-btn">中等</div>
                     <div class="difficulty-btn" data-level="hard" id="hard-btn">困难</div>
                 </div>
-                
                 <div class="controls">
-                    <button id="start-btn">开始</button>
-                    <button id="reset-btn">重置</button>
+                    <button id="start-btn">开始训练</button>
+                    <button id="reset-btn">重置数据</button>
                     <button id="lang-btn">EN/中文</button>
                 </div>
             </div>
         </div>
-        
         <div class="instructions">
             <h2 id="instructions-title">训练说明</h2>
             <ul>
@@ -651,12 +460,10 @@
                 <li id="instruction-8">选择不同难度调整目标大小和速度</li>
             </ul>
         </div>
-        
         <footer>
             <p id="footer-text">CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
         </footer>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const trainingArea = document.getElementById('training-area');
@@ -666,7 +473,6 @@
             const langBtn = document.getElementById('lang-btn');
             const difficultyBtns = document.querySelectorAll('.difficulty-btn');
             const gameStatus = document.getElementById('game-status');
-            
             // Stats elements
             const shotsElement = document.getElementById('shots');
             const hitsElement = document.getElementById('hits');
@@ -678,7 +484,6 @@
             const scoreDisplay = document.getElementById('score-display');
             const comboDisplayContainer = document.getElementById('combo-display-container');
             const scoreDisplayContainer = document.getElementById('score-display-container');
-            
             // Language elements
             const titleElement = document.getElementById('title');
             const subtitleElement = document.getElementById('subtitle');
@@ -702,13 +507,13 @@
             const easyBtn = document.getElementById('easy-btn');
             const mediumBtn = document.getElementById('medium-btn');
             const hardBtn = document.getElementById('hard-btn');
-            
             // Game state
             let gameActive = false;
+            let gameStarted = false; // 新增变量，用于跟踪游戏是否已真正开始（倒计时后）
             let shots = 0;
             let hits = 0;
             let totalReactionTime = 0; // Total reaction time for all targets
-            let targetCount = 0; // Total number of targets that appeared
+            let targetCount = 0; // Total number of targets that appeared (including missed ones)
             let combo = 0;
             let maxCombo = 0;
             let score = 0;
@@ -719,14 +524,12 @@
             let mouseX = 0;
             let mouseY = 0;
             let lastUpdateTime = 0;
-            
             // Difficulty settings
             const difficultySettings = {
                 easy: { size: 40, speed: 1500, spawnRate: 1800 },
                 medium: { size: 30, speed: 1000, spawnRate: 1300 },
                 hard: { size: 22, speed: 700, spawnRate: 900 }
             };
-            
             // Language translations
             const translations = {
                 en: {
@@ -744,8 +547,8 @@
                     easyBtn: "Easy",
                     mediumBtn: "Medium",
                     hardBtn: "Hard",
-                    startBtn: "Start",
-                    resetBtn: "Reset",
+                    startBtn: "Start Training",
+                    resetBtn: "Reset Stats",
                     langBtn: "EN/中文",
                     instructionsTitle: "Training Instructions",
                     instruction1: "Click <span class='highlight'>Start Training</span> button to begin",
@@ -776,8 +579,8 @@
                     easyBtn: "简单",
                     mediumBtn: "中等",
                     hardBtn: "困难",
-                    startBtn: "开始",
-                    resetBtn: "重置",
+                    startBtn: "开始训练",
+                    resetBtn: "重置数据",
                     langBtn: "EN/中文",
                     instructionsTitle: "训练说明",
                     instruction1: "点击 <span class='highlight'>开始训练</span> 按钮开始训练",
@@ -794,127 +597,114 @@
                     stopped: "已停止"
                 }
             };
-            
             // 使用高性能的准星移动
             function updateCrosshair(timestamp) {
                 if (!lastUpdateTime) lastUpdateTime = timestamp;
                 const deltaTime = timestamp - lastUpdateTime;
-                
                 // 使用 requestAnimationFrame 的时间参数实现平滑动画
                 if (gameActive && trainingArea) {
                     const rect = trainingArea.getBoundingClientRect();
                     // 使用 transform 而不是 left/top 实现硬件加速
                     crosshair.style.transform = `translate(${mouseX - rect.left - 14}px, ${mouseY - rect.top - 14}px)`;
                 }
-                
                 lastUpdateTime = timestamp;
                 requestAnimationFrame(updateCrosshair);
             }
-            
             // 鼠标移动事件监听器（优化性能）
             let mouseThrottle = false;
             trainingArea.addEventListener('mousemove', function(e) {
                 if (mouseThrottle) return;
                 mouseThrottle = true;
-                
                 mouseX = e.clientX;
                 mouseY = e.clientY;
-                
                 // 16ms 节流，避免过多的事件处理
                 setTimeout(() => {
                     mouseThrottle = false;
                 }, 16);
             }, { passive: true });
-            
             // 鼠标进入时隐藏系统光标
             trainingArea.addEventListener('mouseenter', function() {
                 if (gameActive) {
                     trainingArea.style.cursor = 'none';
                 }
             });
-            
             // 鼠标离开时显示系统光标
             trainingArea.addEventListener('mouseleave', function() {
                 trainingArea.style.cursor = 'default';
             });
-            
             // 启动准星动画
             requestAnimationFrame(updateCrosshair);
-            
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
-                if (!gameActive) return;
-                
+                if (!gameActive || !gameStarted) return;
                 shots++;
                 updateStats();
-                
-                // Create hit effect
-                const rect = trainingArea.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const hitEffect = document.createElement('div');
-                hitEffect.className = 'hit-effect';
-                hitEffect.style.left = (x - 11) + 'px';
-                hitEffect.style.top = (y - 11) + 'px';
-                trainingArea.appendChild(hitEffect);
-                
-                // Remove hit effect after animation
-                setTimeout(() => {
-                    if (hitEffect && hitEffect.parentNode) {
-                        hitEffect.remove();
-                    }
-                }, 300);
-                
                 // Check if target was hit
                 const targets = document.querySelectorAll('.target:not(.hit)');
                 let hitTarget = false;
-                
                 targets.forEach(target => {
                     if (hitTarget) return; // Only count one hit per click
-                    
                     const targetRect = target.getBoundingClientRect();
                     const areaRect = trainingArea.getBoundingClientRect();
-                    
                     const targetX = targetRect.left - areaRect.left + targetRect.width/2;
                     const targetY = targetRect.top - areaRect.top + targetRect.height/2;
-                    
-                    const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
-                    
+                    const distance = Math.sqrt(Math.pow(e.clientX - targetX, 2) + Math.pow(e.clientY - targetY, 2));
                     if (distance < targetRect.width/2) {
                         hitTarget = true;
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(target.dataset.spawnTime);
                         totalReactionTime += reactionTime;
                         targetCount++; // Count this as a target that was processed
-                        
                         targetHit(target);
                     }
                 });
-                
                 if (!hitTarget) {
                     combo = 0;
                     comboDisplay.textContent = combo;
                     updateStats();
                 }
             });
-            
-            // Start training
+            // Start training with countdown
             startBtn.addEventListener('click', function() {
                 if (gameActive) {
                     gameActive = false;
-                    startBtn.textContent = language === 'zh' ? '开始' : 'Start';
+                    gameStarted = false;
+                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
                     gameActive = true;
-                    startBtn.textContent = language === 'zh' ? '停止' : 'Stop';
-                    spawnTargets();
-                    targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
-                    showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                    // Show countdown
+                    showCountdown();
                 }
             });
-            
+            // Show countdown before starting the actual game
+            function showCountdown() {
+                // Hide the current game status
+                gameStatus.classList.remove('visible');
+                // Show countdown numbers
+                const countdownNumbers = ['3', '2', '1'];
+                let count = 0;
+                const intervalId = setInterval(() => {
+                    gameStatus.textContent = countdownNumbers[count];
+                    gameStatus.classList.add('visible');
+                    count++;
+                    if (count >= countdownNumbers.length) {
+                        clearInterval(intervalId);
+                        // After countdown finishes, start the game properly
+                        gameStarted = true;
+                        startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                        spawnTargets();
+                        targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
+                        showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                    } else {
+                        // Reset the status after each number
+                        setTimeout(() => {
+                            gameStatus.classList.remove('visible');
+                        }, 1000);
+                    }
+                }, 1000);
+            }
             // Show game status message
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -923,10 +713,8 @@
                     gameStatus.classList.remove('visible');
                 }, 2000);
             }
-            
             // Reset stats
             resetBtn.addEventListener('click', resetGame);
-            
             // Reset with spacebar
             document.addEventListener('keydown', function(e) {
                 if (e.code === 'Space') {
@@ -934,31 +722,26 @@
                     resetGame();
                 }
             });
-            
             // Language toggle
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
-            
             // Difficulty selection
             difficultyBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     difficultyBtns.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     difficulty = this.dataset.level;
-                    
                     if (gameActive) {
                         clearInterval(targetSpawnInterval);
                         targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
                     }
                 });
             });
-            
             // Spawn targets
             function spawnTargets() {
-                if (!gameActive) return;
-                
+                if (!gameActive || !gameStarted) return;
                 // Remove old targets
                 const oldTargets = document.querySelectorAll('.target.hit');
                 oldTargets.forEach(target => {
@@ -966,55 +749,44 @@
                         target.remove();
                     }
                 });
-                
                 // Create new targets
                 const maxTargets = 8;
                 const currentTargets = document.querySelectorAll('.target:not(.hit)').length;
-                
                 if (currentTargets < maxTargets) {
                     const target = document.createElement('div');
                     target.className = 'target';
-                    
                     // Get difficulty settings
                     const settings = difficultySettings[difficulty];
-                    
                     // Random position within training area
                     const size = settings.size;
                     const maxX = trainingArea.clientWidth - size;
                     const maxY = trainingArea.clientHeight - size;
-                    
                     const x = Math.floor(Math.random() * maxX);
                     const y = Math.floor(Math.random() * maxY);
-                    
                     target.style.width = size + 'px';
                     target.style.height = size + 'px';
                     target.style.left = x + 'px';
                     target.style.top = y + 'px';
                     target.dataset.spawnTime = Date.now().toString();
-                    
                     // Add click event to target
                     target.addEventListener('click', function(e) {
                         e.stopPropagation();
                         if (this.classList.contains('hit')) return;
-                        
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
                         totalReactionTime += reactionTime;
                         targetCount++; // Count this as a target that was processed
-                        
                         targetHit(this);
                     });
-                    
                     trainingArea.appendChild(target);
                     targets.push(target);
-                    
                     // Auto-remove target after timeout (missed target)
                     setTimeout(() => {
                         if (!target.classList.contains('hit') && target.parentNode) {
                             // For missed targets, add the full duration to total reaction time
+                            // This ensures that even if you don't click, the time is counted
                             totalReactionTime += settings.speed;
                             targetCount++; // Count this as a target that was processed (missed)
-                            
                             target.remove();
                             combo = 0;
                             comboDisplay.textContent = combo;
@@ -1023,30 +795,24 @@
                     }, settings.speed);
                 }
             }
-            
             // Handle target hit
             function targetHit(target) {
                 if (target.classList.contains('hit')) return;
-                
                 target.classList.add('hit');
                 hits++;
                 combo++;
                 comboDisplay.textContent = combo;
-                
                 if (combo > maxCombo) {
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
-                
                 // Calculate points
                 const basePoints = 10;
                 const comboBonus = Math.min(combo, 10) * 2;
                 const points = basePoints + comboBonus;
                 score += points;
                 scoreDisplay.textContent = score;
-                
                 updateStats();
-                
                 // Remove target after animation
                 setTimeout(() => {
                     if (target && target.parentNode) {
@@ -1054,28 +820,24 @@
                     }
                 }, 200);
             }
-            
             // Update statistics display
             function updateStats() {
                 // Calculate accuracy - now can't exceed 100%
                 const accuracy = shots > 0 ? Math.min(100, Math.round((hits / shots) * 100)) : 0;
-                
                 // Calculate average reaction time
                 const averageReactionTime = targetCount > 0 ? Math.round(totalReactionTime / targetCount) : 0;
-                
                 shotsElement.textContent = shots;
                 hitsElement.textContent = hits;
                 accuracyElement.textContent = accuracy + '%';
                 reactionElement.textContent = averageReactionTime + 'ms';
                 scoreElement.textContent = score;
             }
-            
             // Reset game
             function resetGame() {
                 gameActive = false;
-                startBtn.textContent = language === 'zh' ? '开始' : 'Start';
+                gameStarted = false;
+                startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 clearInterval(targetSpawnInterval);
-                
                 // Reset stats
                 shots = 0;
                 hits = 0;
@@ -1084,10 +846,8 @@
                 combo = 0;
                 maxCombo = 0;
                 score = 0;
-                
                 comboDisplay.textContent = combo;
                 scoreDisplay.textContent = score;
-                
                 // Remove all targets
                 const allTargets = document.querySelectorAll('.target');
                 allTargets.forEach(target => {
@@ -1095,16 +855,13 @@
                         target.remove();
                     }
                 });
-                
                 updateStats();
                 maxComboElement.textContent = maxCombo;
                 showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
             }
-            
             // Update language
             function updateLanguage() {
                 const t = translations[language];
-                
                 titleElement.innerHTML = t.title;
                 subtitleElement.innerHTML = t.subtitle;
                 statsTitleElement.innerHTML = t.statsTitle;
@@ -1132,21 +889,18 @@
                 instruction7.innerHTML = t.instruction7;
                 instruction8.innerHTML = t.instruction8;
                 footerText.innerHTML = t.footerText;
-                
                 // Update references to combo and score display elements
                 const newComboDisplay = document.getElementById('combo-display');
                 const newScoreDisplay = document.getElementById('score-display');
                 if (newComboDisplay) comboDisplay = newComboDisplay;
                 if (newScoreDisplay) scoreDisplay = newScoreDisplay;
-                
                 // Update button text based on game state
-                if (gameActive) {
-                    startBtn.textContent = language === 'zh' ? '停止' : 'Stop';
+                if (gameActive && gameStarted) {
+                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                 } else {
-                    startBtn.textContent = language === 'zh' ? '开始' : 'Start';
+                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
-            
             // Initialize
             updateStats();
             updateLanguage();
