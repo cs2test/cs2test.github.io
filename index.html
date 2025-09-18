@@ -718,8 +718,8 @@
                     stopped: "已停止"
                 }
             };
-            // ==================== 零延迟准星核心代码 ====================
-            // 移除所有节流和动画帧，直接在 mousemove 中同步更新
+            // ==================== 终极0延迟准星核心代码 ====================
+            // 直接在 mousemove 事件中同步更新，无任何节流或动画帧
             trainingArea.addEventListener('mousemove', function(e) {
                 if (!gameActive) return;
                 
@@ -744,7 +744,7 @@
                 crosshair.style.left = '-100px';
                 crosshair.style.top = '-100px';
             });
-            // ==================== 零延迟准星代码结束 ====================
+            // ==================== 终极0延迟准星代码结束 ====================
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
                 if (!gameActive) return;
@@ -798,24 +798,26 @@
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
-                    // 倒计时逻辑
+                    // 倒计时逻辑 - 修复321倒计时
                     let count = 3;
-                    gameActive = false;
+                    gameActive = false; // 暂时设为false，倒计时结束后再设为true
                     startBtn.disabled = true;
                     startBtn.textContent = `${count}`;
-                    showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                    showGameStatus(`${count}`);
                     
                     const countdownTimer = setInterval(() => {
                         count--;
                         if (count > 0) {
                             startBtn.textContent = count;
+                            showGameStatus(`${count}`);
                         } else {
                             clearInterval(countdownTimer);
                             startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                             startBtn.disabled = false;
-                            gameActive = true;
+                            gameActive = true; // 倒计时结束，正式开始游戏
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
+                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                         }
                     }, 1000);
                 }
@@ -826,7 +828,7 @@
                 gameStatus.classList.add('visible');
                 setTimeout(() => {
                     gameStatus.classList.remove('visible');
-                }, 2000);
+                }, 1000);
             }
             // Reset stats
             resetBtn.addEventListener('click', resetGame);
