@@ -280,8 +280,8 @@
         }
         .crosshair {
             position: absolute;
-            width: 28px;
-            height: 28px;
+            width: 14px; /* 减小一半 */
+            height: 14px; /* 减小一半 */
             pointer-events: none;
             z-index: 100;
             transition: none !important;
@@ -293,26 +293,26 @@
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
         .crosshair::before {
-            width: 28px;
-            height: 3px;
-            top: 12.5px;
+            width: 14px; /* 减小一半 */
+            height: 2px; /* 减小一半 */
+            top: 6px; /* 调整位置 */
             left: 0;
         }
         .crosshair::after {
-            width: 3px;
-            height: 28px;
+            width: 2px; /* 减小一半 */
+            height: 14px; /* 减小一半 */
             top: 0;
-            left: 12.5px;
+            left: 6px; /* 调整位置 */
         }
         .crosshair.center-dot::after {
             content: '';
             position: absolute;
-            width: 6px;
-            height: 6px;
+            width: 3px; /* 减小一半 */
+            height: 3px; /* 减小一半 */
             background-color: #00ff88;
             border-radius: 50%;
-            top: 11px;
-            left: 11px;
+            top: 5.5px; /* 调整位置 */
+            left: 5.5px; /* 调整位置 */
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
         .hit-effect {
@@ -601,11 +601,12 @@
             let targetSpawnInterval;
             let countdownTimer = null;
             let language = 'zh'; // zh, en
-            let lastTargetPosition = { x: 0, y: 0 }; // 用于贪吃蛇式目标生成
-            let isFirstTarget = true; // 是否是第一个目标
+            let snakeTrail = []; // 贪吃蛇轨迹
+            let snakeLength = 5; // 贪吃蛇长度
+            let lastSpawnTime = 0;
             // Difficulty settings (only easy now)
             const difficultySettings = {
-                easy: { size: 40, speed: 1500, spawnRate: 1800 }
+                easy: { size: 40, speed: 1500, spawnRate: 500 } // 加快生成速度
             };
             // Language translations
             const translations = {
@@ -673,9 +674,9 @@
                 const rect = trainingArea.getBoundingClientRect();
                 
                 // 直接计算并设置准星位置 - 确保中心点对齐
-                // 减去14px是因为准星是28x28px，中心点在(14,14)
-                crosshair.style.left = (e.clientX - rect.left - 14) + 'px';
-                crosshair.style.top = (e.clientY - rect.top - 14) + 'px';
+                // 减去7px是因为准星现在是14x14px，中心点在(7,7)
+                crosshair.style.left = (e.clientX - rect.left - 7) + 'px';
+                crosshair.style.top = (e.clientY - rect.top - 7) + 'px';
             }, { passive: true });
             // 始终隐藏系统鼠标图标
             trainingArea.style.cursor = 'none';
@@ -793,6 +794,7 @@
                             startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                             startBtn.disabled = false;
                             gameActive = true; // 倒计时结束，正式开始游戏
+                            snakeTrail = []; // 重置贪吃蛇轨迹
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
                             showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
@@ -827,90 +829,95 @@
             // Spawn targets - 贪吃蛇式目标生成
             function spawnTargets() {
                 if (!gameActive) return;
-                // Remove old targets
-                const oldTargets = document.querySelectorAll('.target.hit');
-                oldTargets.forEach(target => {
-                    if (target.parentNode) {
-                        target.remove();
-                    }
-                });
-                // Create new targets
-                const maxTargets = 8;
-                const currentTargets = document.querySelectorAll('.target:not(.hit)').length;
-                if (currentTargets < maxTargets) {
-                    const target = document.createElement('div');
-                    target.className = 'target';
-                    // Get difficulty settings
-                    const settings = difficultySettings.easy;
-                    const size = settings.size;
-                    
-                    let x, y;
-                    if (isFirstTarget || !lastTargetPosition) {
-                        // 第一个目标随机生成
-                        const maxX = trainingArea.clientWidth - size - 40;
-                        const maxY = trainingArea.clientHeight - size - 80;
-                        x = Math.floor(Math.random() * maxX) + 20;
-                        y = Math.floor(Math.random() * maxY) + 20;
-                        isFirstTarget = false;
-                    } else {
-                        // 后续目标在上一个目标附近生成（贪吃蛇式）
-                        const maxOffset = 100; // 最大偏移量
-                        const offsetX = Math.floor(Math.random() * maxOffset * 2) - maxOffset;
-                        const offsetY = Math.floor(Math.random() * maxOffset * 2) - maxOffset;
-                        
-                        x = Math.max(20, Math.min(trainingArea.clientWidth - size - 20, lastTargetPosition.x + offsetX));
-                        y = Math.max(20, Math.min(trainingArea.clientHeight - size - 80, lastTargetPosition.y + offsetY));
-                    }
-                    
-                    // 保存当前位置作为下一个目标的参考
-                    lastTargetPosition = { x: x, y: y };
-                    
-                    target.style.width = size + 'px';
-                    target.style.height = size + 'px';
-                    target.style.left = x + 'px';
-                    target.style.top = y + 'px';
-                    target.dataset.spawnTime = Date.now().toString();
-                    // Add click event to target
-                    target.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        if (this.classList.contains('hit')) return;
-                        const hitTime = Date.now();
-                        const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
-                        totalReactionTime += reactionTime;
-                        targetCount++; // Count this as a target that was processed
-                        // 计算得分 - 靶圈式得分系统
-                        const rect = this.getBoundingClientRect();
-                        const areaRect = trainingArea.getBoundingClientRect();
-                        const centerX = rect.left - areaRect.left + rect.width/2;
-                        const centerY = rect.top - areaRect.top + rect.height/2;
-                        const clickX = e.clientX - areaRect.left;
-                        const clickY = e.clientY - areaRect.top;
-                        const distance = Math.sqrt(Math.pow(clickX - centerX, 2) + Math.pow(clickY - centerY, 2));
-                        const radius = rect.width/2;
-                        const normalizedDistance = distance / radius;
-                        const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                        
-                        // 显示得分
-                        showScoreIndicator(points, clickX, clickY);
-                        
-                        // 处理目标命中
-                        targetHit(this, points);
-                    });
-                    trainingArea.appendChild(target);
-                    targets.push(target);
-                    // Auto-remove target after timeout (missed target)
-                    setTimeout(() => {
-                        if (!target.classList.contains('hit') && target.parentNode) {
-                            // For missed targets, add the full duration to total reaction time
-                            totalReactionTime += settings.speed;
-                            targetCount++; // Count this as a target that was processed (missed)
-                            target.remove();
-                            combo = 0;
-                            comboDisplay.textContent = combo;
-                            updateStats();
-                        }
-                    }, settings.speed);
+                
+                const now = Date.now();
+                if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
+                    return; // 控制生成速度
                 }
+                lastSpawnTime = now;
+                
+                // Get difficulty settings
+                const settings = difficultySettings.easy;
+                const size = settings.size;
+                
+                let x, y;
+                if (snakeTrail.length === 0) {
+                    // 第一个目标随机生成
+                    const maxX = trainingArea.clientWidth - size - 40;
+                    const maxY = trainingArea.clientHeight - size - 80;
+                    x = Math.floor(Math.random() * maxX) + 20;
+                    y = Math.floor(Math.random() * maxY) + 20;
+                } else {
+                    // 后续目标在上一个目标附近生成（贪吃蛇式）
+                    const lastPos = snakeTrail[snakeTrail.length - 1];
+                    const maxOffset = 80; // 最大偏移量
+                    const minOffset = 20; // 最小偏移量
+                    const offsetX = (Math.random() * (maxOffset - minOffset) + minOffset) * (Math.random() > 0.5 ? 1 : -1);
+                    const offsetY = (Math.random() * (maxOffset - minOffset) + minOffset) * (Math.random() > 0.5 ? 1 : -1);
+                    
+                    x = Math.max(20, Math.min(trainingArea.clientWidth - size - 20, lastPos.x + offsetX));
+                    y = Math.max(20, Math.min(trainingArea.clientHeight - size - 80, lastPos.y + offsetY));
+                }
+                
+                // 保存当前位置
+                snakeTrail.push({ x: x, y: y });
+                
+                // 保持贪吃蛇长度
+                if (snakeTrail.length > snakeLength) {
+                    snakeTrail.shift();
+                }
+                
+                // Create new target
+                const target = document.createElement('div');
+                target.className = 'target';
+                target.style.width = size + 'px';
+                target.style.height = size + 'px';
+                target.style.left = x + 'px';
+                target.style.top = y + 'px';
+                target.dataset.spawnTime = Date.now().toString();
+                
+                // Add click event to target
+                target.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (this.classList.contains('hit')) return;
+                    const hitTime = Date.now();
+                    const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
+                    totalReactionTime += reactionTime;
+                    targetCount++; // Count this as a target that was processed
+                    // 计算得分 - 靶圈式得分系统
+                    const rect = this.getBoundingClientRect();
+                    const areaRect = trainingArea.getBoundingClientRect();
+                    const centerX = rect.left - areaRect.left + rect.width/2;
+                    const centerY = rect.top - areaRect.top + rect.height/2;
+                    const clickX = e.clientX - areaRect.left;
+                    const clickY = e.clientY - areaRect.top;
+                    const distance = Math.sqrt(Math.pow(clickX - centerX, 2) + Math.pow(clickY - centerY, 2));
+                    const radius = rect.width/2;
+                    const normalizedDistance = distance / radius;
+                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
+                    
+                    // 显示得分
+                    showScoreIndicator(points, clickX, clickY);
+                    
+                    // 处理目标命中
+                    targetHit(this, points);
+                });
+                
+                trainingArea.appendChild(target);
+                targets.push(target);
+                
+                // Auto-remove target after timeout (missed target)
+                setTimeout(() => {
+                    if (!target.classList.contains('hit') && target.parentNode) {
+                        // For missed targets, add the full duration to total reaction time
+                        totalReactionTime += settings.speed;
+                        targetCount++; // Count this as a target that was processed (missed)
+                        target.remove();
+                        combo = 0;
+                        comboDisplay.textContent = combo;
+                        updateStats();
+                    }
+                }, settings.speed);
             }
             // Handle target hit - 修复连击系统
             function targetHit(target, points) {
@@ -968,9 +975,8 @@
                 score = 0;
                 comboDisplay.textContent = combo;
                 scoreDisplay.textContent = score;
-                // Reset target position tracking
-                isFirstTarget = true;
-                lastTargetPosition = { x: 0, y: 0 };
+                // Reset snake trail
+                snakeTrail = [];
                 // Remove all targets
                 const allTargets = document.querySelectorAll('.target');
                 allTargets.forEach(target => {
