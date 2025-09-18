@@ -87,7 +87,9 @@
             position: relative;
             overflow: hidden;
             min-height: 500px;
-            height: 60vh;
+            height: 500px; /* 改为正方形 */
+            width: 500px; /* 改为正方形 */
+            margin: 0 auto; /* 居中显示 */
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
             cursor: none !important;
@@ -280,8 +282,8 @@
         }
         .crosshair {
             position: absolute;
-            width: 14px; /* 减小一半 */
-            height: 14px; /* 减小一半 */
+            width: 14px;
+            height: 14px;
             pointer-events: none;
             z-index: 100;
             transition: none !important;
@@ -293,26 +295,26 @@
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
         .crosshair::before {
-            width: 14px; /* 减小一半 */
-            height: 2px; /* 减小一半 */
-            top: 6px; /* 调整位置 */
+            width: 14px;
+            height: 2px;
+            top: 6px;
             left: 0;
         }
         .crosshair::after {
-            width: 2px; /* 减小一半 */
-            height: 14px; /* 减小一半 */
+            width: 2px;
+            height: 14px;
             top: 0;
-            left: 6px; /* 调整位置 */
+            left: 6px;
         }
         .crosshair.center-dot::after {
             content: '';
             position: absolute;
-            width: 3px; /* 减小一半 */
-            height: 3px; /* 减小一半 */
+            width: 3px;
+            height: 3px;
             background-color: #00ff88;
             border-radius: 50%;
-            top: 5.5px; /* 调整位置 */
-            left: 5.5px; /* 调整位置 */
+            top: 5.5px;
+            left: 5.5px;
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
         .hit-effect {
@@ -395,7 +397,7 @@
             backdrop-filter: blur(10px);
         }
         .difficulty {
-            display: none; /* 隐藏难度选择 */
+            display: none;
         }
         /* Game status indicator */
         .game-status {
@@ -448,7 +450,9 @@
             }
             .training-area {
                 min-height: 400px;
-                height: 50vh;
+                height: 400px;
+                width: 90%;
+                margin: 0 auto;
             }
             .controls {
                 flex-direction: column;
@@ -461,7 +465,8 @@
         @media (max-width: 576px) {
             .training-area {
                 min-height: 350px;
-                height: 40vh;
+                height: 350px;
+                width: 95%;
                 padding: 15px;
             }
             h1 {
@@ -602,11 +607,22 @@
             let countdownTimer = null;
             let language = 'zh'; // zh, en
             let snakeTrail = []; // 贪吃蛇轨迹
-            let snakeLength = 5; // 贪吃蛇长度
+            let snakeLength = 8; // 贪吃蛇长度
             let lastSpawnTime = 0;
-            // Difficulty settings (only easy now)
+            let direction = { x: 1, y: 0 }; // 初始方向向右
+            let directions = [
+                { x: 1, y: 0 },  // 右
+                { x: 0, y: 1 },  // 下
+                { x: -1, y: 0 }, // 左
+                { x: 0, y: -1 }  // 上
+            ];
+            let currentDirectionIndex = 0;
+            let turnCounter = 0;
+            let turnFrequency = 3; // 每3个目标改变一次方向
+            
+            // Difficulty settings
             const difficultySettings = {
-                easy: { size: 40, speed: 1500, spawnRate: 500 } // 加快生成速度
+                easy: { size: 40, speed: 3000, spawnRate: 300 } // 延长消失时间，缩短刷新时间
             };
             // Language translations
             const translations = {
@@ -674,7 +690,6 @@
                 const rect = trainingArea.getBoundingClientRect();
                 
                 // 直接计算并设置准星位置 - 确保中心点对齐
-                // 减去7px是因为准星现在是14x14px，中心点在(7,7)
                 crosshair.style.left = (e.clientX - rect.left - 7) + 'px';
                 crosshair.style.top = (e.clientY - rect.top - 7) + 'px';
             }, { passive: true });
@@ -795,6 +810,9 @@
                             startBtn.disabled = false;
                             gameActive = true; // 倒计时结束，正式开始游戏
                             snakeTrail = []; // 重置贪吃蛇轨迹
+                            direction = { x: 1, y: 0 }; // 重置方向
+                            currentDirectionIndex = 0;
+                            turnCounter = 0;
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
                             showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
@@ -842,21 +860,50 @@
                 
                 let x, y;
                 if (snakeTrail.length === 0) {
-                    // 第一个目标随机生成
-                    const maxX = trainingArea.clientWidth - size - 40;
-                    const maxY = trainingArea.clientHeight - size - 80;
-                    x = Math.floor(Math.random() * maxX) + 20;
-                    y = Math.floor(Math.random() * maxY) + 20;
+                    // 第一个目标在中心位置生成
+                    x = Math.floor(trainingArea.clientWidth / 2 - size / 2);
+                    y = Math.floor(trainingArea.clientHeight / 2 - size / 2);
                 } else {
-                    // 后续目标在上一个目标附近生成（贪吃蛇式）
+                    // 后续目标按照贪吃蛇轨迹生成
                     const lastPos = snakeTrail[snakeTrail.length - 1];
-                    const maxOffset = 80; // 最大偏移量
-                    const minOffset = 20; // 最小偏移量
-                    const offsetX = (Math.random() * (maxOffset - minOffset) + minOffset) * (Math.random() > 0.5 ? 1 : -1);
-                    const offsetY = (Math.random() * (maxOffset - minOffset) + minOffset) * (Math.random() > 0.5 ? 1 : -1);
                     
-                    x = Math.max(20, Math.min(trainingArea.clientWidth - size - 20, lastPos.x + offsetX));
-                    y = Math.max(20, Math.min(trainingArea.clientHeight - size - 80, lastPos.y + offsetY));
+                    // 每隔几个目标改变方向
+                    turnCounter++;
+                    if (turnCounter >= turnFrequency) {
+                        turnCounter = 0;
+                        // 顺时针改变方向
+                        currentDirectionIndex = (currentDirectionIndex + 1) % 4;
+                        direction = directions[currentDirectionIndex];
+                    }
+                    
+                    // 计算新位置
+                    let newX = lastPos.x + direction.x * 60;
+                    let newY = lastPos.y + direction.y * 60;
+                    
+                    // 边界检测
+                    const padding = 40;
+                    if (newX < padding) {
+                        newX = padding;
+                        direction = directions[0]; // 改为向右
+                        currentDirectionIndex = 0;
+                    } else if (newX > trainingArea.clientWidth - size - padding) {
+                        newX = trainingArea.clientWidth - size - padding;
+                        direction = directions[2]; // 改为向左
+                        currentDirectionIndex = 2;
+                    }
+                    
+                    if (newY < padding) {
+                        newY = padding;
+                        direction = directions[1]; // 改为向下
+                        currentDirectionIndex = 1;
+                    } else if (newY > trainingArea.clientHeight - size - padding) {
+                        newY = trainingArea.clientHeight - size - padding;
+                        direction = directions[3]; // 改为向上
+                        currentDirectionIndex = 3;
+                    }
+                    
+                    x = newX;
+                    y = newY;
                 }
                 
                 // 保存当前位置
@@ -977,6 +1024,9 @@
                 scoreDisplay.textContent = score;
                 // Reset snake trail
                 snakeTrail = [];
+                direction = { x: 1, y: 0 };
+                currentDirectionIndex = 0;
+                turnCounter = 0;
                 // Remove all targets
                 const allTargets = document.querySelectorAll('.target');
                 allTargets.forEach(target => {
