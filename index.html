@@ -267,6 +267,132 @@
             left: 11px;
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
+        .hit-effect {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 70%, transparent 100%);
+            pointer-events: none;
+            animation: spread 0.3s forwards;
+            z-index: 20;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+        }
+        @keyframes spread {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        .instructions {
+            background: rgba(15, 15, 40, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .instructions h2 {
+            color: #ffd166;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
+            font-size: 1.8rem;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        .instructions h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffd166, transparent);
+        }
+        .instructions ul {
+            padding-left: 30px;
+        }
+        .instructions li {
+            margin-bottom: 15px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        .instructions li::before {
+            content: '→';
+            color: #4ecdc4;
+            position: absolute;
+            left: -20px;
+            font-weight: bold;
+        }
+        .highlight {
+            color: #4ecdc4;
+            font-weight: bold;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #a9a9c5;
+            font-size: 1.1rem;
+            margin-top: 30px;
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .difficulty {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0;
+            gap: 12px;
+        }
+        .difficulty-btn {
+            background: rgba(40, 45, 80, 0.8);
+            color: #a9a9c5;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.05rem;
+            flex: 1;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .difficulty-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .difficulty-btn:hover::before {
+            opacity: 1;
+        }
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            border-color: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+        .difficulty-btn.active::before {
+            opacity: 0.2;
+        }
+        .difficulty-btn:hover:not(.active) {
+            background: rgba(60, 65, 100, 0.9);
+            transform: translateY(-2px);
+        }
         .combo-display {
             position: absolute;
             top: 30px;
@@ -507,7 +633,6 @@
             const hardBtn = document.getElementById('hard-btn');
             // Game state
             let gameActive = false;
-            let gameReady = false; // 新增状态，用于倒计时
             let shots = 0;
             let hits = 0;
             let totalReactionTime = 0; // Total reaction time for all targets
@@ -603,6 +728,7 @@
                 if (gameActive && trainingArea) {
                     const rect = trainingArea.getBoundingClientRect();
                     // 使用 transform 而不是 left/top 实现硬件加速
+                    // 关键修复：将十字架的中心点设置为 (14, 14)，使其在鼠标位置居中
                     crosshair.style.transform = `translate(${mouseX - rect.left - 14}px, ${mouseY - rect.top - 14}px)`;
                 }
                 lastUpdateTime = timestamp;
@@ -637,6 +763,21 @@
                 if (!gameActive) return;
                 shots++;
                 updateStats();
+                // Create hit effect
+                const rect = trainingArea.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const hitEffect = document.createElement('div');
+                hitEffect.className = 'hit-effect';
+                hitEffect.style.left = (x - 11) + 'px';
+                hitEffect.style.top = (y - 11) + 'px';
+                trainingArea.appendChild(hitEffect);
+                // Remove hit effect after animation
+                setTimeout(() => {
+                    if (hitEffect && hitEffect.parentNode) {
+                        hitEffect.remove();
+                    }
+                }, 300);
                 // Check if target was hit
                 const targets = document.querySelectorAll('.target:not(.hit)');
                 let hitTarget = false;
@@ -646,7 +787,7 @@
                     const areaRect = trainingArea.getBoundingClientRect();
                     const targetX = targetRect.left - areaRect.left + targetRect.width/2;
                     const targetY = targetRect.top - areaRect.top + targetRect.height/2;
-                    const distance = Math.sqrt(Math.pow(e.clientX - targetX, 2) + Math.pow(e.clientY - targetY, 2));
+                    const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
                     if (distance < targetRect.width/2) {
                         hitTarget = true;
                         const hitTime = Date.now();
@@ -662,29 +803,32 @@
                     updateStats();
                 }
             });
-            // Start training
+            // Start training with countdown
             startBtn.addEventListener('click', function() {
                 if (gameActive) {
                     gameActive = false;
-                    gameReady = false;
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
-                    gameActive = true;
-                    gameReady = true; // 开始倒计时
-                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                     // 倒计时逻辑
-                    let countdown = 3;
+                    let count = 3;
+                    gameActive = false;
+                    startBtn.disabled = true;
+                    startBtn.textContent = `${count}`;
+                    showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                    
                     const countdownTimer = setInterval(() => {
-                        showGameStatus(countdown.toString());
-                        countdown--;
-                        if (countdown < 0) {
+                        count--;
+                        if (count > 0) {
+                            startBtn.textContent = count;
+                        } else {
                             clearInterval(countdownTimer);
-                            gameReady = false; // 倒计时结束，开始生成目标
+                            startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                            startBtn.disabled = false;
+                            gameActive = true;
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings[difficulty].spawnRate);
-                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                         }
                     }, 1000);
                 }
@@ -725,7 +869,7 @@
             });
             // Spawn targets
             function spawnTargets() {
-                if (!gameActive || gameReady) return; // 如果游戏未激活或正在倒计时，则不生成目标
+                if (!gameActive) return;
                 // Remove old targets
                 const oldTargets = document.querySelectorAll('.target.hit');
                 oldTargets.forEach(target => {
@@ -819,7 +963,6 @@
             // Reset game
             function resetGame() {
                 gameActive = false;
-                gameReady = false;
                 startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 clearInterval(targetSpawnInterval);
                 // Reset stats
