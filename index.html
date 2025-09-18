@@ -720,20 +720,6 @@
                     stopped: "已停止"
                 }
             };
-            // 使用高性能的准星移动
-            function updateCrosshair(timestamp) {
-                if (!lastUpdateTime) lastUpdateTime = timestamp;
-                const deltaTime = timestamp - lastUpdateTime;
-                // 使用 requestAnimationFrame 的时间参数实现平滑动画
-                if (gameActive && trainingArea) {
-                    const rect = trainingArea.getBoundingClientRect();
-                    // 使用 transform 而不是 left/top 实现硬件加速
-                    // 关键修复：将十字架的中心点设置为 (14, 14)，使其在鼠标位置居中
-                    crosshair.style.transform = `translate(${mouseX - rect.left - 14}px, ${mouseY - rect.top - 14}px)`;
-                }
-                lastUpdateTime = timestamp;
-                requestAnimationFrame(updateCrosshair);
-            }
             // 鼠标移动事件监听器（优化性能）
             let mouseThrottle = false;
             trainingArea.addEventListener('mousemove', function(e) {
@@ -756,8 +742,26 @@
             trainingArea.addEventListener('mouseleave', function() {
                 trainingArea.style.cursor = 'default';
             });
+            // 实时更新准星位置（极速版）
+            function updateCrosshair() {
+                if (!gameActive || !trainingArea) return;
+                const rect = trainingArea.getBoundingClientRect();
+                // 直接设置 left 和 top，确保准星中心与鼠标位置完全一致
+                // 减去 14px 是因为准星是 28x28px，其几何中心在 (14, 14)
+                crosshair.style.left = (mouseX - rect.left - 14) + 'px';
+                crosshair.style.top = (mouseY - rect.top - 14) + 'px';
+            }
             // 启动准星动画
-            requestAnimationFrame(updateCrosshair);
+            // 使用一个独立的函数来调用 updateCrosshair，确保它能被正确触发
+            function startCrosshairUpdate() {
+                // 这里我们不再使用 requestAnimationFrame 的复杂循环
+                // 而是依赖于 mousemove 事件，这已经足够快了
+                // 在 mousemove 事件中我们已经设置了节流，所以这里不需要额外的循环
+            }
+            // 在 mousemove 事件中，我们已经更新了 mouseX 和 mouseY
+            // 因此我们需要一个机制来触发 updateCrosshair
+            // 我们使用一个定时器来定期检查并更新准星位置
+            setInterval(updateCrosshair, 10); // 每 10ms 更新一次，保证极低延迟
             // Handle shooting
             trainingArea.addEventListener('click', function(e) {
                 if (!gameActive) return;
