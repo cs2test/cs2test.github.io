@@ -853,7 +853,7 @@
             rightFrontWall.position.set(wallDistance, wallHeight/2, 0);
             scene.add(rightFrontWall);
 
-            // 在墙上添加标签 (使用简单的方块代替文本)
+            // 在墙上添加标签 (使用简单的方块)
             addWallLabels(backWall, 'B', 0, 10, 0);
             addWallLabels(frontWall, 'D', 0, 10, 0);
             addWallLabels(leftWall, 'A', 0, 10, 0);
@@ -963,12 +963,22 @@
 
             // 在墙上添加标签 (使用简单的方块)
             function addWallLabels(mesh, label, offsetX, offsetY, offsetZ) {
-                const labelGeometry = new THREE.BoxGeometry(2, 1, 1);
-                const labelMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 }); // 黄色
+                // 创建一个用于显示字母的平面
+                const labelGeometry = new THREE.PlaneGeometry(1, 1);
+                const labelMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xFFFF00, // 黄色
+                    transparent: true,
+                    opacity: 1,
+                    side: THREE.DoubleSide
+                });
                 const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+                // 设置位置
                 labelMesh.position.set(offsetX, offsetY, offsetZ);
+                // 使标签面向相机
                 labelMesh.lookAt(0, 0, 0);
+                // 将标签添加到场景中
                 scene.add(labelMesh);
+                // 保存引用以便后续可以更新其位置
                 mesh.userData.labelMesh = labelMesh;
             }
 
@@ -1348,7 +1358,8 @@
                 // 更新小地图上的目标点
                 updateMinimapTargets();
 
-                // 墙壁是静态的，不需要每帧更新
+                // 更新小地图上的墙壁和标签
+                updateMinimapWalls();
             }
 
             // 更新小地图上的目标点
@@ -1375,6 +1386,44 @@
                         targetDiv.style.top = `${y_percent}%`;
                         minimapContainer.appendChild(targetDiv);
                     }
+                });
+            }
+
+            // 更新小地图上的墙壁和标签
+            function updateMinimapWalls() {
+                // 清除旧的墙壁和标签
+                const oldWalls = document.querySelectorAll('.minimap-wall');
+                oldWalls.forEach(wall => wall.remove());
+                const oldLabels = document.querySelectorAll('.minimap-wall-label');
+                oldLabels.forEach(label => label.remove());
+
+                // 添加新的墙壁
+                const walls = [backWall, frontWall, leftWall, rightWall];
+                walls.forEach(wall => {
+                    // 获取墙的位置和尺寸
+                    const wallPosition = wall.position;
+                    const wallSize = wall.geometry.parameters.width;
+                    // 将3D坐标投影到2D小地图上
+                    const x = (wallPosition.x / 100) * 50 + 50;
+                    const y = (wallPosition.z / 100) * 50 + 50;
+                    const width = (wallSize / 100) * 50;
+                    const height = (wallSize / 100) * 50;
+                    // 创建墙的DOM元素
+                    const wallDiv = document.createElement('div');
+                    wallDiv.className = 'minimap-wall';
+                    wallDiv.style.left = `${x - width / 2}%`;
+                    wallDiv.style.top = `${y - height / 2}%`;
+                    wallDiv.style.width = `${width}%`;
+                    wallDiv.style.height = `${height}%`;
+                    minimapContainer.appendChild(wallDiv);
+
+                    // 添加墙上的标签
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = 'minimap-wall-label';
+                    labelDiv.textContent = wall.userData.labelMesh ? wall.userData.labelMesh.geometry.parameters.text : ''; // 从墙的userData获取标签
+                    labelDiv.style.left = `${x - 10}%`;
+                    labelDiv.style.top = `${y - 10}%`;
+                    minimapContainer.appendChild(labelDiv);
                 });
             }
 
