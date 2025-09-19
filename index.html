@@ -953,8 +953,8 @@
                         if (currentAngle < 0) currentAngle += 360;
                     }
                     // 计算新位置 - 使用随机间距
-                    const minStep = 30; // 最小步长
-                    const maxStep = 80; // 最大步长
+                    const minStep = 15; // 最小步长 (从30改为15)
+                    const maxStep = 30; // 最大步长 (从80改为30)
                     const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
                     // 将角度转换为弧度
                     const radians = currentAngle * Math.PI / 180;
@@ -1033,6 +1033,8 @@
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
+                // 创建破碎特效
+                createShatterEffect(target.position);
                 // 移除目标
                 setTimeout(() => {
                     if (target.parent) {
@@ -1040,6 +1042,47 @@
                         targets.splice(targets.indexOf(target), 1);
                     }
                 }, 200);
+            }
+            // 创建破碎特效
+            function createShatterEffect(position) {
+                const particleCount = 30;
+                const particles = new THREE.Group();
+                scene.add(particles);
+                const particleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+                const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                    particle.position.copy(position);
+                    // 随机速度
+                    const speed = 0.5;
+                    particle.userData.velocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * speed,
+                        (Math.random() - 0.5) * speed,
+                        (Math.random() - 0.5) * speed
+                    );
+                    particles.add(particle);
+                }
+                // 动画粒子
+                const animateParticles = () => {
+                    let allDead = true;
+                    particles.children.forEach(particle => {
+                        if (particle.userData.velocity) {
+                            particle.position.add(particle.userData.velocity);
+                            particle.userData.velocity.multiplyScalar(0.95); // 摩擦力
+                            // 检查粒子是否还在移动
+                            if (particle.userData.velocity.length() > 0.01) {
+                                allDead = false;
+                            }
+                        }
+                    });
+                    if (!allDead) {
+                        requestAnimationFrame(animateParticles);
+                    } else {
+                        // 移除粒子系统
+                        scene.remove(particles);
+                    }
+                };
+                animateParticles();
             }
             // 显示得分指示器
             function showScoreIndicator(points, x, y) {
