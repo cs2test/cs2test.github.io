@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS2 Aim Trainer</title>
+    <title>CS2 3D Aim Trainer</title>
     <style>
         * {
             margin: 0;
@@ -287,6 +287,9 @@
             pointer-events: none;
             z-index: 100;
             transition: none !important;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
         .crosshair::before, .crosshair::after {
             content: '';
@@ -488,12 +491,14 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="title">CS2 精准度训练模拟器</h1>
+            <h1 id="title">CS2 3D 精准度训练模拟器</h1>
             <p class="subtitle" id="subtitle">提升你的射击精准度和反应速度</p>
         </header>
         <div class="game-container">
             <div class="training-area-wrapper">
                 <div class="training-area" id="training-area">
+                    <!-- 使用canvas创建3D效果 -->
+                    <canvas id="3d-canvas" width="600" height="600"></canvas>
                     <div class="crosshair" id="crosshair"></div>
                     <div class="game-status" id="game-status">准备就绪</div>
                     <!-- Targets will be generated here -->
@@ -542,22 +547,24 @@
         <div class="instructions">
             <h2 id="instructions-title">训练说明</h2>
             <ul>
-                <li id="instruction-1">点击 <span class="highlight">开始训练</span> 按钮开始训练</li>
+                <li id="instruction-1">按下 <span class="highlight">S</span> 键开始/暂停/继续训练</li>
                 <li id="instruction-2">红色目标出现后，尽快点击它们进行射击</li>
                 <li id="instruction-3">击中目标中心得 <span class="highlight">10分</span>，边缘得 <span class="highlight">1分</span></li>
                 <li id="instruction-4">连续命中会获得额外连击加成</li>
                 <li id="instruction-5">训练时间无限制，可以随时 <span class="highlight">重置数据</span></li>
-                <li id="instruction-6">移动鼠标控制准星位置</li>
+                <li id="instruction-6">准星固定在屏幕中心</li>
                 <li id="instruction-7">按 <span class="highlight">空格键</span> 可以开始和暂停训练</li>
             </ul>
         </div>
         <footer>
-            <p id="footer-text">CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
+            <p id="footer-text">CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
         </footer>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const trainingArea = document.getElementById('training-area');
+            const canvas = document.getElementById('3d-canvas');
+            const ctx = canvas.getContext('2d');
             const crosshair = document.getElementById('crosshair');
             const startBtn = document.getElementById('start-btn');
             const resetBtn = document.getElementById('reset-btn');
@@ -595,6 +602,7 @@
             const footerText = document.getElementById('footer-text');
             // Game state
             let gameActive = false;
+            let isShootingMode = false; // 是否处于射击模式
             let shots = 0;
             let hits = 0;
             let totalReactionTime = 0; // Total reaction time for all targets
@@ -614,7 +622,6 @@
             let angleChangeCounter = 0;
             let minAngleChange = -30; // 最小角度变化
             let maxAngleChange = 30; // 最大角度变化
-            
             // Difficulty settings
             const difficultySettings = {
                 easy: { size: 40, speed: 5000, spawnRate: 800 } // 减慢生成速度到800ms
@@ -622,7 +629,7 @@
             // Language translations
             const translations = {
                 en: {
-                    title: "CS2 Aim Trainer",
+                    title: "CS2 3D Aim Trainer",
                     subtitle: "Improve your shooting accuracy and reaction speed",
                     statsTitle: "Training Stats",
                     shotsLabel: "Shots Fired:",
@@ -637,20 +644,20 @@
                     resetBtn: "Reset Stats",
                     langBtn: "EN/中文",
                     instructionsTitle: "Training Instructions",
-                    instruction1: "Click <span class='highlight'>Start Training</span> button to begin",
+                    instruction1: "Press <span class='highlight'>S</span> key to start/pause/resume",
                     instruction2: "Click on red targets as they appear",
                     instruction3: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
                     instruction4: "Consecutive hits earn bonus points",
                     instruction5: "Training is unlimited, <span class='highlight'>Reset Stats</span> anytime",
-                    instruction6: "Move mouse to control crosshair",
+                    instruction6: "Crosshair is fixed at the center",
                     instruction7: "Press <span class='highlight'>Space</span> to start/pause training",
-                    footerText: "CS2 Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
+                    footerText: "CS2 3D Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
                     ready: "READY",
                     training: "TRAINING",
                     stopped: "STOPPED"
                 },
                 zh: {
-                    title: "CS2 精准度训练模拟器",
+                    title: "CS2 3D 精准度训练模拟器",
                     subtitle: "提升你的射击精准度和反应速度",
                     statsTitle: "训练数据",
                     shotsLabel: "射击次数:",
@@ -665,41 +672,87 @@
                     resetBtn: "重置数据",
                     langBtn: "EN/中文",
                     instructionsTitle: "训练说明",
-                    instruction1: "点击 <span class='highlight'>开始训练</span> 按钮开始训练",
+                    instruction1: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
                     instruction2: "红色目标出现后，尽快点击它们进行射击",
                     instruction3: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
                     instruction4: "连续命中会获得额外连击加成",
                     instruction5: "训练时间无限制，可以随时 <span class='highlight'>重置数据</span>",
-                    instruction6: "移动鼠标控制准星位置",
+                    instruction6: "准星固定在屏幕中心",
                     instruction7: "按 <span class='highlight'>空格键</span> 可以开始和暂停训练",
-                    footerText: "CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
+                    footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
                     training: "训练中",
                     stopped: "已停止"
                 }
             };
+
+            // ==================== 3D Scene Rendering ====================
+            // 绘制3D背景（简单方块）
+            function draw3DScene() {
+                const width = canvas.width;
+                const height = canvas.height;
+                const centerX = width / 2;
+                const centerY = height / 2;
+
+                // 清除画布
+                ctx.clearRect(0, 0, width, height);
+
+                // 绘制地面
+                ctx.fillStyle = '#ddd';
+                ctx.fillRect(0, centerY, width, height - centerY);
+
+                // 绘制墙壁（左侧和右侧）
+                ctx.fillStyle = '#555';
+                ctx.fillRect(0, 0, width / 3, height);
+                ctx.fillRect(width * 2 / 3, 0, width / 3, height);
+
+                // 绘制天花板
+                ctx.fillStyle = '#333';
+                ctx.fillRect(0, 0, width, centerY);
+
+                // 绘制远墙
+                ctx.fillStyle = '#777';
+                ctx.fillRect(width / 3, 0, width / 3, height);
+            }
+
+            // 绘制3D目标
+            function draw3DTarget(target, x, y, z) {
+                // 计算透视投影
+                const fov = 1000; // 视野深度
+                const projectedX = centerX + (x * (fov / (z + fov)));
+                const projectedY = centerY + (y * (fov / (z + fov)));
+                const projectedSize = 20 * (fov / (z + fov)); // 根据距离调整大小
+
+                // 绘制球体（简化为圆形）
+                ctx.beginPath();
+                ctx.arc(projectedX, projectedY, projectedSize, 0, Math.PI * 2);
+                ctx.fillStyle = '#f00';
+                ctx.fill();
+
+                // 添加高光
+                ctx.beginPath();
+                ctx.arc(projectedX - projectedSize/3, projectedY - projectedSize/3, projectedSize/2, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.globalAlpha = 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+
             // ==================== 终极0延迟准星核心代码 ====================
-            // 准星始终跟随鼠标移动，无论游戏是否开始
-            trainingArea.addEventListener('mousemove', function(e) {
-                // 获取训练区域的边界
-                const rect = trainingArea.getBoundingClientRect();
-                
-                // 直接计算并设置准星位置 - 确保中心点对齐
-                crosshair.style.left = (e.clientX - rect.left - 7) + 'px';
-                crosshair.style.top = (e.clientY - rect.top - 7) + 'px';
-            }, { passive: true });
-            // 始终隐藏系统鼠标图标
-            trainingArea.style.cursor = 'none';
+            // 固定准星在中心
+            crosshair.style.left = '50%';
+            crosshair.style.top = '50%';
+            crosshair.style.transform = 'translate(-50%, -50%)';
             // ==================== 终极0延迟准星代码结束 ====================
+
             // Handle shooting - 修复射击次数计数问题
             trainingArea.addEventListener('click', function(e) {
                 // 无论游戏是否激活，点击都计入射击次数
                 shots++;
                 updateStats();
-                
-                if (!gameActive) return;
-                
-                // Create hit effect
+                if (!isShootingMode) return;
+
+                // 创建命中效果
                 const rect = trainingArea.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -708,40 +761,36 @@
                 hitEffect.style.left = (x - 11) + 'px';
                 hitEffect.style.top = (y - 11) + 'px';
                 trainingArea.appendChild(hitEffect);
-                // Remove hit effect after animation
+                // 移除命中效果
                 setTimeout(() => {
                     if (hitEffect && hitEffect.parentNode) {
                         hitEffect.remove();
                     }
                 }, 300);
-                // Check if target was hit
+
+                // 检查是否命中目标
                 const targets = document.querySelectorAll('.target:not(.hit)');
                 let hitTarget = false;
                 targets.forEach(target => {
-                    if (hitTarget) return; // Only count one hit per click
+                    if (hitTarget) return; // 只计算一次命中
                     const targetRect = target.getBoundingClientRect();
                     const areaRect = trainingArea.getBoundingClientRect();
                     const targetX = targetRect.left - areaRect.left + targetRect.width/2;
                     const targetY = targetRect.top - areaRect.top + targetRect.height/2;
                     const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
-                    
                     if (distance < targetRect.width/2) {
                         hitTarget = true;
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(target.dataset.spawnTime);
                         totalReactionTime += reactionTime;
-                        targetCount++; // Count this as a target that was processed
-                        
+                        targetCount++;
                         // 计算得分 - 靶圈式得分系统
                         const radius = targetRect.width/2;
-                        const normalizedDistance = distance / radius; // 0到1之间
-                        // 中心10分，边缘1分，中间线性插值
+                        const normalizedDistance = distance / radius;
                         const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                        
                         // 显示得分
                         showScoreIndicator(points, x, y);
-                        
-                        // 处理目标命中 - 确保射击次数和命中次数同步增加
+                        // 处理目标命中
                         targetHit(target, points);
                     }
                 });
@@ -751,6 +800,7 @@
                     updateStats();
                 }
             });
+
             // 显示得分指示器
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
@@ -759,13 +809,11 @@
                 scoreIndicator.style.left = (x - 25) + 'px';
                 scoreIndicator.style.top = (y - 50) + 'px';
                 trainingArea.appendChild(scoreIndicator);
-                
                 // 动画效果
                 setTimeout(() => {
                     scoreIndicator.style.opacity = '1';
                     scoreIndicator.style.transform = 'translateY(-20px)';
                 }, 10);
-                
                 // 移除元素
                 setTimeout(() => {
                     if (scoreIndicator && scoreIndicator.parentNode) {
@@ -773,13 +821,32 @@
                     }
                 }, 1000);
             }
+
+            // S键控制游戏状态
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 's' || e.key === 'S') {
+                    e.preventDefault();
+                    if (!gameActive) {
+                        // 如果游戏未激活，第一次按S键开始游戏
+                        toggleTraining();
+                    } else {
+                        // 如果游戏已激活，切换射击模式
+                        isShootingMode = !isShootingMode;
+                        if (isShootingMode) {
+                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                        } else {
+                            showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
+                        }
+                    }
+                }
+            });
+
             // Start training with countdown
             function toggleTraining() {
                 if (countdownTimer) {
                     clearInterval(countdownTimer);
                     countdownTimer = null;
                 }
-                
                 if (gameActive) {
                     gameActive = false;
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
@@ -792,7 +859,6 @@
                     startBtn.disabled = true;
                     startBtn.textContent = `${count}`;
                     showGameStatus(`${count}`);
-                    
                     countdownTimer = setInterval(() => {
                         count--;
                         if (count > 0) {
@@ -807,22 +873,13 @@
                             snakeTrail = []; // 重置贪吃蛇轨迹
                             currentAngle = Math.random() * 360; // 随机初始角度
                             angleChangeCounter = 0;
-                            spawnTargets();
-                            targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
-                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                            isShootingMode = false; // 初始不处于射击模式
+                            showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
                         }
                     }, 1000);
                 }
             }
-            // Start button event
-            startBtn.addEventListener('click', toggleTraining);
-            // Space key event - 修改为空格键开始/暂停
-            document.addEventListener('keydown', function(e) {
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    toggleTraining();
-                }
-            });
+
             // Show game status message
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -831,36 +888,36 @@
                     gameStatus.classList.remove('visible');
                 }, 1000);
             }
+
             // Reset stats
             resetBtn.addEventListener('click', resetGame);
+
             // Language toggle
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
+
             // Spawn targets - 360°随机轨迹生成
             function spawnTargets() {
                 if (!gameActive) return;
-                
                 const now = Date.now();
                 if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
                     return; // 控制生成速度
                 }
                 lastSpawnTime = now;
-                
                 // Get difficulty settings
                 const settings = difficultySettings.easy;
                 const size = settings.size;
-                
-                let x, y;
+                let x, y, z;
                 if (snakeTrail.length === 0) {
                     // 第一个目标在中心位置生成
-                    x = Math.floor(trainingArea.clientWidth / 2 - size / 2);
-                    y = Math.floor(trainingArea.clientHeight / 2 - size / 2);
+                    x = 0;
+                    y = 0;
+                    z = 100; // 在Z轴上设置距离
                 } else {
                     // 后续目标按照360°随机轨迹生成
                     const lastPos = snakeTrail[snakeTrail.length - 1];
-                    
                     // 每隔几个目标改变角度
                     angleChangeCounter++;
                     if (angleChangeCounter >= angleChangeFrequency) {
@@ -870,56 +927,48 @@
                         currentAngle = (currentAngle + angleChange) % 360;
                         if (currentAngle < 0) currentAngle += 360;
                     }
-                    
                     // 计算新位置 - 使用随机间距
                     const minStep = 30; // 最小步长
                     const maxStep = 80; // 最大步长
                     const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
-                    
                     // 将角度转换为弧度
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
                     let newY = lastPos.y + Math.sin(radians) * step;
-                    
                     // 边界检测
                     const padding = 40;
                     if (newX < padding) {
                         newX = padding;
                         currentAngle = 0; // 改为向右
-                    } else if (newX > trainingArea.clientWidth - size - padding) {
-                        newX = trainingArea.clientWidth - size - padding;
+                    } else if (newX > 300 - padding) {
+                        newX = 300 - padding;
                         currentAngle = 180; // 改为向左
                     }
-                    
                     if (newY < padding) {
                         newY = padding;
                         currentAngle = 90; // 改为向下
-                    } else if (newY > trainingArea.clientHeight - size - padding) {
-                        newY = trainingArea.clientHeight - size - padding;
+                    } else if (newY > 300 - padding) {
+                        newY = 300 - padding;
                         currentAngle = 270; // 改为向上
                     }
-                    
                     x = newX;
                     y = newY;
+                    z = 100 + Math.random() * 100; // 随机Z轴深度
                 }
-                
                 // 保存当前位置
-                snakeTrail.push({ x: x, y: y });
-                
+                snakeTrail.push({ x: x, y: y, z: z });
                 // 保持贪吃蛇长度
                 if (snakeTrail.length > snakeLength) {
                     snakeTrail.shift();
                 }
-                
                 // Create new target
                 const target = document.createElement('div');
                 target.className = 'target';
                 target.style.width = size + 'px';
                 target.style.height = size + 'px';
-                target.style.left = x + 'px';
-                target.style.top = y + 'px';
+                target.style.left = '0px'; // 位置由JS控制
+                target.style.top = '0px';
                 target.dataset.spawnTime = Date.now().toString();
-                
                 // Add click event to target
                 target.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -927,7 +976,7 @@
                     const hitTime = Date.now();
                     const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
                     totalReactionTime += reactionTime;
-                    targetCount++; // Count this as a target that was processed
+                    targetCount++;
                     // 计算得分 - 靶圈式得分系统
                     const rect = this.getBoundingClientRect();
                     const areaRect = trainingArea.getBoundingClientRect();
@@ -939,23 +988,18 @@
                     const radius = rect.width/2;
                     const normalizedDistance = distance / radius;
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                    
                     // 显示得分
                     showScoreIndicator(points, clickX, clickY);
-                    
                     // 处理目标命中
                     targetHit(this, points);
                 });
-                
                 trainingArea.appendChild(target);
                 targets.push(target);
-                
                 // Auto-remove target after timeout (missed target)
                 setTimeout(() => {
                     if (!target.classList.contains('hit') && target.parentNode) {
-                        // For missed targets, add the full duration to total reaction time
                         totalReactionTime += settings.speed;
-                        targetCount++; // Count this as a target that was processed (missed)
+                        targetCount++;
                         target.remove();
                         combo = 0;
                         comboDisplay.textContent = combo;
@@ -963,6 +1007,7 @@
                     }
                 }, settings.speed);
             }
+
             // Handle target hit - 修复连击系统
             function targetHit(target, points) {
                 if (target.classList.contains('hit')) return;
@@ -987,6 +1032,7 @@
                     }
                 }, 200);
             }
+
             // Update statistics display
             function updateStats() {
                 // Calculate accuracy - now can't exceed 100%
@@ -999,6 +1045,7 @@
                 reactionElement.textContent = averageReactionTime + 'ms';
                 scoreElement.textContent = score;
             }
+
             // Reset game
             function resetGame() {
                 gameActive = false;
@@ -1034,6 +1081,7 @@
                 maxComboElement.textContent = maxCombo;
                 showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
             }
+
             // Update language
             function updateLanguage() {
                 const t = translations[language];
@@ -1072,10 +1120,16 @@
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
+
             // Initialize
             updateStats();
             updateLanguage();
             showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
+
+            // 开始渲染3D场景
+            draw3DScene();
+            // 定期更新3D场景（例如，让目标动起来）
+            setInterval(draw3DScene, 100);
         });
     </script>
 </body>
