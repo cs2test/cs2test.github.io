@@ -914,10 +914,12 @@
                 const settings = difficultySettings.easy;
                 const size = settings.size;
                 let x, y, z;
+                // 固定 Y 坐标，确保小球在地面上方
+                y = 1; 
                 if (snakeTrail.length === 0) {
-                    // 第一个目标在中心位置生成
+                    // 第一个目标在中心位置生成，但稍微远一点
                     x = 0;
-                    y = 1; // 稍微抬高一点
+                    // y = 1; // 已在上面固定
                     z = 10; // 原来是5，现在更远一点，确保在视野内且不在墙内
                     console.log(`Spawning first target at: (${x}, ${y}, ${z})`);
                 } else {
