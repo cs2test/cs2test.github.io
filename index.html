@@ -622,6 +622,8 @@
             const difficultySettings = {
                 easy: { size: 20, speed: 5000, spawnRate: 800 } // 减小球的大小到20
             };
+            // 灵敏度设置
+            let sensitivity = 0.002; // 初始灵敏度
             // Language translations
             const translations = {
                 en: {
@@ -799,7 +801,6 @@
             let isPointerLocked = false; // 新增：跟踪指针锁定状态
             // 相机旋转控制
             let cameraRotation = { x: 0, y: 0 };
-            const sensitivity = 0.002; // 提高灵敏度
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
