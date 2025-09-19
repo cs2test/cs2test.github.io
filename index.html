@@ -730,8 +730,14 @@
             const wallMaterial = new THREE.MeshStandardMaterial({
                 color: 0x333333,
                 roughness: 0.8,
-                metalness: 0.2
+                metalness: 0.2,
+                map: createCheckerboardTexture()
             });
+            // 关键修复：为墙壁设置相同的棋盘格纹理
+            wallMaterial.map.wrapS = THREE.RepeatWrapping;
+            wallMaterial.map.wrapT = THREE.RepeatWrapping;
+            wallMaterial.map.repeat.set(10, 10);
+            wallMaterial.map.needsUpdate = true;
             // 左墙
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-25, 5, 0);
