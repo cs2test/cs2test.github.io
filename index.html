@@ -210,6 +210,26 @@
             justify-content: space-between;
             margin-top: 35px;
             gap: 15px;
+            flex-wrap: wrap; /* 允许按钮换行 */
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px; /* 设置最小宽度 */
+        }
+        .control-group label {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: #a9a9c5;
+        }
+        .control-group input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #4ecdc4;
+            background: rgba(10, 10, 30, 0.8);
+            color: #e0e0e0;
+            font-size: 1rem;
         }
         button {
             background: linear-gradient(135deg, #ff6b6b, #ff8e53);
@@ -223,6 +243,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
             flex: 1;
+            min-width: 150px; /* 设置最小宽度 */
             position: relative;
             overflow: hidden;
         }
@@ -537,6 +558,10 @@
                     <!-- 隐藏难度选择 -->
                 </div>
                 <div class="controls">
+                    <div class="control-group">
+                        <label for="sensitivity-input">鼠标灵敏度:</label>
+                        <input type="number" id="sensitivity-input" min="0.0001" max="0.01" step="0.0001" value="0.002">
+                    </div>
                     <button id="start-btn">开始训练</button>
                     <button id="reset-btn">重置数据</button>
                     <button id="lang-btn">EN/中文</button>
@@ -567,6 +592,7 @@
             const resetBtn = document.getElementById('reset-btn');
             const langBtn = document.getElementById('lang-btn');
             const gameStatus = document.getElementById('game-status');
+            const sensitivityInput = document.getElementById('sensitivity-input'); // 新增灵敏度输入框
             // Stats elements
             const shotsElement = document.getElementById('shots');
             const hitsElement = document.getElementById('hits');
@@ -620,7 +646,7 @@
             let maxAngleChange = 30; // 最大角度变化
             // Difficulty settings
             const difficultySettings = {
-                easy: { size: 20, speed: 5000, spawnRate: 800 } // 减小球的大小到20
+                easy: { size: 5, speed: 5000, spawnRate: 800 } // 减小球的大小到5
             };
             // 灵敏度设置
             let sensitivity = 0.002; // 初始灵敏度
@@ -728,14 +754,12 @@
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
-            
             // === 创建墙壁 ===
             // 定义墙壁尺寸和位置
             const wallWidth = 200; // 墙壁宽度 (X轴)
             const wallDepth = 10;  // 墙壁厚度 (Z轴)
             const wallHeight = 20; // 墙壁高度 (Y轴)
             const wallDistance = 100; // 墙壁距离中心的距离
-
             const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
             // 创建带纹理的墙壁材质
             const wallMaterial = new THREE.MeshStandardMaterial({
@@ -749,39 +773,32 @@
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
             wallMaterial.map.repeat.set(10, 2); // X方向10次重复，Y方向2次重复
             wallMaterial.map.needsUpdate = true;
-
             // 后墙 (Z+)
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
             backWall.position.set(0, wallHeight/2, wallDistance);
             scene.add(backWall);
-
             // 前墙 (Z-)
             const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
             frontWall.position.set(0, wallHeight/2, -wallDistance);
             scene.add(frontWall);
-
             // 左墙 (X-)
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-wallDistance, wallHeight/2, 0);
             leftWall.rotation.y = Math.PI / 2; // 旋转90度
             scene.add(leftWall);
-
             // 右墙 (X+)
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2; // 旋转90度
             scene.add(rightWall);
-
             // 左前墙 (角落)
             const leftFrontWall = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, wallHeight, wallDistance * 2), wallMaterial);
             leftFrontWall.position.set(-wallDistance, wallHeight/2, 0);
             scene.add(leftFrontWall);
-
             // 右前墙 (角落)
             const rightFrontWall = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, wallHeight, wallDistance * 2), wallMaterial);
             rightFrontWall.position.set(wallDistance, wallHeight/2, 0);
             scene.add(rightFrontWall);
-
              // 设置相机初始位置，稍微拉远一点，避免墙壁太近
             camera.position.set(0, 5, 15); // 原来是 (0, 2, 5)
             camera.lookAt(0, 0, 0);
@@ -915,12 +932,12 @@
                 const settings = difficultySettings.easy;
                 const size = settings.size;
                 let x, y, z;
-                // 固定 Y 坐标，确保小球在地面上方
-                y = 1; 
+                // 固定 Y 坐标，确保小球在地面上方 (从1改为5)
+                y = 5; 
                 if (snakeTrail.length === 0) {
                     // 第一个目标在中心位置生成，但稍微远一点
                     x = 0;
-                    // y = 1; // 已在上面固定
+                    // y = 5; // 已在上面固定
                     z = 10; // 原来是5，现在更远一点，确保在视野内且不在墙内
                     console.log(`Spawning first target at: (${x}, ${y}, ${z})`);
                 } else {
@@ -1101,6 +1118,13 @@
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
+            });
+            // 灵敏度输入框事件监听
+            sensitivityInput.addEventListener('input', function() {
+                const newSensitivity = parseFloat(this.value);
+                if (!isNaN(newSensitivity) && newSensitivity > 0) {
+                    sensitivity = newSensitivity;
+                }
             });
             // 渲染循环
             function animate() {
