@@ -473,9 +473,9 @@
             position: absolute;
             top: 30px;
             left: 30px;
-            width: 150px;
-            height: 150px;
-            background: rgba(0, 0, 0, 0.7);
+            width: 180px;
+            height: 180px;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 50%;
             z-index: 100;
             border: 2px solid #4ecdc4;
@@ -514,8 +514,8 @@
                 margin-bottom: 15px;
             }
             .mini-map {
-                width: 100px;
-                height: 100px;
+                width: 120px;
+                height: 120px;
                 top: 15px;
                 left: 15px;
             }
@@ -541,8 +541,8 @@
                 padding: 8px 20px;
             }
             .mini-map {
-                width: 80px;
-                height: 80px;
+                width: 100px;
+                height: 100px;
                 top: 10px;
                 left: 10px;
             }
@@ -616,12 +616,12 @@
             <h2 id="instructions-title">训练说明</h2>
             <ul>
                 <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
-                <li id="instruction-2">再次按下 <span class="highlight">A</span> 键退出射击模式，鼠标恢复原状</li>
-                <li id="instruction-3">按下 <span class="highlight">S</span> 键开始/暂停/继续训练</li>
+                <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
+                <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
                 <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
-                <li id="instruction-5">击中目标中心得 <span class="highlight">10分</span>，边缘得 <span class="highlight">1分</span></li>
+                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span></li>
                 <li id="instruction-6">连续命中会获得额外连击加成</li>
-                <li id="instruction-7">按 <span class="highlight">F11</span> 进入全屏模式获得最佳体验</li>
+                <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
             </ul>
         </div>
         <footer>
@@ -850,12 +850,12 @@
             // 创建墙壁标签
             function createWallLabel(text, position, rotation) {
                 const canvas = document.createElement('canvas');
-                canvas.width = 128;
-                canvas.height = 128;
+                canvas.width = 256;
+                canvas.height = 256;
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'rgba(0, 0, 0, 0)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.font = 'bold 100px Arial';
+                ctx.font = 'bold 180px Arial';
                 ctx.fillStyle = '#ffd166';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -866,7 +866,7 @@
                     transparent: true,
                     side: THREE.DoubleSide
                 });
-                const geometry = new THREE.PlaneGeometry(10, 10);
+                const geometry = new THREE.PlaneGeometry(15, 15);
                 const label = new THREE.Mesh(geometry, material);
                 label.position.copy(position);
                 if (rotation) label.rotation.copy(rotation);
@@ -970,7 +970,8 @@
                     const distanceToCenter = intersects[0].distance;
                     const radius = target.geometry.parameters.radius;
                     const normalizedDistance = distanceToCenter / radius;
-                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance)); // 1~10分
+                    // 中心得10分，边缘得1分，中间按比例计算
+                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
                     // 显示得分
                     showScoreIndicator(points, 0, 0); // 准星在中心，所以得分显示在中心
                     // 处理目标命中
@@ -1001,7 +1002,6 @@
             }
             // 生成目标函数
             function spawnTargets() {
-                console.log("spawnTargets called"); // 添加日志
                 if (!gameActive) return;
                 const now = Date.now();
                 if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
@@ -1017,9 +1017,7 @@
                 if (snakeTrail.length === 0) {
                     // 第一个目标在中心位置生成，但稍微远一点
                     x = 0;
-                    // y = 5; // 已在上面固定
                     z = 15; // 原来是5，现在更远一点，确保在视野内且不在墙内
-                    console.log(`Spawning first target at: (${x}, ${y}, ${z})`);
                 } else {
                     // 后续目标按照360°随机轨迹生成
                     const lastPos = snakeTrail[snakeTrail.length - 1];
@@ -1058,7 +1056,6 @@
                     }
                     x = newX;
                     z = newZ;
-                    console.log(`Spawning target at: (${x}, ${y}, ${z})`);
                 }
                 // 保存当前位置
                 snakeTrail.push({ x: x, y: y, z: z });
@@ -1078,7 +1075,6 @@
                 target.position.set(x, y, z);
                 target.userData.spawnTime = Date.now().toString();
                 target.userData.isHit = false;
-                console.log("Target added to scene");
                 // 添加到场景和目标数组
                 scene.add(target);
                 targets.push(target);
@@ -1123,41 +1119,78 @@
                     }
                 }, 200);
             }
-            // 创建破碎特效 - 修复版本
+            // 创建破碎特效 - 优化版本
             function createShatterEffect(position) {
-                const particleCount = 15;
+                const particleCount = 20;
                 const particles = new THREE.Group();
                 scene.add(particles);
-                const particleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-                const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // 保持红色
+                
+                // 创建粒子材质
+                const particleMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xff0000, // 保持红色
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                // 创建不同大小的粒子
                 for (let i = 0; i < particleCount; i++) {
-                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                    const size = Math.random() * 0.3 + 0.1;
+                    const geometry = new THREE.SphereGeometry(size, 8, 8);
+                    const particle = new THREE.Mesh(geometry, particleMaterial);
                     particle.position.copy(position);
-                    // 随机速度
-                    const speed = 0.8;
+                    
+                    // 随机速度 - 向外爆炸效果
+                    const speed = 1.5;
+                    const angle1 = Math.random() * Math.PI * 2;
+                    const angle2 = Math.random() * Math.PI * 2;
                     particle.userData.velocity = new THREE.Vector3(
-                        (Math.random() - 0.5) * speed,
-                        (Math.random() - 0.5) * speed,
-                        (Math.random() - 0.5) * speed
+                        Math.sin(angle1) * Math.cos(angle2) * speed,
+                        Math.sin(angle1) * Math.sin(angle2) * speed,
+                        Math.cos(angle1) * speed
                     );
+                    
+                    // 随机旋转
+                    particle.userData.rotationSpeed = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.2,
+                        (Math.random() - 0.5) * 0.2,
+                        (Math.random() - 0.5) * 0.2
+                    );
+                    
                     particles.add(particle);
                 }
+                
                 // 动画粒子 - 确保0.1秒内消失
                 const startTime = Date.now();
+                const duration = 100; // 0.1秒
+                
                 const animateParticles = () => {
                     const elapsed = Date.now() - startTime;
-                    if (elapsed > 100) { // 0.1秒后移除所有粒子
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    if (progress >= 1) {
                         scene.remove(particles);
                         return;
                     }
+                    
+                    // 更新粒子位置和旋转
                     particles.children.forEach(particle => {
                         if (particle.userData.velocity) {
                             particle.position.add(particle.userData.velocity);
-                            particle.userData.velocity.multiplyScalar(0.95); // 摩擦力
+                            particle.rotation.x += particle.userData.rotationSpeed.x;
+                            particle.rotation.y += particle.userData.rotationSpeed.y;
+                            particle.rotation.z += particle.userData.rotationSpeed.z;
+                            
+                            // 逐渐减速
+                            particle.userData.velocity.multiplyScalar(0.92);
+                            
+                            // 逐渐消失
+                            particle.material.opacity = 0.8 * (1 - progress);
                         }
                     });
+                    
                     requestAnimationFrame(animateParticles);
                 };
+                
                 animateParticles();
             }
             // 显示得分指示器
@@ -1267,7 +1300,7 @@
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
                 // 绘制背景
-                miniMapCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                miniMapCtx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
@@ -1286,26 +1319,43 @@
                 miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);
                 miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);
                 miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);
-                // 绘制玩家视角方向
+                // 绘制玩家视角方向（扇形区域）
                 const directionAngle = cameraRotation.y;
+                const fov = 75 * Math.PI / 180; // 视野角度（弧度）
                 const directionLength = radius * 0.8;
-                const directionX = centerX + Math.sin(directionAngle) * directionLength;
-                const directionY = centerY - Math.cos(directionAngle) * directionLength;
-                miniMapCtx.strokeStyle = '#00ff88';
-                miniMapCtx.lineWidth = 2;
+                
+                // 绘制视角扇形
+                miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.2)';
                 miniMapCtx.beginPath();
                 miniMapCtx.moveTo(centerX, centerY);
-                miniMapCtx.lineTo(directionX, directionY);
+                miniMapCtx.arc(centerX, centerY, directionLength, 
+                               directionAngle - fov/2, directionAngle + fov/2);
+                miniMapCtx.closePath();
+                miniMapCtx.fill();
+                
+                // 绘制视角边界线
+                miniMapCtx.strokeStyle = '#00ff88';
+                miniMapCtx.lineWidth = 1;
+                miniMapCtx.beginPath();
+                miniMapCtx.moveTo(centerX, centerY);
+                miniMapCtx.lineTo(centerX + Math.sin(directionAngle - fov/2) * directionLength, 
+                                 centerY - Math.cos(directionAngle - fov/2) * directionLength);
+                miniMapCtx.stroke();
+                
+                miniMapCtx.beginPath();
+                miniMapCtx.moveTo(centerX, centerY);
+                miniMapCtx.lineTo(centerX + Math.sin(directionAngle + fov/2) * directionLength, 
+                                 centerY - Math.cos(directionAngle + fov/2) * directionLength);
                 miniMapCtx.stroke();
                 // 绘制玩家位置
                 miniMapCtx.fillStyle = '#00ff88';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
                 miniMapCtx.fill();
-                // 绘制目标
+                // 绘制目标 - 修正坐标映射
                 targets.forEach(target => {
-                    const targetX = target.position.x / wallDistance * radius * 0.8 + centerX;
-                    const targetZ = target.position.z / wallDistance * radius * 0.8 + centerY;
+                    const targetX = centerX + (target.position.x / wallDistance) * radius * 0.8;
+                    const targetZ = centerY + (target.position.z / wallDistance) * radius * 0.8;
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetZ, 3, 0, Math.PI * 2);
