@@ -620,7 +620,7 @@
             let maxAngleChange = 30; // 最大角度变化
             // Difficulty settings
             const difficultySettings = {
-                easy: { size: 40, speed: 5000, spawnRate: 800 } // 减慢生成速度到800ms
+                easy: { size: 20, speed: 5000, spawnRate: 800 } // 减小球的大小到20
             };
             // Language translations
             const translations = {
@@ -872,7 +872,7 @@
                     const distanceToCenter = intersects[0].distance;
                     const radius = target.geometry.parameters.radius;
                     const normalizedDistance = distanceToCenter / radius;
-                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
+                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance)); // 1~10分
                     // 显示得分
                     showScoreIndicator(points, 0, 0); // 准星在中心，所以得分显示在中心
                     // 处理目标命中
