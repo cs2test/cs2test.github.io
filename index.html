@@ -542,13 +542,13 @@
         <div class="instructions">
             <h2 id="instructions-title">训练说明</h2>
             <ul>
-                <li id="instruction-1">按下 <span class="highlight">S</span> 键开始/暂停/继续训练</li>
-                <li id="instruction-2">红色目标出现后，尽快点击它们进行射击</li>
-                <li id="instruction-3">击中目标中心得 <span class="highlight">10分</span>，边缘得 <span class="highlight">1分</span></li>
-                <li id="instruction-4">连续命中会获得额外连击加成</li>
-                <li id="instruction-5">训练时间无限制，可以随时 <span class="highlight">重置数据</span></li>
-                <li id="instruction-6">准星固定在屏幕中心</li>
-                <li id="instruction-7">按 <span class="highlight">空格键</span> 可以开始和暂停训练</li>
+                <li id="instruction-1">按下 <span class="highlight">S</span> 键开始/暂停训练</li>
+                <li id="instruction-2">按下 <span class="highlight">A</span> 键激活/退出射击模式</li>
+                <li id="instruction-3">红色目标出现后，尽快点击它们进行射击</li>
+                <li id="instruction-4">击中目标中心得 <span class="highlight">10分</span>，边缘得 <span class="highlight">1分</span></li>
+                <li id="instruction-5">连续命中会获得额外连击加成</li>
+                <li id="instruction-6">移动鼠标控制准星位置</li>
+                <li id="instruction-7">按 <span class="highlight">空格键</span> 也可以开始和暂停训练</li>
             </ul>
         </div>
         <footer>
@@ -570,7 +570,6 @@
             const reactionElement = document.getElementById('reaction');
             const maxComboElement = document.getElementById('max-combo');
             const scoreElement = document.getElementById('score');
-            // Use 'let' instead of 'const' to allow reassignment
             let comboDisplay = document.getElementById('combo-display');
             let scoreDisplay = document.getElementById('score-display');
             const comboDisplayContainer = document.getElementById('combo-display-container');
@@ -595,8 +594,8 @@
             const instruction7 = document.getElementById('instruction-7');
             const footerText = document.getElementById('footer-text');
             // Game state
-            let gameActive = false;
-            let isShootingMode = false; // 是否处于射击模式
+            let gameActive = false; // 游戏是否在运行（开始/暂停）
+            let isShootingMode = false; // 鼠标是否在射击框内（激活/退出）
             let shots = 0;
             let hits = 0;
             let totalReactionTime = 0; // Total reaction time for all targets
@@ -605,7 +604,7 @@
             let maxCombo = 0;
             let score = 0;
             let targets = [];
-            let targetSpawnInterval;
+            let targetSpawnInterval = null; // 关键：初始化为null
             let countdownTimer = null;
             let language = 'zh'; // zh, en
             let snakeTrail = []; // 贪吃蛇轨迹
@@ -638,12 +637,12 @@
                     resetBtn: "Reset Stats",
                     langBtn: "EN/中文",
                     instructionsTitle: "Training Instructions",
-                    instruction1: "Press <span class='highlight'>S</span> key to start/pause/resume",
-                    instruction2: "Click on red targets as they appear",
-                    instruction3: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
-                    instruction4: "Consecutive hits earn bonus points",
-                    instruction5: "Training is unlimited, <span class='highlight'>Reset Stats</span> anytime",
-                    instruction6: "Crosshair is fixed at the center",
+                    instruction1: "Press <span class='highlight'>S</span> to start/pause",
+                    instruction2: "Press <span class='highlight'>A</span> to enter/exit shooting mode",
+                    instruction3: "Click on red targets as they appear",
+                    instruction4: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
+                    instruction5: "Consecutive hits earn bonus points",
+                    instruction6: "Move mouse to control crosshair",
                     instruction7: "Press <span class='highlight'>Space</span> to start/pause training",
                     footerText: "CS2 Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
                     ready: "READY",
@@ -666,13 +665,13 @@
                     resetBtn: "重置数据",
                     langBtn: "EN/中文",
                     instructionsTitle: "训练说明",
-                    instruction1: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
-                    instruction2: "红色目标出现后，尽快点击它们进行射击",
-                    instruction3: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
-                    instruction4: "连续命中会获得额外连击加成",
-                    instruction5: "训练时间无限制，可以随时 <span class='highlight'>重置数据</span>",
-                    instruction6: "准星固定在屏幕中心",
-                    instruction7: "按 <span class='highlight'>空格键</span> 可以开始和暂停训练",
+                    instruction1: "按下 <span class='highlight'>S</span> 键开始/暂停训练",
+                    instruction2: "按下 <span class='highlight'>A</span> 键激活/退出射击模式",
+                    instruction3: "红色目标出现后，尽快点击它们进行射击",
+                    instruction4: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
+                    instruction5: "连续命中会获得额外连击加成",
+                    instruction6: "移动鼠标控制准星位置",
+                    instruction7: "按 <span class='highlight'>空格键</span> 也可以开始和暂停训练",
                     footerText: "CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
                     training: "训练中",
@@ -681,10 +680,16 @@
             };
 
             // ==================== 终极0延迟准星核心代码 ====================
-            // 固定准星在中心
-            crosshair.style.left = '50%';
-            crosshair.style.top = '50%';
-            crosshair.style.transform = 'translate(-50%, -50%)';
+            // 准星始终跟随鼠标移动，无论游戏是否开始
+            trainingArea.addEventListener('mousemove', function(e) {
+                // 获取训练区域的边界
+                const rect = trainingArea.getBoundingClientRect();
+                // 直接计算并设置准星位置 - 确保中心点对齐
+                crosshair.style.left = (e.clientX - rect.left - 7) + 'px';
+                crosshair.style.top = (e.clientY - rect.top - 7) + 'px';
+            }, { passive: true });
+            // 始终隐藏系统鼠标图标
+            trainingArea.style.cursor = 'none';
             // ==================== 终极0延迟准星代码结束 ====================
 
             // Handle shooting - 修复射击次数计数问题
@@ -692,9 +697,9 @@
                 // 无论游戏是否激活，点击都计入射击次数
                 shots++;
                 updateStats();
-                if (!isShootingMode) return;
+                if (!isShootingMode) return; // 只有在射击模式下才能射击
 
-                // 创建命中效果
+                // Create hit effect
                 const rect = trainingArea.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -703,18 +708,18 @@
                 hitEffect.style.left = (x - 11) + 'px';
                 hitEffect.style.top = (y - 11) + 'px';
                 trainingArea.appendChild(hitEffect);
-                // 移除命中效果
+                // Remove hit effect after animation
                 setTimeout(() => {
                     if (hitEffect && hitEffect.parentNode) {
                         hitEffect.remove();
                     }
                 }, 300);
 
-                // 检查是否命中目标
+                // Check if target was hit
                 const targets = document.querySelectorAll('.target:not(.hit)');
                 let hitTarget = false;
                 targets.forEach(target => {
-                    if (hitTarget) return; // 只计算一次命中
+                    if (hitTarget) return; // Only count one hit per click
                     const targetRect = target.getBoundingClientRect();
                     const areaRect = trainingArea.getBoundingClientRect();
                     const targetX = targetRect.left - areaRect.left + targetRect.width/2;
@@ -725,14 +730,15 @@
                         const hitTime = Date.now();
                         const reactionTime = hitTime - parseInt(target.dataset.spawnTime);
                         totalReactionTime += reactionTime;
-                        targetCount++;
+                        targetCount++; // Count this as a target that was processed
                         // 计算得分 - 靶圈式得分系统
                         const radius = targetRect.width/2;
-                        const normalizedDistance = distance / radius;
+                        const normalizedDistance = distance / radius; // 0到1之间
+                        // 中心10分，边缘1分，中间线性插值
                         const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
                         // 显示得分
                         showScoreIndicator(points, x, y);
-                        // 处理目标命中
+                        // 处理目标命中 - 确保射击次数和命中次数同步增加
                         targetHit(target, points);
                     }
                 });
@@ -764,25 +770,6 @@
                 }, 1000);
             }
 
-            // S键控制游戏状态
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 's' || e.key === 'S') {
-                    e.preventDefault();
-                    if (!gameActive) {
-                        // 如果游戏未激活，第一次按S键开始游戏
-                        toggleTraining();
-                    } else {
-                        // 如果游戏已激活，切换射击模式
-                        isShootingMode = !isShootingMode;
-                        if (isShootingMode) {
-                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
-                        } else {
-                            showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
-                        }
-                    }
-                }
-            });
-
             // Start training with countdown
             function toggleTraining() {
                 if (countdownTimer) {
@@ -792,7 +779,10 @@
                 if (gameActive) {
                     gameActive = false;
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
-                    clearInterval(targetSpawnInterval);
+                    if (targetSpawnInterval) {
+                        clearInterval(targetSpawnInterval);
+                        targetSpawnInterval = null;
+                    }
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
                     // 倒计时逻辑
@@ -815,12 +805,45 @@
                             snakeTrail = []; // 重置贪吃蛇轨迹
                             currentAngle = Math.random() * 360; // 随机初始角度
                             angleChangeCounter = 0;
-                            isShootingMode = false; // 初始不处于射击模式
-                            showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
+                            // 关键修复：启动目标生成定时器
+                            targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
+                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                         }
                     }, 1000);
                 }
             }
+
+            // Start button event
+            startBtn.addEventListener('click', toggleTraining);
+
+            // S key event - 开始/暂停
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 's' || e.key === 'S') {
+                    e.preventDefault();
+                    toggleTraining();
+                }
+            });
+
+            // A key event - 激活/退出射击模式
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'a' || e.key === 'A') {
+                    e.preventDefault();
+                    isShootingMode = !isShootingMode;
+                    if (isShootingMode) {
+                        showGameStatus("射击模式: ON");
+                    } else {
+                        showGameStatus("射击模式: OFF");
+                    }
+                }
+            });
+
+            // Space key event - 修改为空格键开始/暂停
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    toggleTraining();
+                }
+            });
 
             // Show game status message
             function showGameStatus(text) {
@@ -842,7 +865,7 @@
 
             // Spawn targets - 360°随机轨迹生成
             function spawnTargets() {
-                if (!gameActive) return;
+                if (!gameActive) return; // 只有在游戏激活时才生成目标
                 const now = Date.now();
                 if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
                     return; // 控制生成速度
@@ -916,7 +939,7 @@
                     const hitTime = Date.now();
                     const reactionTime = hitTime - parseInt(this.dataset.spawnTime);
                     totalReactionTime += reactionTime;
-                    targetCount++;
+                    targetCount++; // Count this as a target that was processed
                     // 计算得分 - 靶圈式得分系统
                     const rect = this.getBoundingClientRect();
                     const areaRect = trainingArea.getBoundingClientRect();
@@ -938,8 +961,9 @@
                 // Auto-remove target after timeout (missed target)
                 setTimeout(() => {
                     if (!target.classList.contains('hit') && target.parentNode) {
+                        // For missed targets, add the full duration to total reaction time
                         totalReactionTime += settings.speed;
-                        targetCount++;
+                        targetCount++; // Count this as a target that was processed (missed)
                         target.remove();
                         combo = 0;
                         comboDisplay.textContent = combo;
@@ -989,8 +1013,12 @@
             // Reset game
             function resetGame() {
                 gameActive = false;
+                isShootingMode = false; // 重置射击模式
                 startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
-                clearInterval(targetSpawnInterval);
+                if (targetSpawnInterval) {
+                    clearInterval(targetSpawnInterval);
+                    targetSpawnInterval = null;
+                }
                 if (countdownTimer) {
                     clearInterval(countdownTimer);
                     countdownTimer = null;
