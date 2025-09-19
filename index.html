@@ -678,7 +678,6 @@
                     stopped: "已停止"
                 }
             };
-
             // ==================== THREE.JS SETUP ====================
             // 创建场景、相机和渲染器
             const scene = new THREE.Scene();
@@ -687,14 +686,12 @@
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
             renderer.setClearColor(0x111133);
             trainingArea.appendChild(renderer.domElement);
-
             // 添加光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(1, 1, 1);
             scene.add(directionalLight);
-
             // 创建地面
             const groundGeometry = new THREE.PlaneGeometry(100, 100);
             const groundMaterial = new THREE.MeshStandardMaterial({
@@ -708,7 +705,6 @@
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
-
             // 创建墙壁
             const wallGeometry = new THREE.BoxGeometry(100, 10, 100);
             const wallMaterial = new THREE.MeshStandardMaterial({
@@ -716,30 +712,24 @@
                 roughness: 0.8,
                 metalness: 0.2
             });
-
             // 左墙
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-45, 5, 0);
             scene.add(leftWall);
-
             // 右墙
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(45, 5, 0);
             scene.add(rightWall);
-
             // 后墙
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
             backWall.position.set(0, 5, 45);
             scene.add(backWall);
-
             // 设置相机位置
             camera.position.set(0, 2, 5);
             camera.lookAt(0, 0, 0);
-
             // 创建射线投射器用于检测点击
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
-
             // ==================== 终极0延迟准星核心代码 ====================
             // 准星始终固定在屏幕中心
             crosshair.style.left = '50%';
@@ -747,74 +737,78 @@
             crosshair.style.transform = 'translate(-50%, -50%)';
             // 始终隐藏系统鼠标图标
             trainingArea.style.cursor = 'none';
-
             // ==================== 3D 控制逻辑 ====================
             // 射击模式状态
             let inShootingMode = false;
-
+            let isPointerLocked = false; // 新增：跟踪指针锁定状态
+            // 相机旋转控制
+            let cameraRotation = { x: 0, y: 0 };
+            const sensitivity = 0.002; // 提高灵敏度
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
                     // 切换射击模式
                     inShootingMode = !inShootingMode;
                     if (inShootingMode) {
-                        // 进入射击模式：锁定鼠标，设置准星
-                        trainingArea.style.cursor = 'none';
-                        // 由于我们无法直接获取用户输入，所以这里只做视觉上的处理
-                        // 实际的鼠标移动将通过监听事件来实现
+                        // 进入射击模式：请求指针锁定
+                        trainingArea.requestPointerLock();
                     } else {
                         // 退出射击模式：解锁鼠标
-                        trainingArea.style.cursor = 'default';
+                        if (isPointerLocked) {
+                            document.exitPointerLock();
+                        }
                     }
                 }
-
                 if (e.key === 's' || e.key === 'S') {
                     // 切换游戏状态（开始/暂停/继续）
                     toggleTraining();
                 }
             });
-
+            // 监听指针锁定状态变化
+            document.addEventListener('pointerlockchange', function() {
+                if (document.pointerLockElement === trainingArea) {
+                    isPointerLocked = true;
+                    trainingArea.style.cursor = 'none';
+                } else {
+                    isPointerLocked = false;
+                    if (inShootingMode) {
+                        // 如果仍在射击模式但指针解锁了（例如用户按了ESC），则退出射击模式
+                        inShootingMode = false;
+                    }
+                    trainingArea.style.cursor = 'default';
+                }
+            });
             // 处理鼠标移动以控制3D视角
-            trainingArea.addEventListener('mousemove', function(e) {
-                if (!inShootingMode) return;
+            document.addEventListener('mousemove', function(e) {
+                if (!inShootingMode || !isPointerLocked) return;
+                
+                // 使用 movementX 和 movementY 获取相对移动距离
+                const deltaX = e.movementX;
+                const deltaY = e.movementY;
 
-                // 获取鼠标位置
-                const rect = trainingArea.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                // 更新相机旋转
+                cameraRotation.y -= deltaX * sensitivity; // Y轴旋转（左右看）
+                cameraRotation.x -= deltaY * sensitivity; // X轴旋转（上下看）
 
-                // 更新鼠标向量
-                mouse.set(x, y);
+                // 限制上下看的角度，防止翻转
+                cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
 
-                // 计算鼠标移动的偏移量
-                const deltaX = x - 0; // 中心点是0
-                const deltaY = y - 0;
-
-                // 使用鼠标移动来旋转相机
-                // 注意：这只是一个简单的实现，实际游戏中通常使用更复杂的方案
-                camera.rotation.y += deltaX * 0.05;
-                camera.rotation.x += deltaY * 0.05;
-
-                // 限制相机旋转范围
-                camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
-            }, { passive: true });
-
+                // 应用旋转到相机
+                camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ'); // 使用YXZ顺序防止万向锁
+            });
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
                 // 无论游戏是否激活，点击都计入射击次数
                 shots++;
                 updateStats();
                 if (!gameActive) return;
-
                 // 在射击模式下才进行射击
                 if (!inShootingMode) return;
-
                 // 创建射线
-                raycaster.setFromCamera(mouse, camera);
-
+                // 在指针锁定模式下，准星始终在中心，所以射线也从中心发出
+                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 // 查找与射线相交的目标
                 const intersects = raycaster.intersectObjects(targets, true);
-
                 if (intersects.length > 0) {
                     // 找到最近的目标
                     const target = intersects[0].object;
@@ -822,16 +816,13 @@
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
                     targetCount++; // Count this as a target that was processed
-
                     // 计算得分 - 根据距离中心的距离计算
                     const distanceToCenter = intersects[0].distance;
                     const radius = target.geometry.parameters.radius;
                     const normalizedDistance = distanceToCenter / radius;
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-
                     // 显示得分
-                    showScoreIndicator(points, mouse.x, mouse.y);
-
+                    showScoreIndicator(points, 0, 0); // 准星在中心，所以得分显示在中心
                     // 处理目标命中
                     targetHit(target, points);
                 } else {
@@ -841,7 +832,6 @@
                     updateStats();
                 }
             });
-
             // ==================== 3D 游戏逻辑 ====================
             // 生成目标函数
             function spawnTargets() {
@@ -851,12 +841,10 @@
                     return; // 控制生成速度
                 }
                 lastSpawnTime = now;
-
                 // Get difficulty settings
                 const settings = difficultySettings.easy;
                 const size = settings.size;
                 let x, y, z;
-
                 if (snakeTrail.length === 0) {
                     // 第一个目标在中心位置生成
                     x = 0;
@@ -901,14 +889,12 @@
                     x = newX;
                     z = newZ;
                 }
-
                 // 保存当前位置
                 snakeTrail.push({ x: x, y: y, z: z });
                 // 保持贪吃蛇长度
                 if (snakeTrail.length > snakeLength) {
                     snakeTrail.shift();
                 }
-
                 // 创建新的目标球体
                 const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
                 const material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.9 });
@@ -916,11 +902,9 @@
                 target.position.set(x, y, z);
                 target.userData.spawnTime = Date.now().toString();
                 target.userData.isHit = false;
-
                 // 添加到场景和目标数组
                 scene.add(target);
                 targets.push(target);
-
                 // 自动移除目标（未命中的）
                 setTimeout(() => {
                     if (!target.userData.isHit && target.parent) {
@@ -935,7 +919,6 @@
                     }
                 }, settings.speed);
             }
-
             // 处理目标命中
             function targetHit(target, points) {
                 if (target.userData.isHit) return;
@@ -953,7 +936,6 @@
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
-
                 // 移除目标
                 setTimeout(() => {
                     if (target.parent) {
@@ -962,16 +944,15 @@
                     }
                 }, 200);
             }
-
             // 显示得分指示器
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
                 scoreIndicator.className = 'score-indicator';
                 scoreIndicator.textContent = '+' + points;
-                // 将3D坐标映射到2D屏幕坐标
+                // 将3D坐标映射到2D屏幕坐标 (现在总是显示在屏幕中心)
                 const rect = trainingArea.getBoundingClientRect();
-                const screenX = ((x + 1) / 2) * rect.width;
-                const screenY = ((-y + 1) / 2) * rect.height;
+                const screenX = rect.width / 2;
+                const screenY = rect.height / 2;
                 scoreIndicator.style.left = (screenX - 25) + 'px';
                 scoreIndicator.style.top = (screenY - 50) + 'px';
                 trainingArea.appendChild(scoreIndicator);
@@ -987,7 +968,6 @@
                     }
                 }, 1000);
             }
-
             // 开始/暂停训练
             function toggleTraining() {
                 if (countdownTimer) {
@@ -1027,7 +1007,6 @@
                     }, 1000);
                 }
             }
-
             // 显示游戏状态消息
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -1036,16 +1015,13 @@
                     gameStatus.classList.remove('visible');
                 }, 1000);
             }
-
             // 重置统计数据
             resetBtn.addEventListener('click', resetGame);
-
             // 语言切换
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
-
             // 渲染循环
             function animate() {
                 requestAnimationFrame(animate);
@@ -1056,7 +1032,6 @@
                 renderer.render(scene, camera);
             }
             animate();
-
             // 重置游戏
             function resetGame() {
                 gameActive = false;
@@ -1091,8 +1066,15 @@
                 updateStats();
                 maxComboElement.textContent = maxCombo;
                 showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
+                
+                // 如果在射击模式下重置，退出射击模式
+                if (inShootingMode) {
+                    inShootingMode = false;
+                    if (isPointerLocked) {
+                        document.exitPointerLock();
+                    }
+                }
             }
-
             // 更新统计信息
             function updateStats() {
                 // 计算准确率 - 不超过100%
@@ -1105,7 +1087,6 @@
                 reactionElement.textContent = averageReactionTime + 'ms';
                 scoreElement.textContent = score;
             }
-
             // 更新语言
             function updateLanguage() {
                 const t = translations[language];
@@ -1144,7 +1125,6 @@
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
-
             // 初始化
             updateStats();
             updateLanguage();
