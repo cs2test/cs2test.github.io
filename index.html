@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
-    <!-- 引入 FontLoader 以支持 TextGeometry -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FontLoader.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/geometries/TextGeometry.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -514,10 +511,10 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            width: 150px; /* 放大 */
-            height: 150px; /* 放大 */
+            width: 300px; /* 放大一倍 */
+            height: 300px; /* 放大一倍 */
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.2); /* 更透明 */
             border: 2px solid rgba(135, 206, 235, 0.8);
             overflow: hidden;
             z-index: 1000;
@@ -549,8 +546,8 @@
         }
         .minimap-target {
             position: absolute;
-            width: 8px; /* 放大 */
-            height: 8px; /* 放大 */
+            width: 10px;
+            height: 10px;
             background-color: #FF0000;
             border-radius: 50%;
             z-index: 5;
@@ -563,7 +560,7 @@
         .minimap-wall-label {
             position: absolute;
             color: #FFFF00;
-            font-size: 16px; /* 放大 */
+            font-size: 20px;
             font-weight: bold;
             z-index: 2;
         }
@@ -580,7 +577,7 @@
             <div class="training-area-wrapper">
                 <div class="training-area" id="training-area">
                     <!-- 3D Scene will be rendered here -->
-                    <!-- UI 元素将在 JS 中动态添加到这里，确保它们在 renderer.domElement 之后 -->
+                    <!-- UI 元素将在 JS 中动态添加到这里 -->
                 </div>
                 <div class="score-section">
                     <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
@@ -647,7 +644,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const trainingArea = document.getElementById('training-area');
-            // const crosshair = document.getElementById('crosshair'); // 将在 setup 中创建
             let crosshair; // 声明但不初始化
             const startBtn = document.getElementById('start-btn');
             const resetBtn = document.getElementById('reset-btn');
@@ -767,13 +763,13 @@
                     stopped: "已停止"
                 }
             };
+
             // ==================== THREE.JS SETUP ====================
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
             renderer.setClearColor(0x111133);
-            // 将 renderer.domElement 添加到 trainingArea
             trainingArea.appendChild(renderer.domElement);
 
             // 添加光源
@@ -857,21 +853,11 @@
             rightFrontWall.position.set(wallDistance, wallHeight/2, 0);
             scene.add(rightFrontWall);
 
-            // 加载字体并添加标签
-            let font = null;
-            const loader = new THREE.FontLoader();
-            loader.load('https://cdn.jsdelivr.net/npm/three@0.132.2/examples/fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
-                font = loadedFont;
-                // 字体加载完成后添加标签
-                addWallLabels(backWall, 'B', 0, 10, 0, font);
-                addWallLabels(frontWall, 'D', 0, 10, 0, font);
-                addWallLabels(leftWall, 'A', 0, 10, 0, font);
-                addWallLabels(rightWall, 'C', 0, 10, 0, font);
-            }, undefined, function ( error ) {
-                console.error( 'Error loading font:', error );
-                // 即使字体加载失败，也继续初始化其他部分
-                initAfterFont();
-            });
+            // 在墙上添加标签 (使用简单的方块代替文本)
+            addWallLabels(backWall, 'B', 0, 10, 0);
+            addWallLabels(frontWall, 'D', 0, 10, 0);
+            addWallLabels(leftWall, 'A', 0, 10, 0);
+            addWallLabels(rightWall, 'C', 0, 10, 0);
 
             // 设置相机初始位置
             camera.position.set(0, 5, 15);
@@ -975,25 +961,15 @@
                 return new THREE.CanvasTexture(canvas);
             }
 
-            // 在墙上添加标签 (修改以接收字体参数)
-            function addWallLabels(mesh, label, offsetX, offsetY, offsetZ, font) {
-                if (!font) {
-                    console.warn("Font not loaded, skipping label for", label);
-                    return;
-                }
-                const textGeometry = new THREE.TextGeometry(label, {
-                    font: font, // 使用加载的字体对象
-                    size: 2.5,
-                    height: 0.5,
-                    curveSegments: 12,
-                    bevelEnabled: false
-                });
-                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
-                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-                textMesh.position.set(offsetX, offsetY, offsetZ);
-                textMesh.lookAt(0, 0, 0);
-                scene.add(textMesh);
-                mesh.userData.textMesh = textMesh;
+            // 在墙上添加标签 (使用简单的方块)
+            function addWallLabels(mesh, label, offsetX, offsetY, offsetZ) {
+                const labelGeometry = new THREE.BoxGeometry(2, 1, 1);
+                const labelMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 }); // 黄色
+                const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+                labelMesh.position.set(offsetX, offsetY, offsetZ);
+                labelMesh.lookAt(0, 0, 0);
+                scene.add(labelMesh);
+                mesh.userData.labelMesh = labelMesh;
             }
 
             function spawnTargets() {
@@ -1094,7 +1070,7 @@
                         scene.remove(target);
                         targets.splice(targets.indexOf(target), 1);
                     }
-                }, 200); // 保留 0.2 秒，然后移除
+                }, 200);
             }
 
             function createShatterEffect(position) {
@@ -1117,7 +1093,6 @@
                 const startTime = Date.now();
                 const animateParticles = () => {
                     const elapsed = Date.now() - startTime;
-                    // 强制在 0.1 秒后移除
                     if (elapsed > 100) {
                         if (particles.parent) {
                             scene.remove(particles);
@@ -1210,7 +1185,7 @@
                     const statusElement = document.createElement('div');
                     statusElement.id = 'game-status';
                     statusElement.className = 'game-status';
-                    trainingArea.appendChild(statusElement); // 添加到 trainingArea
+                    trainingArea.appendChild(statusElement);
                     statusElement.textContent = text;
                     statusElement.classList.add('visible');
                     setTimeout(() => {
@@ -1340,7 +1315,7 @@
                     </div>
                 </div>
                 `;
-                trainingArea.insertAdjacentHTML('beforeend', minimapHTML); // 添加到 trainingArea 末尾
+                trainingArea.insertAdjacentHTML('beforeend', minimapHTML);
 
                 // 创建准星元素
                 crosshair = document.createElement('div');
@@ -1350,18 +1325,13 @@
                 crosshair.style.left = '50%';
                 crosshair.style.top = '50%';
                 crosshair.style.transform = 'translate(-50%, -50%)';
-                trainingArea.appendChild(crosshair); // 添加到 trainingArea 末尾
-
-                 // 确保 UI 元素在最上层
-                if (crosshair) crosshair.style.zIndex = '100';
-                const minimapElement = document.querySelector('.minimap');
-                if (minimapElement) minimapElement.style.zIndex = '1000';
+                trainingArea.appendChild(crosshair);
             }
 
             // 更新小地图
             function updateMinimap() {
                 const minimapPlayer = document.getElementById('minimap-player');
-                if (!minimapPlayer) return; // 如果小地图还没创建好，就跳过
+                if (!minimapPlayer) return;
 
                 // 获取相机的世界坐标和朝向
                 const cameraWorldPosition = new THREE.Vector3();
@@ -1394,10 +1364,8 @@
                 targets.forEach(target => {
                     const targetPosition = target.position;
                     // 将3D坐标 (-50 到 50) 映射到2D小地图 (0% 到 100%)
-                    // 注意：小地图的坐标系是左上角(0,0)，右下角(100%,100%)
-                    // 我们需要将 Three.js 的 Z 轴映射到小地图的 Y 轴
-                    const x_percent = ((targetPosition.x + 50) / 100) * 100; // -50..50 -> 0..100
-                    const y_percent = ((targetPosition.z + 50) / 100) * 100; // -50..50 -> 0..100
+                    const x_percent = ((targetPosition.x + 50) / 100) * 100;
+                    const y_percent = ((targetPosition.z + 50) / 100) * 100;
 
                     // 确保点在小地图范围内
                     if (x_percent >= 0 && x_percent <= 100 && y_percent >= 0 && y_percent <= 100) {
@@ -1410,29 +1378,11 @@
                 });
             }
 
-            // 初始化函数，在字体加载后或失败后调用
-            function initAfterFont() {
-                 // 创建小地图和准星 UI
-                setupMinimap();
-                updateStats();
-                updateLanguage();
-                showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
-            }
-
-            // 如果字体加载成功，也调用初始化
-            // 注意：FontLoader 的 onload 回调会处理成功情况下的标签添加和初始化
-            // 如果加载失败，onError 回调会调用 initAfterFont
-            // 如果字体加载成功，我们需要在标签添加后也调用 initAfterFont
-            // 为了简化，我们假设只要字体加载过程结束（无论成功与否），就进行初始化
-            // 实际上，更好的做法是使用 Promise 或者在 addWallLabels 完成后调用
-            // 这里我们采用一个简单的延迟来确保初始化
-            setTimeout(() => {
-                if (!window.fontInitDone) {
-                     window.fontInitDone = true;
-                     initAfterFont();
-                }
-            }, 1000); // 1秒后强制初始化，防止字体加载卡住
-
+            // 初始化
+            setupMinimap(); // 创建UI
+            updateStats();
+            updateLanguage();
+            showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
         });
     </script>
 </body>
