@@ -735,7 +735,7 @@
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
             // 创建地面（黑白相间的瓷砖）
-            const tileGeometry = new THREE.PlaneGeometry(200, 200); // 增大地面尺寸
+            const tileGeometry = new THREE.PlaneGeometry(100, 100); // 缩小地面尺寸
             const tileMaterial = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
                 roughness: 0.8,
@@ -748,7 +748,7 @@
             // 关键修复：禁用mipmap并设置重复模式以防止模糊
             tileMaterial.map.wrapS = THREE.RepeatWrapping;
             tileMaterial.map.wrapT = THREE.RepeatWrapping;
-            tileMaterial.map.repeat.set(20, 20); // 增加重复次数以适应更大的地面
+            tileMaterial.map.repeat.set(10, 10); // 增加重复次数以适应更大的地面
             tileMaterial.map.needsUpdate = true;
             const ground = new THREE.Mesh(tileGeometry, tileMaterial);
             ground.rotation.x = -Math.PI / 2;
@@ -756,14 +756,14 @@
             scene.add(ground);
             // === 创建墙壁 ===
             // 定义墙壁尺寸和位置
-            const wallWidth = 200; // 墙壁宽度 (X轴)
+            const wallWidth = 100; // 墙壁宽度 (X轴)
             const wallDepth = 10;  // 墙壁厚度 (Z轴)
             const wallHeight = 20; // 墙壁高度 (Y轴)
-            const wallDistance = 100; // 墙壁距离中心的距离
+            const wallDistance = 50; // 墙壁距离中心的距离
             const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
             // 创建带纹理的墙壁材质
             const wallMaterial = new THREE.MeshStandardMaterial({
-                color: 0x666666, // 灰色
+                color: 0x444444, // 深灰色
                 roughness: 0.7,
                 metalness: 0.3,
                 map: createCheckerboardTexture() // 使用棋盘格纹理
@@ -938,7 +938,7 @@
                     // 第一个目标在中心位置生成，但稍微远一点
                     x = 0;
                     // y = 5; // 已在上面固定
-                    z = 10; // 原来是5，现在更远一点，确保在视野内且不在墙内
+                    z = 15; // 原来是5，现在更远一点，确保在视野内且不在墙内
                     console.log(`Spawning first target at: (${x}, ${y}, ${z})`);
                 } else {
                     // 后续目标按照360°随机轨迹生成
@@ -1045,7 +1045,7 @@
             }
             // 创建破碎特效
             function createShatterEffect(position) {
-                const particleCount = 30;
+                const particleCount = 20;
                 const particles = new THREE.Group();
                 scene.add(particles);
                 const particleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
@@ -1054,7 +1054,7 @@
                     const particle = new THREE.Mesh(particleGeometry, particleMaterial);
                     particle.position.copy(position);
                     // 随机速度
-                    const speed = 0.5;
+                    const speed = 0.8;
                     particle.userData.velocity = new THREE.Vector3(
                         (Math.random() - 0.5) * speed,
                         (Math.random() - 0.5) * speed,
