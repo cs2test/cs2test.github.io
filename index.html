@@ -71,7 +71,7 @@
         }
         .game-container {
             display: flex;
-            flex-direction: column; /* 改为垂直排列 */
+            flex-direction: column; /* 垂直排列 */
             gap: 30px;
             margin-bottom: 30px;
         }
@@ -88,8 +88,8 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            width: 100%; /* 改为100%宽度 */
-            height: 100%; /* 改为100%高度 */
+            width: 100%; /* 宽度占满父容器 */
+            height: 100%; /* 高度占满父容器 */
             margin: 0 auto; /* 居中显示 */
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
@@ -1129,8 +1129,10 @@
                 reactionLabel.innerHTML = t.reactionLabel;
                 maxComboLabel.innerHTML = t.maxComboLabel;
                 scoreLabel.innerHTML = t.scoreLabel;
-                comboDisplayContainer.innerHTML = t.comboDisplay + '<span id="combo-display">0</span>';
-                scoreDisplayContainer.innerHTML = t.scoreDisplay + '<span id="score-display">0</span>';
+                // 修复：使用直接赋值而非innerHTML替换
+                comboDisplay.textContent = '0';
+                scoreDisplay.textContent = '0';
+                // 更新按钮文本
                 startBtn.innerHTML = t.startBtn;
                 resetBtn.innerHTML = t.resetBtn;
                 langBtn.innerHTML = t.langBtn;
@@ -1143,11 +1145,6 @@
                 instruction6.innerHTML = t.instruction6;
                 instruction7.innerHTML = t.instruction7;
                 footerText.innerHTML = t.footerText;
-                // 更新组合和分数显示元素的引用
-                const newComboDisplay = document.getElementById('combo-display');
-                const newScoreDisplay = document.getElementById('score-display');
-                if (newComboDisplay) comboDisplay = newComboDisplay;
-                if (newScoreDisplay) scoreDisplay = newScoreDisplay;
                 // 根据游戏状态更新按钮文本
                 if (gameActive) {
                     startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
