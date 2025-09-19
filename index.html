@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS2 Aim Trainer</title>
+    <title>CS2 3D Aim Trainer</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -488,15 +489,16 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="title">CS2 精准度训练模拟器</h1>
+            <h1 id="title">CS2 3D 精准度训练模拟器</h1>
             <p class="subtitle" id="subtitle">提升你的射击精准度和反应速度</p>
         </header>
         <div class="game-container">
             <div class="training-area-wrapper">
                 <div class="training-area" id="training-area">
+                    <!-- Three.js 渲染器会在这里 -->
+                    <div id="three-container"></div>
                     <div class="crosshair" id="crosshair"></div>
                     <div class="game-status" id="game-status">准备就绪</div>
-                    <!-- Targets will be generated here -->
                 </div>
                 <div class="score-section">
                     <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
@@ -552,12 +554,13 @@
             </ul>
         </div>
         <footer>
-            <p id="footer-text">CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
+            <p id="footer-text">CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
         </footer>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const trainingArea = document.getElementById('training-area');
+            const threeContainer = document.getElementById('three-container');
             const crosshair = document.getElementById('crosshair');
             const startBtn = document.getElementById('start-btn');
             const resetBtn = document.getElementById('reset-btn');
@@ -594,35 +597,35 @@
             const instruction7 = document.getElementById('instruction-7');
             const footerText = document.getElementById('footer-text');
             // Game state
-            let gameActive = false; // 游戏是否在运行（开始/暂停）
-            let isShootingMode = false; // 鼠标是否在射击框内（激活/退出）
+            let gameActive = false;
+            let isShootingMode = false;
             let shots = 0;
             let hits = 0;
-            let totalReactionTime = 0; // Total reaction time for all targets
-            let targetCount = 0; // Total number of targets that appeared
+            let totalReactionTime = 0;
+            let targetCount = 0;
             let combo = 0;
             let maxCombo = 0;
             let score = 0;
             let targets = [];
-            let targetSpawnInterval = null; // 关键：初始化为null
+            let targetSpawnInterval = null;
             let countdownTimer = null;
-            let language = 'zh'; // zh, en
-            let snakeTrail = []; // 贪吃蛇轨迹
-            let snakeLength = 8; // 贪吃蛇长度
+            let language = 'zh';
+            let snakeTrail = [];
+            let snakeLength = 8;
             let lastSpawnTime = 0;
-            let currentAngle = 0; // 当前运动角度（0-360度）
-            let angleChangeFrequency = 5; // 每5个目标改变一次角度
+            let currentAngle = 0;
+            let angleChangeFrequency = 5;
             let angleChangeCounter = 0;
-            let minAngleChange = -30; // 最小角度变化
-            let maxAngleChange = 30; // 最大角度变化
+            let minAngleChange = -30;
+            let maxAngleChange = 30;
             // Difficulty settings
             const difficultySettings = {
-                easy: { size: 40, speed: 5000, spawnRate: 800 } // 减慢生成速度到800ms
+                easy: { size: 40, speed: 5000, spawnRate: 800 }
             };
             // Language translations
             const translations = {
                 en: {
-                    title: "CS2 Aim Trainer",
+                    title: "CS2 3D Aim Trainer",
                     subtitle: "Improve your shooting accuracy and reaction speed",
                     statsTitle: "Training Stats",
                     shotsLabel: "Shots Fired:",
@@ -650,7 +653,7 @@
                     stopped: "STOPPED"
                 },
                 zh: {
-                    title: "CS2 精准度训练模拟器",
+                    title: "CS2 3D 精准度训练模拟器",
                     subtitle: "提升你的射击精准度和反应速度",
                     statsTitle: "训练数据",
                     shotsLabel: "射击次数:",
@@ -672,12 +675,94 @@
                     instruction5: "连续命中会获得额外连击加成",
                     instruction6: "移动鼠标控制准星位置",
                     instruction7: "按 <span class='highlight'>空格键</span> 也可以开始和暂停训练",
-                    footerText: "CS2 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
+                    footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
                     training: "训练中",
                     stopped: "已停止"
                 }
             };
+
+            // ==================== Three.js 3D Scene Setup ====================
+            // 创建场景
+            const scene = new THREE.Scene();
+            // 创建相机
+            const camera = new THREE.PerspectiveCamera(75, threeContainer.clientWidth / threeContainer.clientHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5); // 设置相机位置
+            // 创建渲染器
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(threeContainer.clientWidth, threeContainer.clientHeight);
+            renderer.setClearColor(0x1a1a2e); // 设置背景色
+            threeContainer.appendChild(renderer.domElement);
+
+            // 添加地面
+            const groundGeometry = new THREE.PlaneGeometry(10, 10);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x888888,
+                roughness: 0.8,
+                metalness: 0.2,
+                side: THREE.DoubleSide
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2; // 旋转到水平面
+            ground.position.y = -0.5; // 放在底部
+            scene.add(ground);
+
+            // 添加墙壁
+            const wallGeometry = new THREE.BoxGeometry(10, 5, 0.1);
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: 0x222222,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+
+            // 左墙
+            const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            leftWall.position.set(-5, 0, 0);
+            scene.add(leftWall);
+
+            // 右墙
+            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            rightWall.position.set(5, 0, 0);
+            scene.add(rightWall);
+
+            // 后墙
+            const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            backWall.position.set(0, 0, 5);
+            scene.add(backWall);
+
+            // 添加光源
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+
+            // 创建目标球体材质
+            const targetMaterial = new THREE.MeshStandardMaterial({
+                color: 0xff0000,
+                roughness: 0.5,
+                metalness: 0.1,
+                emissive: 0x330000,
+                emissiveIntensity: 0.2
+            });
+
+            // 创建一个用于检测点击的平面（与地面相同）
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            // 更新函数
+            function update() {
+                // 这里可以添加任何需要每帧更新的逻辑
+            }
+
+            // 渲染循环
+            function animate() {
+                requestAnimationFrame(animate);
+                update();
+                renderer.render(scene, camera);
+            }
+            animate();
 
             // ==================== 终极0延迟准星核心代码 ====================
             // 准星始终跟随鼠标移动，无论游戏是否开始
@@ -697,7 +782,7 @@
                 // 无论游戏是否激活，点击都计入射击次数
                 shots++;
                 updateStats();
-                if (!isShootingMode) return; // 只有在射击模式下才能射击
+                if (!isShootingMode) return;
 
                 // Create hit effect
                 const rect = trainingArea.getBoundingClientRect();
@@ -865,7 +950,7 @@
 
             // Spawn targets - 360°随机轨迹生成
             function spawnTargets() {
-                if (!gameActive) return; // 只有在游戏激活时才生成目标
+                if (!gameActive) return;
                 const now = Date.now();
                 if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
                     return; // 控制生成速度
