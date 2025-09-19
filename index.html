@@ -692,16 +692,28 @@
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(1, 1, 1);
             scene.add(directionalLight);
-            // 创建地面
-            const groundGeometry = new THREE.PlaneGeometry(100, 100);
-            const groundMaterial = new THREE.MeshStandardMaterial({
-                color: 0xaaaaaa,
+            // 创建天空盒（Skybox）
+            const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+            const skyboxMaterial = new THREE.MeshBasicMaterial({
+                color: 0x87CEEB, // 天空蓝色
+                side: THREE.BackSide,
+                transparent: true,
+                opacity: 0.9
+            });
+            const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+            scene.add(skybox);
+            // 创建地面（黑白相间的瓷砖）
+            const tileGeometry = new THREE.PlaneGeometry(100, 100);
+            const tileMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
                 roughness: 0.8,
                 metalness: 0.2,
                 transparent: true,
-                opacity: 0.8
+                opacity: 0.8,
+                // 使用纹理创建棋盘格效果
+                map: createCheckerboardTexture()
             });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            const ground = new THREE.Mesh(tileGeometry, tileMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
@@ -833,6 +845,22 @@
                 }
             });
             // ==================== 3D 游戏逻辑 ====================
+            // 创建棋盘格纹理
+            function createCheckerboardTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                const tileSize = 16;
+                for (let i = 0; i < canvas.width; i += tileSize) {
+                    for (let j = 0; j < canvas.height; j += tileSize) {
+                        const isEven = ((i / tileSize) + (j / tileSize)) % 2 === 0;
+                        ctx.fillStyle = isEven ? '#ffffff' : '#000000';
+                        ctx.fillRect(i, j, tileSize, tileSize);
+                    }
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
             // 生成目标函数
             function spawnTargets() {
                 if (!gameActive) return;
