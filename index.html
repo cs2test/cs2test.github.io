@@ -74,7 +74,7 @@
             flex-direction: column; /* 垂直排列 */
             gap: 30px;
             margin-bottom: 30px;
-            height: 200vh;
+            height: 180vh;
         }
         .training-area-wrapper {
             flex: 1; /* 占据剩余空间 */
@@ -716,6 +716,11 @@
                 // 使用纹理创建棋盘格效果
                 map: createCheckerboardTexture()
             });
+            // 关键修复：禁用mipmap以防止近距离模糊
+            tileMaterial.map.wrapS = THREE.RepeatWrapping;
+            tileMaterial.map.wrapT = THREE.RepeatWrapping;
+            tileMaterial.map.repeat.set(10, 10);
+            tileMaterial.map.needsUpdate = true;
             const ground = new THREE.Mesh(tileGeometry, tileMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
@@ -1097,7 +1102,6 @@
                 updateStats();
                 maxComboElement.textContent = maxCombo;
                 showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
-                
                 // 如果在射击模式下重置，退出射击模式
                 if (inShootingMode) {
                     inShootingMode = false;
