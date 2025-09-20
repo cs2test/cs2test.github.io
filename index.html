@@ -197,6 +197,11 @@
             color: #4ecdc4;
             margin-right: 8px;
             font-size: 1.4rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         .stat-value {
             font-weight: bold;
@@ -437,6 +442,10 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
         }
         .game-status.visible {
             opacity: 1;
@@ -636,9 +645,10 @@
             const resetBtn = document.getElementById('reset-btn');
             const langBtn = document.getElementById('lang-btn');
             const gameStatus = document.getElementById('game-status');
-            const sensitivityInput = document.getElementById('sensitivity-input'); // 新增灵敏度输入框
+            const sensitivityInput = document.getElementById('sensitivity-input');
             const miniMapCanvas = document.getElementById('mini-map-canvas');
             const miniMapCtx = miniMapCanvas.getContext('2d');
+            
             // Stats elements
             const shotsElement = document.getElementById('shots');
             const hitsElement = document.getElementById('hits');
@@ -648,8 +658,7 @@
             const scoreElement = document.getElementById('score');
             const comboDisplay = document.getElementById('combo-display');
             const scoreDisplay = document.getElementById('score-display');
-            const comboDisplayContainer = document.getElementById('combo-display-container');
-            const scoreDisplayContainer = document.getElementById('score-display-container');
+            
             // Language elements
             const titleElement = document.getElementById('title');
             const subtitleElement = document.getElementById('subtitle');
@@ -669,33 +678,37 @@
             const instruction6 = document.getElementById('instruction-6');
             const instruction7 = document.getElementById('instruction-7');
             const footerText = document.getElementById('footer-text');
+            
             // Game state
             let gameActive = false;
             let shots = 0;
             let hits = 0;
-            let totalReactionTime = 0; // Total reaction time for all targets
-            let targetCount = 0; // Total number of targets that appeared
+            let totalReactionTime = 0;
+            let targetCount = 0;
             let combo = 0;
             let maxCombo = 0;
             let score = 0;
             let targets = [];
             let targetSpawnInterval;
             let countdownTimer = null;
-            let language = 'zh'; // zh, en
-            let snakeTrail = []; // 贪吃蛇轨迹
-            let snakeLength = 8; // 贪吃蛇长度
+            let language = 'zh';
+            let snakeTrail = [];
+            let snakeLength = 8;
             let lastSpawnTime = 0;
-            let currentAngle = 0; // 当前运动角度（0-360度）
-            let angleChangeFrequency = 5; // 每5个目标改变一次角度
+            let currentAngle = 0;
+            let angleChangeFrequency = 5;
             let angleChangeCounter = 0;
-            let minAngleChange = -30; // 最小角度变化
-            let maxAngleChange = 30; // 最大角度变化
+            let minAngleChange = -30;
+            let maxAngleChange = 30;
+            
             // Difficulty settings
             const difficultySettings = {
-                easy: { size: 5, speed: 5000, spawnRate: 800 } // 减小球的大小到5
+                easy: { size: 5, speed: 5000, spawnRate: 800 }
             };
+            
             // 灵敏度设置
-            let sensitivity = 0.002; // 初始灵敏度
+            let sensitivity = 0.002;
+            
             // Language translations
             const translations = {
                 en: {
@@ -755,98 +768,95 @@
                     stopped: "已停止"
                 }
             };
+
             // ==================== THREE.JS SETUP ====================
-            // 创建场景、相机和渲染器
             const scene = new THREE.Scene();
-            // 调整相机视角，使其更宽广，能看到更远的墙壁
-            const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000); // 增大远平面
+            const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
             renderer.setClearColor(0x111133);
             trainingArea.appendChild(renderer.domElement);
+
             // 添加光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
-            // 创建天空盒（Skybox）
+
+            // 创建天空盒
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
             const skyboxMaterial = new THREE.MeshBasicMaterial({
-                color: 0x87CEEB, // 天空蓝色
+                color: 0x87CEEB,
                 side: THREE.BackSide,
                 transparent: true,
                 opacity: 0.9
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
-            // 创建地面（黑白相间的瓷砖）
-            const tileGeometry = new THREE.PlaneGeometry(100, 100); // 缩小地面尺寸
+
+            // 创建地面
+            const tileGeometry = new THREE.PlaneGeometry(100, 100);
             const tileMaterial = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
                 roughness: 0.8,
                 metalness: 0.2,
                 transparent: true,
                 opacity: 0.8,
-                // 使用纹理创建棋盘格效果
                 map: createCheckerboardTexture()
             });
-            // 关键修复：禁用mipmap并设置重复模式以防止模糊
             tileMaterial.map.wrapS = THREE.RepeatWrapping;
             tileMaterial.map.wrapT = THREE.RepeatWrapping;
-            tileMaterial.map.repeat.set(10, 10); // 增加重复次数以适应更大的地面
+            tileMaterial.map.repeat.set(10, 10);
             tileMaterial.map.needsUpdate = true;
             const ground = new THREE.Mesh(tileGeometry, tileMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
+
             // === 创建墙壁 ===
-            // 定义墙壁尺寸和位置
-            const wallWidth = 100; // 墙壁宽度 (X轴)
-            const wallDepth = 10;  // 墙壁厚度 (Z轴)
-            const wallHeight = 20; // 墙壁高度 (Y轴)
-            const wallDistance = 50; // 墙壁距离中心的距离
+            const wallWidth = 100;
+            const wallDepth = 10;
+            const wallHeight = 20;
+            const wallDistance = 50;
             const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
-            // 创建带纹理的墙壁材质
+            
             const wallMaterial = new THREE.MeshStandardMaterial({
-                color: 0x444444, // 深灰色
+                color: 0x444444,
                 roughness: 0.7,
                 metalness: 0.3,
-                map: createCheckerboardTexture() // 使用棋盘格纹理
+                map: createCheckerboardTexture()
             });
-            // 为墙壁材质也设置纹理重复
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
-            wallMaterial.map.repeat.set(10, 2); // X方向10次重复，Y方向2次重复
+            wallMaterial.map.repeat.set(10, 2);
             wallMaterial.map.needsUpdate = true;
+
             // 后墙 (Z+)
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
             backWall.position.set(0, wallHeight/2, wallDistance);
             scene.add(backWall);
+
             // 前墙 (Z-)
             const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
             frontWall.position.set(0, wallHeight/2, -wallDistance);
             scene.add(frontWall);
+
             // 左墙 (X-)
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-wallDistance, wallHeight/2, 0);
-            leftWall.rotation.y = Math.PI / 2; // 旋转90度
+            leftWall.rotation.y = Math.PI / 2;
             scene.add(leftWall);
+
             // 右墙 (X+)
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
-            rightWall.rotation.y = Math.PI / 2; // 旋转90度
+            rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
-            // 左前墙 (角落)
-            const leftFrontWall = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, wallHeight, wallDistance * 2), wallMaterial);
-            leftFrontWall.position.set(-wallDistance, wallHeight/2, 0);
-            scene.add(leftFrontWall);
-            // 右前墙 (角落)
-            const rightFrontWall = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, wallHeight, wallDistance * 2), wallMaterial);
-            rightFrontWall.position.set(wallDistance, wallHeight/2, 0);
-            scene.add(rightFrontWall);
+
             // 添加墙壁标签
             const wallLabels = [];
+            
             // 创建墙壁标签
             function createWallLabel(text, position, rotation) {
                 const canvas = document.createElement('canvas');
@@ -860,64 +870,66 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(text, canvas.width/2, canvas.height/2);
+                
                 const texture = new THREE.CanvasTexture(canvas);
                 const material = new THREE.MeshBasicMaterial({
                     map: texture,
                     transparent: true,
                     side: THREE.DoubleSide
                 });
+                
                 const geometry = new THREE.PlaneGeometry(15, 15);
                 const label = new THREE.Mesh(geometry, material);
                 label.position.copy(position);
                 if (rotation) label.rotation.copy(rotation);
+                
                 scene.add(label);
                 wallLabels.push(label);
                 return label;
             }
-            // 添加A、B、C、D四个墙壁标签 - 修正位置
+
+            // 添加A、B、C、D四个墙壁标签 - 修正位置和方向
             createWallLabel('A', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, 0, 0));
-            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
+            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0)); // 修正旋转方向
             createWallLabel('C', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, Math.PI, 0));
-            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
-            // 设置相机初始位置，稍微拉远一点，避免墙壁太近
-            camera.position.set(0, 5, 15); // 原来是 (0, 2, 5)
+            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0)); // 修正旋转方向
+
+            // 设置相机初始位置 - 修正为场景中心
+            camera.position.set(0, 5, 0);
             camera.lookAt(0, 0, 0);
+
             // 创建射线投射器用于检测点击
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
-            // ==================== 终极0延迟准星核心代码 ====================
-            // 准星始终固定在屏幕中心
+
+            // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
             crosshair.style.top = '50%';
             crosshair.style.transform = 'translate(-50%, -50%)';
-            // 始终隐藏系统鼠标图标
             trainingArea.style.cursor = 'none';
+
             // ==================== 3D 控制逻辑 ====================
-            // 射击模式状态
             let inShootingMode = false;
-            let isPointerLocked = false; // 新增：跟踪指针锁定状态
-            // 相机旋转控制
+            let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
+
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
-                    // 切换射击模式
                     inShootingMode = !inShootingMode;
                     if (inShootingMode) {
-                        // 进入射击模式：请求指针锁定
                         trainingArea.requestPointerLock();
                     } else {
-                        // 退出射击模式：解锁鼠标
                         if (isPointerLocked) {
                             document.exitPointerLock();
                         }
                     }
                 }
                 if (e.key === 's' || e.key === 'S') {
-                    // 切换游戏状态（开始/暂停/继续）
                     toggleTraining();
                 }
             });
+
             // 监听指针锁定状态变化
             document.addEventListener('pointerlockchange', function() {
                 if (document.pointerLockElement === trainingArea) {
@@ -926,71 +938,66 @@
                 } else {
                     isPointerLocked = false;
                     if (inShootingMode) {
-                        // 如果仍在射击模式但指针解锁了（例如用户按了ESC），则退出射击模式
                         inShootingMode = false;
                     }
                     trainingArea.style.cursor = 'default';
                 }
             });
+
             // 处理鼠标移动以控制3D视角
             document.addEventListener('mousemove', function(e) {
                 if (!inShootingMode || !isPointerLocked) return;
-                // 使用 movementX 和 movementY 获取相对移动距离
+                
                 const deltaX = e.movementX;
                 const deltaY = e.movementY;
-                // 更新相机旋转
-                cameraRotation.y -= deltaX * sensitivity; // Y轴旋转（左右看）
-                cameraRotation.x -= deltaY * sensitivity; // X轴旋转（上下看）
-                // 限制上下看的角度，防止翻转
+                
+                cameraRotation.y -= deltaX * sensitivity;
+                cameraRotation.x -= deltaY * sensitivity;
+                
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
-                // 应用旋转到相机
-                camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ'); // 使用YXZ顺序防止万向锁
+                
+                camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
             });
+
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
-                // 无论游戏是否激活，点击都计入射击次数
                 shots++;
                 updateStats();
                 if (!gameActive) return;
-                // 在射击模式下才进行射击
                 if (!inShootingMode) return;
-                // 创建射线
-                // 在指针锁定模式下，准星始终在中心，所以射线也从中心发出
+                
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
-                // 查找与射线相交的目标
+                
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
-                    // 找到最近的目标
                     const target = intersects[0].object;
                     const hitTime = Date.now();
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
-                    targetCount++; // Count this as a target that was processed
-                    // 计算得分 - 根据距离中心的距离计算
+                    targetCount++;
+                    
                     const distanceToCenter = intersects[0].distance;
                     const radius = target.geometry.parameters.radius;
                     const normalizedDistance = distanceToCenter / radius;
-                    // 中心得10分，边缘得1分，中间按比例计算
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                    // 显示得分
-                    showScoreIndicator(points, 0, 0); // 准星在中心，所以得分显示在中心
-                    // 处理目标命中
+                    
+                    showScoreIndicator(points, 0, 0);
                     targetHit(target, points);
                 } else {
-                    // 未命中任何目标
                     combo = 0;
                     comboDisplay.textContent = combo;
                     updateStats();
                 }
             });
+
             // ==================== 3D 游戏逻辑 ====================
             // 创建棋盘格纹理
             function createCheckerboardTexture() {
                 const canvas = document.createElement('canvas');
-                canvas.width = 64; // 减小纹理尺寸
-                canvas.height = 64; // 减小纹理尺寸
+                canvas.width = 64;
+                canvas.height = 64;
                 const ctx = canvas.getContext('2d');
-                const tileSize = 32; // 减小瓷砖尺寸
+                const tileSize = 32;
                 for (let i = 0; i < canvas.width; i += tileSize) {
                     for (let j = 0; j < canvas.height; j += tileSize) {
                         const isEven = ((i / tileSize) + (j / tileSize)) % 2 === 0;
@@ -1000,90 +1007,88 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
+
             // 生成目标函数
             function spawnTargets() {
                 if (!gameActive) return;
                 const now = Date.now();
                 if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
-                    return; // 控制生成速度
+                    return;
                 }
                 lastSpawnTime = now;
-                // Get difficulty settings
+                
                 const settings = difficultySettings.easy;
                 const size = settings.size;
                 let x, y, z;
-                // 固定 Y 坐标，确保小球在地面上方 (从1改为5)
-                y = 5; 
+                
+                y = 5;
+                
                 if (snakeTrail.length === 0) {
-                    // 第一个目标在中心位置生成，但稍微远一点
                     x = 0;
-                    z = 15; // 原来是5，现在更远一点，确保在视野内且不在墙内
+                    z = 15;
                 } else {
-                    // 后续目标按照360°随机轨迹生成
                     const lastPos = snakeTrail[snakeTrail.length - 1];
-                    // 每隔几个目标改变角度
+                    
                     angleChangeCounter++;
                     if (angleChangeCounter >= angleChangeFrequency) {
                         angleChangeCounter = 0;
-                        // 随机改变角度（-30°到+30°）
                         const angleChange = Math.random() * (maxAngleChange - minAngleChange) + minAngleChange;
                         currentAngle = (currentAngle + angleChange) % 360;
                         if (currentAngle < 0) currentAngle += 360;
                     }
-                    // 计算新位置 - 使用随机间距
-                    const minStep = 15; // 最小步长 (从30改为15)
-                    const maxStep = 30; // 最大步长 (从80改为30)
+                    
+                    const minStep = 15;
+                    const maxStep = 30;
                     const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
-                    // 将角度转换为弧度
+                    
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
                     let newZ = lastPos.z + Math.sin(radians) * step;
-                    // 边界检测 - 确保在墙壁内
-                    const padding = wallDistance - 20; // 距离墙壁边缘留点空间
+                    
+                    const padding = wallDistance - 20;
                     if (newX < -padding) {
                         newX = -padding;
-                        currentAngle = 0; // 改为向右
+                        currentAngle = 0;
                     } else if (newX > padding) {
                         newX = padding;
-                        currentAngle = 180; // 改为向左
+                        currentAngle = 180;
                     }
                     if (newZ < -padding) {
                         newZ = -padding;
-                        currentAngle = 90; // 改为向下
+                        currentAngle = 90;
                     } else if (newZ > padding) {
                         newZ = padding;
-                        currentAngle = 270; // 改为向上
+                        currentAngle = 270;
                     }
                     x = newX;
                     z = newZ;
                 }
-                // 保存当前位置
+                
                 snakeTrail.push({ x: x, y: y, z: z });
-                // 保持贪吃蛇长度
+                
                 if (snakeTrail.length > snakeLength) {
                     snakeTrail.shift();
                 }
-                // 创建新的目标球体
+                
                 const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
                 const material = new THREE.MeshBasicMaterial({ 
                     color: 0xff0000, 
                     transparent: true, 
                     opacity: 0.9,
-                    depthTest: true // 确保深度测试开启
+                    depthTest: true
                 });
                 const target = new THREE.Mesh(geometry, material);
                 target.position.set(x, y, z);
                 target.userData.spawnTime = Date.now().toString();
                 target.userData.isHit = false;
-                // 添加到场景和目标数组
+                
                 scene.add(target);
                 targets.push(target);
-                // 自动移除目标（未命中的）
+                
                 setTimeout(() => {
                     if (!target.userData.isHit && target.parent) {
-                        // For missed targets, add the full duration to total reaction time
                         totalReactionTime += settings.speed;
-                        targetCount++; // Count this as a target that was processed (missed)
+                        targetCount++;
                         scene.remove(target);
                         targets.splice(targets.indexOf(target), 1);
                         combo = 0;
@@ -1092,26 +1097,27 @@
                     }
                 }, settings.speed);
             }
+
             // 处理目标命中
             function targetHit(target, points) {
                 if (target.userData.isHit) return;
                 target.userData.isHit = true;
-                hits++; // 命中次数+1
-                combo++; // 连击+1
+                hits++;
+                combo++;
                 comboDisplay.textContent = combo;
                 if (combo > maxCombo) {
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
-                // Calculate points with combo bonus
-                const comboBonus = Math.min(combo, 10) * 1; // 连击加成
+                
+                const comboBonus = Math.min(combo, 10) * 1;
                 const totalPoints = points + comboBonus;
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
-                // 创建血溅效果
-                createBloodSplatterEffect(target.position);
-                // 移除目标
+                
+                createExplosionEffect(target.position);
+                
                 setTimeout(() => {
                     if (target.parent) {
                         scene.remove(target);
@@ -1119,28 +1125,29 @@
                     }
                 }, 200);
             }
-            // 创建血溅效果
-            function createBloodSplatterEffect(position) {
-                const particleCount = 25;
+
+            // 创建爆炸效果 - 重新设计
+            function createExplosionEffect(position) {
+                const particleCount = 30;
                 const particles = new THREE.Group();
                 scene.add(particles);
                 
-                // 创建血滴材质
-                const bloodMaterial = new THREE.MeshBasicMaterial({ 
-                    color: 0x8a0303, // 深红色
+                // 创建粒子材质
+                const particleMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xff3333,
                     transparent: true,
                     opacity: 0.9
                 });
                 
-                // 创建不同大小的血滴
+                // 创建爆炸粒子
                 for (let i = 0; i < particleCount; i++) {
-                    const size = Math.random() * 0.2 + 0.05;
+                    const size = Math.random() * 0.3 + 0.1;
                     const geometry = new THREE.SphereGeometry(size, 8, 8);
-                    const particle = new THREE.Mesh(geometry, bloodMaterial);
+                    const particle = new THREE.Mesh(geometry, particleMaterial);
                     particle.position.copy(position);
                     
                     // 随机速度 - 向外爆炸效果
-                    const speed = 2.0;
+                    const speed = 2.5;
                     const angle1 = Math.random() * Math.PI * 2;
                     const angle2 = Math.random() * Math.PI * 2;
                     particle.userData.velocity = new THREE.Vector3(
@@ -1151,17 +1158,17 @@
                     
                     // 随机旋转
                     particle.userData.rotationSpeed = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.3,
-                        (Math.random() - 0.5) * 0.3,
-                        (Math.random() - 0.5) * 0.3
+                        (Math.random() - 0.5) * 0.4,
+                        (Math.random() - 0.5) * 0.4,
+                        (Math.random() - 0.5) * 0.4
                     );
                     
                     particles.add(particle);
                 }
                 
-                // 动画粒子 - 确保0.1秒内消失
+                // 动画粒子
                 const startTime = Date.now();
-                const duration = 100; // 0.1秒
+                const duration = 300; // 0.3秒
                 
                 const animateParticles = () => {
                     const elapsed = Date.now() - startTime;
@@ -1181,7 +1188,7 @@
                             particle.rotation.z += particle.userData.rotationSpeed.z;
                             
                             // 逐渐减速
-                            particle.userData.velocity.multiplyScalar(0.85);
+                            particle.userData.velocity.multiplyScalar(0.9);
                             
                             // 逐渐消失
                             particle.material.opacity = 0.9 * (1 - progress);
@@ -1193,30 +1200,32 @@
                 
                 animateParticles();
             }
+
             // 显示得分指示器
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
                 scoreIndicator.className = 'score-indicator';
                 scoreIndicator.textContent = '+' + points;
-                // 将3D坐标映射到2D屏幕坐标 (现在总是显示在屏幕中心)
+                
                 const rect = trainingArea.getBoundingClientRect();
                 const screenX = rect.width / 2;
                 const screenY = rect.height / 2;
                 scoreIndicator.style.left = (screenX - 25) + 'px';
                 scoreIndicator.style.top = (screenY - 50) + 'px';
                 trainingArea.appendChild(scoreIndicator);
-                // 动画效果
+                
                 setTimeout(() => {
                     scoreIndicator.style.opacity = '1';
                     scoreIndicator.style.transform = 'translateY(-20px)';
                 }, 10);
-                // 移除元素
+                
                 setTimeout(() => {
                     if (scoreIndicator && scoreIndicator.parentNode) {
                         scoreIndicator.remove();
                     }
                 }, 1000);
             }
+
             // 开始/暂停训练
             function toggleTraining() {
                 if (countdownTimer) {
@@ -1229,9 +1238,8 @@
                     clearInterval(targetSpawnInterval);
                     showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
                 } else {
-                    // 倒计时逻辑
                     let count = 3;
-                    gameActive = false; // 暂时设为false，倒计时结束后再设为true
+                    gameActive = false;
                     startBtn.disabled = true;
                     startBtn.textContent = `${count}`;
                     showGameStatus(`${count}`);
@@ -1245,17 +1253,18 @@
                             countdownTimer = null;
                             startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                             startBtn.disabled = false;
-                            gameActive = true; // 倒计时结束，正式开始游戏
-                            snakeTrail = []; // 重置贪吃蛇轨迹
-                            currentAngle = Math.random() * 360; // 随机初始角度
+                            gameActive = true;
+                            snakeTrail = [];
+                            currentAngle = Math.random() * 360;
                             angleChangeCounter = 0;
-                            spawnTargets(); // 立即生成第一个目标
-                            targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate); // 启动定时器
+                            spawnTargets();
+                            targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
                             showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                         }
                     }, 1000);
                 }
             }
+
             // 显示游戏状态消息
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -1264,13 +1273,16 @@
                     gameStatus.classList.remove('visible');
                 }, 1000);
             }
+
             // 重置统计数据
             resetBtn.addEventListener('click', resetGame);
+
             // 语言切换
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
+
             // 灵敏度输入框事件监听
             sensitivityInput.addEventListener('input', function() {
                 const newSensitivity = parseFloat(this.value);
@@ -1278,18 +1290,15 @@
                     sensitivity = newSensitivity;
                 }
             });
+
             // 渲染循环
             function animate() {
                 requestAnimationFrame(animate);
-                // 更新相机位置以跟随鼠标
-                if (inShootingMode) {
-                    // 在这里可以添加相机的平滑跟随或其他动画效果
-                }
                 renderer.render(scene, camera);
-                // 更新小地图
                 updateMiniMap();
             }
             animate();
+
             // 更新小地图
             function updateMiniMap() {
                 const width = miniMapCanvas.width;
@@ -1297,25 +1306,29 @@
                 const radius = Math.min(width, height) / 2;
                 const centerX = width / 2;
                 const centerY = height / 2;
+                
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
+                
                 // 绘制背景 - 淡蓝色
                 miniMapCtx.fillStyle = 'rgba(30, 144, 255, 0.2)';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
-                // 绘制墙壁标签
+                
+                // 绘制墙壁标签 - 修正对应关系
                 miniMapCtx.fillStyle = '#ffd166';
                 miniMapCtx.font = 'bold 16px Arial';
                 miniMapCtx.textAlign = 'center';
                 miniMapCtx.textBaseline = 'middle';
-                miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);
-                miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);
-                miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);
-                miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);
+                miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);  // 前
+                miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);  // 右
+                miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);  // 后
+                miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);  // 左
+                
                 // 绘制玩家视角方向（扇形区域）
                 const directionAngle = cameraRotation.y;
-                const fov = 75 * Math.PI / 180; // 视野角度（弧度）
+                const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
                 
                 // 绘制视角扇形
@@ -1326,12 +1339,14 @@
                                directionAngle - fov/2, directionAngle + fov/2);
                 miniMapCtx.closePath();
                 miniMapCtx.fill();
+                
                 // 绘制玩家位置
                 miniMapCtx.fillStyle = '#00ff88';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
                 miniMapCtx.fill();
-                // 绘制目标 - 修正坐标映射
+                
+                // 绘制目标
                 targets.forEach(target => {
                     const targetX = centerX + (target.position.x / wallDistance) * radius * 0.8;
                     const targetZ = centerY + (target.position.z / wallDistance) * radius * 0.8;
@@ -1341,14 +1356,17 @@
                     miniMapCtx.fill();
                 });
             }
+
             // 调整小地图大小
             function resizeMiniMap() {
                 miniMapCanvas.width = miniMapCanvas.offsetWidth;
                 miniMapCanvas.height = miniMapCanvas.offsetHeight;
             }
+
             // 初始化小地图
             resizeMiniMap();
             window.addEventListener('resize', resizeMiniMap);
+
             // 重置游戏
             function resetGame() {
                 gameActive = false;
@@ -1359,7 +1377,7 @@
                     countdownTimer = null;
                 }
                 startBtn.disabled = false;
-                // 重置统计数据
+                
                 shots = 0;
                 hits = 0;
                 totalReactionTime = 0;
@@ -1369,21 +1387,22 @@
                 score = 0;
                 comboDisplay.textContent = combo;
                 scoreDisplay.textContent = score;
-                // 重置贪吃蛇轨迹
+                
                 snakeTrail = [];
                 currentAngle = 0;
                 angleChangeCounter = 0;
-                // 移除所有目标
+                
                 targets.forEach(target => {
                     if (target.parent) {
                         scene.remove(target);
                     }
                 });
                 targets = [];
+                
                 updateStats();
                 maxComboElement.textContent = maxCombo;
                 showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
-                // 如果在射击模式下重置，退出射击模式
+                
                 if (inShootingMode) {
                     inShootingMode = false;
                     if (isPointerLocked) {
@@ -1391,18 +1410,19 @@
                     }
                 }
             }
+
             // 更新统计信息
             function updateStats() {
-                // 计算准确率 - 不超过100%
                 const accuracy = shots > 0 ? Math.min(100, Math.round((hits / shots) * 100)) : 0;
-                // 计算平均反应时间
                 const averageReactionTime = targetCount > 0 ? Math.round(totalReactionTime / targetCount) : 0;
+                
                 shotsElement.textContent = shots;
                 hitsElement.textContent = hits;
                 accuracyElement.textContent = accuracy + '%';
                 reactionElement.textContent = averageReactionTime + 'ms';
                 scoreElement.textContent = score;
             }
+
             // 更新语言
             function updateLanguage() {
                 const t = translations[language];
@@ -1415,10 +1435,10 @@
                 reactionLabel.innerHTML = t.reactionLabel;
                 maxComboLabel.innerHTML = t.maxComboLabel;
                 scoreLabel.innerHTML = t.scoreLabel;
-                // 修复：使用直接赋值而非innerHTML替换
+                
                 comboDisplay.textContent = '0';
                 scoreDisplay.textContent = '0';
-                // 更新按钮文本
+                
                 startBtn.innerHTML = t.startBtn;
                 resetBtn.innerHTML = t.resetBtn;
                 langBtn.innerHTML = t.langBtn;
@@ -1431,13 +1451,14 @@
                 instruction6.innerHTML = t.instruction6;
                 instruction7.innerHTML = t.instruction7;
                 footerText.innerHTML = t.footerText;
-                // 根据游戏状态更新按钮文本
+                
                 if (gameActive) {
                     startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                 } else {
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
+
             // 初始化
             updateStats();
             updateLanguage();
