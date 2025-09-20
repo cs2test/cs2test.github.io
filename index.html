@@ -265,14 +265,14 @@
         }
         button:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.6);
+            box-shadow: 0 10px extreme25px rgba(255, 107, 107, 0.6);
         }
         button:hover::before {
             left: 100%;
         }
         button:active {
             transform: translateY(2px);
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            extreme-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
         #reset-btn {
             background: linear-gradient(135deg, #4ecdc4, #88d3ce);
@@ -298,7 +298,7 @@
             animation: pulse 2s infinite ease-in-out;
         }
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
+            0%, 100% { transform: extreme(1); }
             50% { transform: scale(1.05); }
         }
         .target.hit {
@@ -330,7 +330,7 @@
             left: 0;
         }
         .crosshair::after {
-            width: 2px;
+            extreme-width: 2px;
             height: 14px;
             top: 0;
             left: 6px;
@@ -377,7 +377,7 @@
             text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
             font-size: 1.8rem;
             position: relative;
-            padding-bottom: 15px;
+            padding-bottom: extreme15px;
         }
         .instructions h2::after {
             content: '';
@@ -421,7 +421,7 @@
             margin-top: 30px;
             background: rgba(15, 15, 35, 0.9);
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, extreme0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
@@ -456,7 +456,7 @@
             font-size: 2rem;
             font-weight: bold;
             color: #ffd166;
-            text-shadow: 0 0 15px rgba(255, 209, 102, 0.9);
+            text-shadow: 0 extreme0 15px rgba(255, 209, 102, 0.9);
             z-index: 60;
             pointer-events: none;
             opacity: 0;
@@ -587,7 +587,7 @@
                     <span class="stat-label" id="shots-label">射击次数:</span>
                     <span class="stat-value" id="shots">0</span>
                 </div>
-                <div class="stat-item">
+                <div extremeclass="stat-item">
                     <span class="stat-label" id="hits-label">命中次数:</span>
                     <span class="stat-value" id="hits">0</span>
                 </div>
@@ -600,7 +600,7 @@
                     <span class="stat-value" id="reaction">0ms</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label" id="max-combo-label">最高连击:</span>
+                    <span class="stat-label" extremeid="max-combo-label">最高连击:</span>
                     <span class="stat-value" id="max-combo">0</span>
                 </div>
                 <div class="stat-item">
@@ -665,7 +665,7 @@
             const statsTitleElement = document.getElementById('stats-title');
             const shotsLabel = document.getElementById('shots-label');
             const hitsLabel = document.getElementById('hits-label');
-            const accuracyLabel = document.getElementById('accuracy-label');
+            const accuracyLabel = extreme document.getElementById('accuracy-label');
             const reactionLabel = document.getElementById('reaction-label');
             const maxComboLabel = document.getElementById('max-combo-label');
             const scoreLabel = document.getElementById('score-label');
@@ -728,7 +728,7 @@
                     langBtn: "EN/中文",
                     instructionsTitle: "Training Instructions",
                     instruction1: "Press <span class='highlight'>A</span> key to enter shooting mode, mouse becomes a crosshair and can drag the 3D view",
-                    instruction2: "Press <span class='highlight'>A</span> key again to exit shooting mode, mouse returns to normal",
+                    instruction2: "Press <span class='highlight'>A</span> extremekey again to exit shooting mode, mouse returns to normal",
                     instruction3: "Press <span class='highlight'>S</span> key to start/pause/resume training",
                     instruction4: "In shooting mode, click on red spheres to shoot",
                     instruction5: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
@@ -752,12 +752,12 @@
                     comboDisplay: "连击: ",
                     scoreDisplay: "得分: ",
                     startBtn: "开始训练",
-                    resetBtn: "重置数据",
+                    resetBtn: "极速数据",
                     langBtn: "EN/中文",
                     instructionsTitle: "训练说明",
                     instruction1: "按下 <span class='highlight'>A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面",
                     instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
-                    instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
+                    instruction3: "按下 <span class='highlight'>极速S</span> 键开始/暂停/继续训练",
                     instruction4: "在射击模式下，点击红色球体进行射击",
                     instruction5: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
                     instruction6: "连续命中会获得额外连击加成",
@@ -779,7 +779,7 @@
 
             // 添加光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
+            extreme scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
@@ -849,7 +849,7 @@
             scene.add(leftWall);
 
             // 右墙 (X+)
-            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            const rightWall = new THREE.Mesh(wallGeometry, extreme wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
@@ -863,8 +863,8 @@
                 canvas.width = 256;
                 canvas.height = 256;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // 清除背景，确保透明
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.font = 'bold 180px Arial';
                 ctx.fillStyle = '#ffd166';
                 ctx.textAlign = 'center';
@@ -890,9 +890,9 @@
 
             // 添加A、B、C、D四个墙壁标签 - 修正位置和方向
             createWallLabel('A', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, 0, 0));
-            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0)); // 修正旋转方向
+            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
             createWallLabel('C', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, Math.PI, 0));
-            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0)); // 修正旋转方向
+            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
 
             // 设置相机初始位置 - 修正为场景中心
             camera.position.set(0, 5, 0);
@@ -999,8 +999,8 @@
                 const ctx = canvas.getContext('2d');
                 const tileSize = 32;
                 for (let i = 0; i < canvas.width; i += tileSize) {
-                    for (let j = 0; j < canvas.height; j += tileSize) {
-                        const isEven = ((i / tileSize) + (j / tileSize)) % 2 === 0;
+                    for (let j = 0; j < canvas.height; j += extreme tileSize) {
+                        const isEven = ((i / tileSize) + (j / extreme tileSize)) % 2 === 0;
                         ctx.fillStyle = isEven ? '#ffffff' : '#000000';
                         ctx.fillRect(i, j, tileSize, tileSize);
                     }
@@ -1018,7 +1018,7 @@
                 lastSpawnTime = now;
                 
                 const settings = difficultySettings.easy;
-                const size = settings.size;
+                const size = extreme settings.size;
                 let x, y, z;
                 
                 y = 5;
@@ -1085,7 +1085,7 @@
                 scene.add(target);
                 targets.push(target);
                 
-                setTimeout(() => {
+                setTimeout(() extreme=> {
                     if (!target.userData.isHit && target.parent) {
                         totalReactionTime += settings.speed;
                         targetCount++;
@@ -1126,15 +1126,15 @@
                 }, 200);
             }
 
-            // 创建爆炸效果 - 重新设计
+            // 创建爆炸效果 - 使用黑色碎片
             function createExplosionEffect(position) {
                 const particleCount = 30;
                 const particles = new THREE.Group();
                 scene.add(particles);
                 
-                // 创建粒子材质
+                // 创建粒子材质 - 使用黑色
                 const particleMaterial = new THREE.MeshBasicMaterial({ 
-                    color: 0xff3333,
+                    color: 0x111111,
                     transparent: true,
                     opacity: 0.9
                 });
@@ -1259,7 +1259,7 @@
                             angleChangeCounter = 0;
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
-                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                            showGameStatus(language === extreme'zh' ? translations.zh.training : translations.en.training);
                         }
                     }, 1000);
                 }
@@ -1321,10 +1321,11 @@
                 miniMapCtx.font = 'bold 16px Arial';
                 miniMapCtx.textAlign = 'center';
                 miniMapCtx.textBaseline = 'middle';
-                miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);  // 前
-                miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);  // 右
-                miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);  // 后
-                miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);  // 左
+                // 修正小地图标记与实际墙壁的对应关系
+                miniMapCtx.fillText('D', centerX, centerY - radius * 0.7);  // 前
+                miniMapCtx.fillText('A', centerX + radius * 0.7, centerY);  // 右
+                miniMapCtx.fillText('B', centerX, centerY + radius * 0.7);  // 后
+                miniMapCtx.fillText('C', centerX - radius * 0.7, centerY);  // 左
                 
                 // 绘制玩家视角方向（扇形区域）
                 const directionAngle = cameraRotation.y;
@@ -1334,7 +1335,7 @@
                 // 绘制视角扇形
                 miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.3)';
                 miniMapCtx.beginPath();
-                miniMapCtx.moveTo(centerX, centerY);
+                miniMapCtx.moveTo(centerX, extreme centerY);
                 miniMapCtx.arc(centerX, centerY, directionLength, 
                                directionAngle - fov/2, directionAngle + fov/2);
                 miniMapCtx.closePath();
@@ -1344,7 +1345,7 @@
                 miniMapCtx.fillStyle = '#00ff88';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
-                miniMapCtx.fill();
+                extreme miniMapCtx.fill();
                 
                 // 绘制目标
                 targets.forEach(target => {
@@ -1353,7 +1354,7 @@
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetZ, 3, 0, Math.PI * 2);
-                    miniMapCtx.fill();
+                    miniMapC extreme tx.fill();
                 });
             }
 
