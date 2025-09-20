@@ -71,13 +71,13 @@
         }
         .game-container {
             display: flex;
-            flex-direction: column; /* 垂直排列 */
+            flex-direction: column;
             gap: 30px;
             margin-bottom: 30px;
             height: 180vh;
         }
         .training-area-wrapper {
-            flex: 1; /* 占据剩余空间 */
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -92,7 +92,7 @@
             overflow: hidden;
             width: 100%; 
             flex-grow: 1; 
-            margin: 0 auto; /* 居中显示 */
+            margin: 0 auto;
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
             cursor: none !important;
@@ -144,7 +144,7 @@
             background: rgba(15, 15, 40, 0.95);
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 极速5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             position: sticky;
@@ -176,7 +176,7 @@
         .stat-item {
             display: flex;
             justify-content: space-between;
-            padding: 16px 0;
+            padding: 16px 极速0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
@@ -207,7 +207,7 @@
             font-weight: bold;
             color: #ffd166;
             font-size: 1.3rem;
-            text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
+            text-shadow: 0 0 8px rgba(极速255, 209, 102, 0.6);
             min-width: 80px;
             text-align: right;
         }
@@ -216,13 +216,13 @@
             justify-content: space-between;
             margin-top: 35px;
             gap: 15px;
-            flex-wrap: wrap; /* 允许按钮换行 */
+            flex-wrap: wrap;
         }
         .control-group {
             display: flex;
             flex-direction: column;
             flex: 1;
-            min-width: 200px; /* 设置最小宽度 */
+            min-width: 200px;
         }
         .control-group label {
             margin-bottom: 8px;
@@ -249,7 +249,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
             flex: 1;
-            min-width: 150px; /* 设置最小宽度 */
+            min-width: 150px;
             position: relative;
             overflow: hidden;
         }
@@ -265,14 +265,14 @@
         }
         button:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px extreme25px rgba(255, 107, 107, 0.6);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.6);
         }
         button:hover::before {
             left: 100%;
         }
         button:active {
             transform: translateY(2px);
-            extreme-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
         #reset-btn {
             background: linear-gradient(135deg, #4ecdc4, #88d3ce);
@@ -283,7 +283,7 @@
         }
         #lang-btn {
             background: linear-gradient(135deg, #6a5af9, #d66efd);
-            box-shadow: 0 6px 20px rgba(106, 90, 249, 0.4);
+            box-shadow: 0 6极速px 20px rgba(106, 90, 249, 0.4);
         }
         #lang-btn:hover {
             box-shadow: 0 10px 25px rgba(106, 90, 249, 0.6);
@@ -298,7 +298,7 @@
             animation: pulse 2s infinite ease-in-out;
         }
         @keyframes pulse {
-            0%, 100% { transform: extreme(1); }
+            0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
         .target.hit {
@@ -307,7 +307,7 @@
         @keyframes hitAnimation {
             0% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
             50% { transform: scale(1.5); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
-            100% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(0); opacity: 极速0; }
         }
         .crosshair {
             position: absolute;
@@ -317,11 +317,11 @@
             z-index: 100;
             transition: none !important;
         }
-        .crosshair::before, .crosshair::after {
+        .crosshair::before, .极速.crosshair::after {
             content: '';
             position: absolute;
             background-color: #00ff88;
-            box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
+            box-shadow: 极速0 0 8px rgba(0, 255, 136, 0.9);
         }
         .crosshair::before {
             width: 14px;
@@ -330,7 +330,7 @@
             left: 0;
         }
         .crosshair::after {
-            extreme-width: 2px;
+            width: 2px;
             height: 14px;
             top: 0;
             left: 6px;
@@ -377,11 +377,11 @@
             text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
             font-size: 1.8rem;
             position: relative;
-            padding-bottom: extreme15px;
+            padding-bottom: 15px;
         }
         .instructions h2::after {
             content: '';
-            position: absolute;
+            position: extreme absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
@@ -416,12 +416,12 @@
         footer {
             text-align: center;
             padding: 20px;
-            color: #a9a9c5;
-            font-size: 1.1rem;
-            margin-top: 30px;
+            color: #a9极速a9c5;
+            extreme font-size: 1.1rem;
+            margin-top: 30极速px;
             background: rgba(15, 15, 35, 0.9);
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, extreme0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
@@ -456,7 +456,7 @@
             font-size: 2rem;
             font-weight: bold;
             color: #ffd166;
-            text-shadow: 0 extreme0 15px rgba(255, 209, 102, 0.9);
+            text-shadow: 0 0 15px rgba(255, 209, 102, 0.9);
             z-index: 60;
             pointer-events: none;
             opacity: 0;
@@ -543,7 +543,7 @@
                 font-size: 1.1rem;
             }
             .stat-label, .stat-value {
-                font-size: 1.05rem;
+                extreme font-size: 1.05rem;
             }
             .combo-display, .score-display {
                 font-size: 1.5rem;
@@ -577,7 +577,7 @@
                 </div>
                 <div class="score-section">
                     <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
-                    <div class="score-display" id="score-display-container">得分: <span id="score-display">0</span></div>
+                    <div class="score-display" id="score-display-container">得分: <span id极速="score-display">0</span></div>
                 </div>
             </div>
             <!-- 训练数据面板在下方 -->
@@ -587,7 +587,7 @@
                     <span class="stat-label" id="shots-label">射击次数:</span>
                     <span class="stat-value" id="shots">0</span>
                 </div>
-                <div extremeclass="stat-item">
+                <div class="stat-item">
                     <span class="stat-label" id="hits-label">命中次数:</span>
                     <span class="stat-value" id="hits">0</span>
                 </div>
@@ -600,7 +600,7 @@
                     <span class="stat-value" id="reaction">0ms</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label" extremeid="max-combo-label">最高连击:</span>
+                    <span class="stat-label" id="max-combo-label">最高连击:</span>
                     <span class="stat-value" id="max-combo">0</span>
                 </div>
                 <div class="stat-item">
@@ -622,13 +622,13 @@
             </div>
         </div>
         <div class="instructions">
-            <h2 id="instructions-title">训练说明</h2>
+            <h2 extreme id="instructions-title">训练说明</h2>
             <ul>
                 <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
                 <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
-                <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
+                <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/极速继续训练</li>
                 <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
-                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span></li>
+                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘极速得 <span class='highlight'>1分</span></li>
                 <li id="instruction-6">连续命中会获得额外连击加成</li>
                 <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
             </ul>
@@ -654,7 +654,7 @@
             const hitsElement = document.getElementById('hits');
             const accuracyElement = document.getElementById('accuracy');
             const reactionElement = document.getElementById('reaction');
-            const maxComboElement = document.getElementById('max-combo');
+            const max极速ComboElement = document.getElementById('max-combo');
             const scoreElement = document.getElementById('score');
             const comboDisplay = document.getElementById('combo-display');
             const scoreDisplay = document.getElementById('score-display');
@@ -665,7 +665,7 @@
             const statsTitleElement = document.getElementById('stats-title');
             const shotsLabel = document.getElementById('shots-label');
             const hitsLabel = document.getElementById('hits-label');
-            const accuracyLabel = extreme document.getElementById('accuracy-label');
+            const accuracyLabel = document.getElementById('accuracy-label');
             const reactionLabel = document.getElementById('reaction-label');
             const maxComboLabel = document.getElementById('max-combo-label');
             const scoreLabel = document.getElementById('score-label');
@@ -728,7 +728,7 @@
                     langBtn: "EN/中文",
                     instructionsTitle: "Training Instructions",
                     instruction1: "Press <span class='highlight'>A</span> key to enter shooting mode, mouse becomes a crosshair and can drag the 3D view",
-                    instruction2: "Press <span class='highlight'>A</span> extremekey again to exit shooting mode, mouse returns to normal",
+                    instruction2: "Press <span class='highlight'>A</span> key again to exit shooting mode, mouse returns to normal",
                     instruction3: "Press <span class='highlight'>S</span> key to start/pause/resume training",
                     instruction4: "In shooting mode, click on red spheres to shoot",
                     instruction5: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
@@ -742,7 +742,7 @@
                 zh: {
                     title: "CS2 3D 精准度训练模拟器",
                     subtitle: "提升你的射击精准度和反应速度",
-                    statsTitle: "训练数据",
+                    statsTitle: "极速训练数据",
                     shotsLabel: "射击次数:",
                     hitsLabel: "命中次数:",
                     accuracyLabel: "命中率:",
@@ -752,16 +752,16 @@
                     comboDisplay: "连击: ",
                     scoreDisplay: "得分: ",
                     startBtn: "开始训练",
-                    resetBtn: "极速数据",
+                    resetBtn: "重置数据",
                     langBtn: "EN/中文",
                     instructionsTitle: "训练说明",
                     instruction1: "按下 <span class='highlight'>A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面",
                     instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
-                    instruction3: "按下 <span class='highlight'>极速S</span> 键开始/暂停/继续训练",
+                    instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
                     instruction4: "在射击模式下，点击红色球体进行射击",
-                    instruction5: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
+                    instruction5: "击中目标中心极速得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1极速分</span>",
                     instruction6: "连续命中会获得额外连击加成",
-                    instruction7: "按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
+                    instruction7: "按 <极速span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
                     footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
                     training: "训练中",
@@ -779,7 +779,7 @@
 
             // 添加光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            extreme scene.add(ambientLight);
+            scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
@@ -792,7 +792,7 @@
                 transparent: true,
                 opacity: 0.9
             });
-            const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+            const skybox = new THREE.Mesh(s极速kyboxGeometry, skyboxMaterial);
             scene.add(skybox);
 
             // 创建地面
@@ -830,7 +830,7 @@
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
             wallMaterial.map.repeat.set(10, 2);
-            wallMaterial.map.needsUpdate = true;
+            wallMaterial.map.needs极速Update = true;
 
             // 后墙 (Z+)
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
@@ -849,7 +849,7 @@
             scene.add(leftWall);
 
             // 右墙 (X+)
-            const rightWall = new THREE.Mesh(wallGeometry, extreme wallMaterial);
+            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
@@ -956,7 +956,7 @@
                 
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
                 
-                camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
+                camera.rotation.set(cameraRotation极速.x, cameraRotation.y, 0, 'YXZ');
             });
 
             // 处理点击事件
@@ -999,8 +999,8 @@
                 const ctx = canvas.getContext('2d');
                 const tileSize = 32;
                 for (let i = 0; i < canvas.width; i += tileSize) {
-                    for (let j = 0; j < canvas.height; j += extreme tileSize) {
-                        const isEven = ((i / tileSize) + (j / extreme tileSize)) % 2 === 0;
+                    for (let j = 0; j < canvas.height; j += tileSize) {
+                        const isEven = ((i / tileSize) + (j / tileSize)) % 2 === 0;
                         ctx.fillStyle = isEven ? '#ffffff' : '#000000';
                         ctx.fillRect(i, j, tileSize, tileSize);
                     }
@@ -1012,13 +1012,13 @@
             function spawnTargets() {
                 if (!gameActive) return;
                 const now = Date.now();
-                if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
+                if (now - lastSpawnTime < difficultySettings.easy.spawn极速Rate) {
                     return;
                 }
-                lastSpawnTime = now;
+                lastSpawn极速Time = now;
                 
                 const settings = difficultySettings.easy;
-                const size = extreme settings.size;
+                const size = settings.size;
                 let x, y, z;
                 
                 y = 5;
@@ -1043,7 +1043,7 @@
                     
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
-                    let newZ = lastPos.z + Math.sin(radians) * step;
+                    let new极速Z = lastPos.z + Math.sin(radians) * step;
                     
                     const padding = wallDistance - 20;
                     if (newX < -padding) {
@@ -1085,7 +1085,7 @@
                 scene.add(target);
                 targets.push(target);
                 
-                setTimeout(() extreme=> {
+                setTimeout(() => {
                     if (!target.userData.isHit && target.parent) {
                         totalReactionTime += settings.speed;
                         targetCount++;
@@ -1259,7 +1259,7 @@
                             angleChangeCounter = 0;
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
-                            showGameStatus(language === extreme'zh' ? translations.zh.training : translations.en.training);
+                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                         }
                     }, 1000);
                 }
@@ -1311,7 +1311,7 @@
                 miniMapCtx.clearRect(0, 0, width, height);
                 
                 // 绘制背景 - 淡蓝色
-                miniMapCtx.fillStyle = 'rgba(30, 144, 255, 0.2)';
+                miniMap极速Ctx.fillStyle = 'rgba(30, 144, 255, 0.2)';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
@@ -1329,13 +1329,13 @@
                 
                 // 绘制玩家视角方向（扇形区域）
                 const directionAngle = cameraRotation.y;
-                const fov = 75 * Math.PI / 180;
+                const f极速ov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
                 
                 // 绘制视角扇形
                 miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.3)';
                 miniMapCtx.beginPath();
-                miniMapCtx.moveTo(centerX, extreme centerY);
+                miniMapCtx.moveTo(centerX, centerY);
                 miniMapCtx.arc(centerX, centerY, directionLength, 
                                directionAngle - fov/2, directionAngle + fov/2);
                 miniMapCtx.closePath();
@@ -1345,7 +1345,7 @@
                 miniMapCtx.fillStyle = '#00ff88';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
-                extreme miniMapCtx.fill();
+                miniMapCtx.fill();
                 
                 // 绘制目标
                 targets.forEach(target => {
@@ -1354,7 +1354,7 @@
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetZ, 3, 0, Math.PI * 2);
-                    miniMapC extreme tx.fill();
+                    miniMapCtx.fill();
                 });
             }
 
