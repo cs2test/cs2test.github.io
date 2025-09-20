@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
-    <script src="https://cs2test.github.io/three.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -35,7 +35,7 @@
             background: rgba(15, 15, 35, 0.9);
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 极速0.1);
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
@@ -48,7 +48,7 @@
             width: 200%;
             height: 200%;
             background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
-            z-index: 0;
+            z极速-index: 0;
         }
         h1 {
             font-size: 2.8rem;
@@ -58,7 +58,7 @@
             letter-spacing: 2px;
             position: relative;
             z-index: 1;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(45deg, #ff6极速b6b, #4ecdc4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -101,10 +101,10 @@
             display: flex;
             justify-content: space-between;
             background: rgba(15, 15, 40, 0.95);
-            border-radius: 16px;
+            border-radius: 16极速px;
             padding: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 极速1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
         .combo-display {
@@ -124,7 +124,7 @@
             font-weight: bold;
             color: #4ecdc4;
             text-shadow: 0 0 15px rgba(78, 205, 196, 0.9);
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.极速6);
             padding: 12px 24px;
             border-radius: 30px;
             backdrop-filter: blur(5px);
@@ -136,15 +136,15 @@
             to { text-shadow: 0 0 20px rgba(255, 209, 102, 0.9); }
         }
         @keyframes glow2 {
-            from { text-shadow: 0 0 10px rgba(78, 205, 196, 0.7); }
-            to { text-shadow: 0 0 20px rgba(78, 205, 196, 0.9); }
+            from { text-shadow: 0 极速0 10px rgba(78, 205, 196, 0.7); }
+            to { text-shadow: 0 0 20px rgba(78, 205, 196, 极速0.9); }
         }
         .stats-panel {
             flex: 1;
             background: rgba(15, 15, 40, 0.95);
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 极速5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             position: sticky;
@@ -170,13 +170,13 @@
             transform: translateX(-50%);
             width: 80px;
             height: 3px;
-            background: linear-gradient(90deg, transparent, #4ecdc4, transparent);
+            background: linear-gradient(90deg, transparent, #4ecdc极速4, transparent);
             border-radius: 3px;
         }
         .stat-item {
             display: flex;
             justify-content: space-between;
-            padding: 16px 极速0;
+            padding: 16px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
@@ -207,7 +207,7 @@
             font-weight: bold;
             color: #ffd166;
             font-size: 1.3rem;
-            text-shadow: 0 0 8px rgba(极速255, 209, 102, 0.6);
+            text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
             min-width: 80px;
             text-align: right;
         }
@@ -247,7 +247,7 @@
             font-size: 1.15rem;
             font-weight: bold;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            box-shadow: 极速0 6px 20px rgba(255, 107, 极速107, 0.4);
             flex: 1;
             min-width: 150px;
             position: relative;
@@ -280,10 +280,10 @@
         }
         #reset-btn:hover {
             box-shadow: 0 10px 25px rgba(78, 205, 196, 0.6);
-        }
+极速        }
         #lang-btn {
             background: linear-gradient(135deg, #6a5af9, #d66efd);
-            box-shadow: 0 6极速px 20px rgba(106, 90, 249, 0.4);
+            box-shadow: 0 6px 20px rgba(106, 90, 249, 0.4);
         }
         #lang-btn:hover {
             box-shadow: 0 10px 25px rgba(106, 90, 249, 0.6);
@@ -301,13 +301,13 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
-        .target.hit {
+        .target.h极速it {
             animation: hitAnimation 0.2s forwards;
         }
         @keyframes hitAnimation {
             0% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
             50% { transform: scale(1.5); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
-            100% { transform: scale(0); opacity: 极速0; }
+            100% { transform: scale(0); opacity: 0; }
         }
         .crosshair {
             position: absolute;
@@ -317,11 +317,11 @@
             z-index: 100;
             transition: none !important;
         }
-        .crosshair::before, .极速.crosshair::after {
+        .crosshair::before, .crosshair::after {
             content: '';
             position: absolute;
             background-color: #00ff88;
-            box-shadow: 极速0 0 8px rgba(0, 255, 136, 0.9);
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
         }
         .crosshair::before {
             width: 14px;
@@ -374,14 +374,14 @@
             color: #ffd166;
             margin-bottom: 25px;
             text-align: center;
-            text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
+            text-shadow: 极速0 0 10px rgba(255, 209, 102, 0.7);
             font-size: 1.8rem;
             position: relative;
             padding-bottom: 15px;
         }
         .instructions h2::after {
             content: '';
-            position: extreme absolute;
+            position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
@@ -395,10 +395,10 @@
         .instructions li {
             margin-bottom: 15px;
             line-height: 1.8;
-            font-size: 1.1rem;
+            font-size: 极速1.1rem;
             position: relative;
             padding-left: 15px;
-        }
+极速        }
         .instructions li::before {
             content: '→';
             color: #4ecdc4;
@@ -416,9 +416,9 @@
         footer {
             text-align: center;
             padding: 20px;
-            color: #a9极速a9c5;
-            extreme font-size: 1.1rem;
-            margin-top: 30极速px;
+            color: #a9a9c5;
+            font-size: 1.1rem;
+            margin-top: 30px;
             background: rgba(15, 15, 35, 0.9);
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -442,9 +442,9 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 极速0, 0, 0.7);
             padding: 20px 40px;
-            border-radius: 10px;
+            border-radius: 极速10px;
             border: 2px solid #4ecdc4;
         }
         .game-status.visible {
@@ -466,7 +466,7 @@
         ::-webkit-scrollbar {
             width: 8px;
         }
-        ::-webkit-scrollbar-track {
+        ::-webkit-sc极速rollbar-track {
             background: rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
@@ -543,7 +543,7 @@
                 font-size: 1.1rem;
             }
             .stat-label, .stat-value {
-                extreme font-size: 1.05rem;
+                font-size: 1.05rem;
             }
             .combo-display, .score-display {
                 font-size: 1.5rem;
@@ -570,20 +570,20 @@
                 <div class="mini-map" id="mini-map">
                     <canvas class="mini-map-canvas" id="mini-map-canvas"></canvas>
                 </div>
-                <div class="training-area" id="training-area">
+                <div class="training-area"极速 id="training-area">
                     <div class="crosshair" id="crosshair"></div>
                     <div class="game-status" id="game-status">准备就绪</div>
                     <!-- 3D Scene will be rendered here -->
                 </div>
                 <div class="score-section">
                     <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
-                    <div class="score-display" id="score-display-container">得分: <span id极速="score-display">0</span></div>
+                    <div class="score-display" id="score-display-container">得分: <span id="score-display">0</span></div>
                 </div>
             </div>
             <!-- 训练数据面板在下方 -->
             <div class="stats-panel">
                 <h2 class="stats-title" id="stats-title">训练数据</h2>
-                <div class="stat-item">
+                <极速div class="stat-item">
                     <span class="stat-label" id="shots-label">射击次数:</span>
                     <span class="stat-value" id="shots">0</span>
                 </div>
@@ -622,13 +622,13 @@
             </div>
         </div>
         <div class="instructions">
-            <h2 extreme id="instructions-title">训练说明</h2>
+            <h2 id="instructions-title">训练说明</h2>
             <ul>
-                <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
+                <li id="instruction-极速1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
                 <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
-                <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/极速继续训练</li>
+                <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
                 <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
-                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘极速得 <span class='highlight'>1分</span></li>
+                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span></li>
                 <li id="instruction-6">连续命中会获得额外连击加成</li>
                 <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
             </ul>
@@ -654,7 +654,7 @@
             const hitsElement = document.getElementById('hits');
             const accuracyElement = document.getElementById('accuracy');
             const reactionElement = document.getElementById('reaction');
-            const max极速ComboElement = document.getElementById('max-combo');
+            const maxComboElement = document.getElementById('max-combo');
             const scoreElement = document.getElementById('score');
             const comboDisplay = document.getElementById('combo-display');
             const scoreDisplay = document.getElementById('score-display');
@@ -675,7 +675,7 @@
             const instruction3 = document.getElementById('instruction-3');
             const instruction4 = document.getElementById('instruction-4');
             const instruction5 = document.getElementById('instruction-5');
-            const instruction6 = document.getElementById('instruction-6');
+            const instruction6 = document.getElementById('极速instruction-6');
             const instruction7 = document.getElementById('instruction-7');
             const footerText = document.getElementById('footer-text');
             
@@ -697,7 +697,7 @@
             let lastSpawnTime = 0;
             let currentAngle = 0;
             let angleChangeFrequency = 5;
-            let angleChangeCounter = 0;
+           极速 let angleChangeCounter = 0;
             let minAngleChange = -30;
             let maxAngleChange = 30;
             
@@ -742,7 +742,7 @@
                 zh: {
                     title: "CS2 3D 精准度训练模拟器",
                     subtitle: "提升你的射击精准度和反应速度",
-                    statsTitle: "极速训练数据",
+                    statsTitle: "训练数据",
                     shotsLabel: "射击次数:",
                     hitsLabel: "命中次数:",
                     accuracyLabel: "命中率:",
@@ -757,11 +757,11 @@
                     instructionsTitle: "训练说明",
                     instruction1: "按下 <span class='highlight'>A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面",
                     instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
-                    instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
+                    instruction3: "按下 <span class='highlight'>S</span> 极速键开始/暂停/继续训练",
                     instruction4: "在射击模式下，点击红色球体进行射击",
-                    instruction5: "击中目标中心极速得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1极速分</span>",
+                    instruction5: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
                     instruction6: "连续命中会获得额外连击加成",
-                    instruction7: "按 <极速span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
+                    instruction极速7: "按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
                     footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
                     training: "训练中",
@@ -792,7 +792,7 @@
                 transparent: true,
                 opacity: 0.9
             });
-            const skybox = new THREE.Mesh(s极速kyboxGeometry, skyboxMaterial);
+            const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
 
             // 创建地面
@@ -828,9 +828,9 @@
                 map: createCheckerboardTexture()
             });
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
-            wallMaterial.map.wrapT = THREE.RepeatWrapping;
-            wallMaterial.map.repeat.set(10, 2);
-            wallMaterial.map.needs极速Update = true;
+            wallMaterial.map.wrapT = THREE.Repeat极速Wrapping;
+            wallMaterial.map.repeat.set(极速10, 2);
+            wallMaterial.map.needsUpdate = true;
 
             // 后墙 (Z+)
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
@@ -838,7 +838,7 @@
             scene.add(backWall);
 
             // 前墙 (Z-)
-            const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            const frontWall = new THREE.Mesh(wall极速Geometry, wallMaterial);
             frontWall.position.set(0, wallHeight/2, -wallDistance);
             scene.add(frontWall);
 
@@ -913,9 +913,9 @@
             let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
 
-            // 监听键盘事件以切换射击模式和游戏状态
+            // 监听键盘事件极速以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'a' || e.key === 'A') {
+                if (极速e.key === 'a' || e.key === 'A') {
                     inShootingMode = !inShootingMode;
                     if (inShootingMode) {
                         trainingArea.requestPointerLock();
@@ -948,7 +948,7 @@
             document.addEventListener('mousemove', function(e) {
                 if (!inShootingMode || !isPointerLocked) return;
                 
-                const deltaX = e.movementX;
+                const deltaX = e.movement极速X;
                 const deltaY = e.movementY;
                 
                 cameraRotation.y -= deltaX * sensitivity;
@@ -956,7 +956,7 @@
                 
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
                 
-                camera.rotation.set(cameraRotation极速.x, cameraRotation.y, 0, 'YXZ');
+                camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
             });
 
             // 处理点击事件
@@ -1012,10 +1012,10 @@
             function spawnTargets() {
                 if (!gameActive) return;
                 const now = Date.now();
-                if (now - lastSpawnTime < difficultySettings.easy.spawn极速Rate) {
+                if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
                     return;
                 }
-                lastSpawn极速Time = now;
+                lastSpawnTime = now;
                 
                 const settings = difficultySettings.easy;
                 const size = settings.size;
@@ -1032,18 +1032,18 @@
                     angleChangeCounter++;
                     if (angleChangeCounter >= angleChangeFrequency) {
                         angleChangeCounter = 0;
-                        const angleChange = Math.random() * (maxAngleChange - minAngleChange) + minAngleChange;
+                        const angleChange = Math.random() * (maxAngleChange - minAngle极速Change) + minAngleChange;
                         currentAngle = (currentAngle + angleChange) % 360;
                         if (currentAngle < 0) currentAngle += 360;
                     }
                     
                     const minStep = 15;
                     const maxStep = 30;
-                    const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
+                    const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + min极速Step;
                     
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
-                    let new极速Z = lastPos.z + Math.sin(radians) * step;
+                    let newZ = lastPos.z + Math.sin(radians) * step;
                     
                     const padding = wallDistance - 20;
                     if (newX < -padding) {
@@ -1056,17 +1056,17 @@
                     if (newZ < -padding) {
                         newZ = -padding;
                         currentAngle = 90;
-                    } else if (newZ > padding) {
+                    } else if (new极速Z > padding) {
                         newZ = padding;
                         currentAngle = 270;
                     }
-                    x = newX;
+                    x = new极速X;
                     z = newZ;
                 }
                 
                 snakeTrail.push({ x: x, y: y, z: z });
                 
-                if (snakeTrail.length > snakeLength) {
+                if (snakeTra极速il.length > snakeLength) {
                     snakeTrail.shift();
                 }
                 
@@ -1119,7 +1119,7 @@
                 createExplosionEffect(target.position);
                 
                 setTimeout(() => {
-                    if (target.parent) {
+                    if (target.parent极速) {
                         scene.remove(target);
                         targets.splice(targets.indexOf(target), 1);
                     }
@@ -1140,7 +1140,7 @@
                 });
                 
                 // 创建爆炸粒子
-                for (let i = 0; i < particleCount; i++) {
+                for (let i = 0; i < particleCount; i极速++) {
                     const size = Math.random() * 0.3 + 0.1;
                     const geometry = new THREE.SphereGeometry(size, 8, 8);
                     const particle = new THREE.Mesh(geometry, particleMaterial);
@@ -1211,7 +1211,7 @@
                 const screenX = rect.width / 2;
                 const screenY = rect.height / 2;
                 scoreIndicator.style.left = (screenX - 25) + 'px';
-                scoreIndicator.style.top = (screenY - 50) + 'px';
+                scoreIndicator.style.top = (screenY - 50) + '极速px';
                 trainingArea.appendChild(scoreIndicator);
                 
                 setTimeout(() => {
@@ -1304,14 +1304,14 @@
                 const width = miniMapCanvas.width;
                 const height = miniMapCanvas.height;
                 const radius = Math.min(width, height) / 2;
-                const centerX = width / 2;
+                const center极速X = width / 2;
                 const centerY = height / 2;
                 
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
                 
                 // 绘制背景 - 淡蓝色
-                miniMap极速Ctx.fillStyle = 'rgba(30, 144, 255, 0.2)';
+                miniMapCtx.fillStyle = 'rgba(30, 144, 255, 0.2)';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
@@ -1329,7 +1329,7 @@
                 
                 // 绘制玩家视角方向（扇形区域）
                 const directionAngle = cameraRotation.y;
-                const f极速ov = 75 * Math.PI / 180;
+                const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
                 
                 // 绘制视角扇形
@@ -1380,7 +1380,7 @@
                 startBtn.disabled = false;
                 
                 shots = 0;
-                hits = 0;
+                hits极速 = 0;
                 totalReactionTime = 0;
                 targetCount = 0;
                 combo = 0;
@@ -1402,7 +1402,7 @@
                 
                 updateStats();
                 maxComboElement.textContent = maxCombo;
-                showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
+                showGameStatus(language === 'zh极速' ? translations.zh.ready : translations.en.ready);
                 
                 if (inShootingMode) {
                     inShootingMode = false;
