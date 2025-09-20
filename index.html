@@ -590,7 +590,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-label" id="hits-label">命中次数:</span>
-                    <span class="stat-value" <span id="hits">0</span>
+                    <span class="stat-value" id="hits">0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label" id="accuracy-label">命中率:</span>
@@ -898,11 +898,10 @@
             }
 
             // 添加A、B、C、D四个墙壁标签 - 修正位置和方向
-            // 修正墙壁标签对应关系
-            createWallLabel('A', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, 0, 0)); // 前墙 (Z-)
-            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0)); // 右墙 (X+)
-            createWallLabel('C', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, Math.PI, 0), true); // 后墙 (Z+)
-            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0)); // 左墙 (X-)
+            createWallLabel('A', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, 0, 0)); // 前墙
+            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0)); // 右墙
+            createWallLabel('C', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, Math.PI, 0), true); // 后墙 - 水平翻转
+            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0)); // 左墙
 
             // 设置相机初始位置
             camera.position.set(0, 5, 0);
@@ -1333,10 +1332,10 @@
                 miniMapCtx.textBaseline = 'middle';
                 
                 // 修正标签对应关系
-                miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);  // 前墙 (Z-)
-                miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);  // 右墙 (X+)
-                miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);  // 后墙 (Z+)
-                miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);  // 左墙 (X-)
+                miniMapCtx.fillText('D', centerX, centerY - radius * 0.7);  // 前墙
+                miniMapCtx.fillText('A', centerX + radius * 0.7, centerY);  // 右墙
+                miniMapCtx.fillText('B', centerX, centerY + radius * 0.7);  // 后墙
+                miniMapCtx.fillText('C', centerX - radius * 0.7, centerY);  // 左墙
                 
                 // 绘制玩家视角方向（扇形区域）
                 const directionAngle = cameraRotation.y;
