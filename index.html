@@ -475,11 +475,11 @@
             left: 30px;
             width: 180px;
             height: 180px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(30, 144, 255, 0.2);
             border-radius: 50%;
             z-index: 100;
-            border: 2px solid #4ecdc4;
-            box-shadow: 0 0 20px rgba(78, 205, 196, 0.7);
+            border: 2px solid rgba(30, 144, 255, 0.5);
+            box-shadow: 0 0 15px rgba(30, 144, 255, 0.4);
             overflow: hidden;
             backdrop-filter: blur(5px);
         }
@@ -874,11 +874,11 @@
                 wallLabels.push(label);
                 return label;
             }
-            // 添加A、B、C、D四个墙壁标签
-            createWallLabel('A', new THREE.Vector3(0, 15, 49), new THREE.Euler(0, 0, 0));
-            createWallLabel('B', new THREE.Vector3(49, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
-            createWallLabel('C', new THREE.Vector3(0, 15, -49), new THREE.Euler(0, Math.PI, 0));
-            createWallLabel('D', new THREE.Vector3(-49, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
+            // 添加A、B、C、D四个墙壁标签 - 修正位置
+            createWallLabel('A', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, 0, 0));
+            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
+            createWallLabel('C', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, Math.PI, 0));
+            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
             // 设置相机初始位置，稍微拉远一点，避免墙壁太近
             camera.position.set(0, 5, 15); // 原来是 (0, 2, 5)
             camera.lookAt(0, 0, 0);
@@ -1109,8 +1109,8 @@
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
-                // 创建破碎特效
-                createShatterEffect(target.position);
+                // 创建血溅效果
+                createBloodSplatterEffect(target.position);
                 // 移除目标
                 setTimeout(() => {
                     if (target.parent) {
@@ -1119,28 +1119,28 @@
                     }
                 }, 200);
             }
-            // 创建破碎特效 - 优化版本
-            function createShatterEffect(position) {
-                const particleCount = 20;
+            // 创建血溅效果
+            function createBloodSplatterEffect(position) {
+                const particleCount = 25;
                 const particles = new THREE.Group();
                 scene.add(particles);
                 
-                // 创建粒子材质
-                const particleMaterial = new THREE.MeshBasicMaterial({ 
-                    color: 0xff0000, // 保持红色
+                // 创建血滴材质
+                const bloodMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0x8a0303, // 深红色
                     transparent: true,
-                    opacity: 0.8
+                    opacity: 0.9
                 });
                 
-                // 创建不同大小的粒子
+                // 创建不同大小的血滴
                 for (let i = 0; i < particleCount; i++) {
-                    const size = Math.random() * 0.3 + 0.1;
+                    const size = Math.random() * 0.2 + 0.05;
                     const geometry = new THREE.SphereGeometry(size, 8, 8);
-                    const particle = new THREE.Mesh(geometry, particleMaterial);
+                    const particle = new THREE.Mesh(geometry, bloodMaterial);
                     particle.position.copy(position);
                     
                     // 随机速度 - 向外爆炸效果
-                    const speed = 1.5;
+                    const speed = 2.0;
                     const angle1 = Math.random() * Math.PI * 2;
                     const angle2 = Math.random() * Math.PI * 2;
                     particle.userData.velocity = new THREE.Vector3(
@@ -1151,9 +1151,9 @@
                     
                     // 随机旋转
                     particle.userData.rotationSpeed = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.2,
-                        (Math.random() - 0.5) * 0.2,
-                        (Math.random() - 0.5) * 0.2
+                        (Math.random() - 0.5) * 0.3,
+                        (Math.random() - 0.5) * 0.3,
+                        (Math.random() - 0.5) * 0.3
                     );
                     
                     particles.add(particle);
@@ -1181,10 +1181,10 @@
                             particle.rotation.z += particle.userData.rotationSpeed.z;
                             
                             // 逐渐减速
-                            particle.userData.velocity.multiplyScalar(0.92);
+                            particle.userData.velocity.multiplyScalar(0.85);
                             
                             // 逐渐消失
-                            particle.material.opacity = 0.8 * (1 - progress);
+                            particle.material.opacity = 0.9 * (1 - progress);
                         }
                     });
                     
@@ -1299,17 +1299,11 @@
                 const centerY = height / 2;
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
-                // 绘制背景
-                miniMapCtx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                // 绘制背景 - 淡蓝色
+                miniMapCtx.fillStyle = 'rgba(30, 144, 255, 0.2)';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
-                // 绘制墙壁边界
-                miniMapCtx.strokeStyle = '#4ecdc4';
-                miniMapCtx.lineWidth = 2;
-                miniMapCtx.beginPath();
-                miniMapCtx.arc(centerX, centerY, radius * 0.9, 0, Math.PI * 2);
-                miniMapCtx.stroke();
                 // 绘制墙壁标签
                 miniMapCtx.fillStyle = '#ffd166';
                 miniMapCtx.font = 'bold 16px Arial';
@@ -1325,28 +1319,13 @@
                 const directionLength = radius * 0.8;
                 
                 // 绘制视角扇形
-                miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.2)';
+                miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.3)';
                 miniMapCtx.beginPath();
                 miniMapCtx.moveTo(centerX, centerY);
                 miniMapCtx.arc(centerX, centerY, directionLength, 
                                directionAngle - fov/2, directionAngle + fov/2);
                 miniMapCtx.closePath();
                 miniMapCtx.fill();
-                
-                // 绘制视角边界线
-                miniMapCtx.strokeStyle = '#00ff88';
-                miniMapCtx.lineWidth = 1;
-                miniMapCtx.beginPath();
-                miniMapCtx.moveTo(centerX, centerY);
-                miniMapCtx.lineTo(centerX + Math.sin(directionAngle - fov/2) * directionLength, 
-                                 centerY - Math.cos(directionAngle - fov/2) * directionLength);
-                miniMapCtx.stroke();
-                
-                miniMapCtx.beginPath();
-                miniMapCtx.moveTo(centerX, centerY);
-                miniMapCtx.lineTo(centerX + Math.sin(directionAngle + fov/2) * directionLength, 
-                                 centerY - Math.cos(directionAngle + fov/2) * directionLength);
-                miniMapCtx.stroke();
                 // 绘制玩家位置
                 miniMapCtx.fillStyle = '#00ff88';
                 miniMapCtx.beginPath();
