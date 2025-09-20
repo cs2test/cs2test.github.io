@@ -1359,8 +1359,8 @@
                 
                 // 绘制目标
                 targets.forEach(target => {
-                    const targetX = centerX + (target.position.z / wallDistance) * radius * 0.8;
-                    const targetZ = centerY + (target.position.x / wallDistance) * radius * 0.8;
+                    const targetX = centerX + (target.position.x / wallDistance) * radius * 0.8;
+                    const targetZ = centerY - (target.position.z / wallDistance) * radius * 0.8;
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetZ, 3, 0, Math.PI * 2);
@@ -1477,4 +1477,4 @@
         });
     </script>
 </body>
-</html> 
+</html>    
