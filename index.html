@@ -1332,10 +1332,10 @@
                 miniMapCtx.textBaseline = 'middle';
                 
                 // 修正标签对应关系
-                miniMapCtx.fillText('D', centerX, centerY - radius * 0.7);  // 前墙
-                miniMapCtx.fillText('A', centerX + radius * 0.7, centerY);  // 右墙
-                miniMapCtx.fillText('B', centerX, centerY + radius * 0.7);  // 后墙
-                miniMapCtx.fillText('C', centerX - radius * 0.7, centerY);  // 左墙
+                miniMapCtx.fillText('B', centerX, centerY - radius * 0.7);  // 前墙
+                miniMapCtx.fillText('C', centerX + radius * 0.7, centerY);  // 右墙
+                miniMapCtx.fillText('D', centerX, centerY + radius * 0.7);  // 后墙
+                miniMapCtx.fillText('A', centerX - radius * 0.7, centerY);  // 左墙
                 
                 // 绘制玩家视角方向（扇形区域）
                 const directionAngle = cameraRotation.y;
