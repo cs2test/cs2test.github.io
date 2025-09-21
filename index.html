@@ -1316,6 +1316,8 @@
                 const centerX = width / 2;
                 const centerY = height / 2;
                 
+                console.log("Mini map center:", centerX, centerY); // 先查看中心点坐标
+
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
                 
@@ -1359,10 +1361,13 @@
                 
                 // 绘制目标
                 targets.forEach(target => {
-                    // 将3D坐标转换为小地图坐标
-                    // 小地图中心点 (88, 71) 对应3D场景的 (0, 0)
-                    const targetX = 88 + (target.position.x / 50) * 42.24; // 130.24 - 88 = 42.24
-                    const targetY = 71 - (target.position.z / 50) * 42.24; // 71 - 71.095945 ≈ 0.095945 (误差很小)
+
+                    const targetX = centerX + (target.position.x / 50) * radius * 0.8;
+                    const targetY = centerY - (target.position.z / 50) * radius * 0.8; // 使用减号来反转Z轴
+    
+                    // 确保目标在小地图范围内
+                    const clampedX = Math.max(centerX - radius, Math.min(centerX + radius, targetX));
+                    const clampedY = Math.max(centerY - radius, Math.min(centerY + radius, targetY));
     
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
@@ -1370,8 +1375,8 @@
                     miniMapCtx.fill();
     
                     // 调试信息
-                    console.log("Target 3D position:", target.position.x, target.position.z);
-                    console.log("Mini map position:", targetX, targetY);
+                    //console.log("Target 3D position:", target.position.x, target.position.z);
+                    //console.log("Mini map position:", targetX, targetY);
                 });
             }
 
