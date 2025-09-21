@@ -1340,7 +1340,7 @@
                 miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);  // 左墙
                 
                 // 绘制玩家视角方向（扇形区域）
-                const directionAngle = -cameraRotation.y + Math.PI/2; 
+                const directionAngle = -cameraRotation.y - Math.PI/2; 
                 const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
                 
