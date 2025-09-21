@@ -1367,6 +1367,12 @@
                     const targetX = centerX + target.position.x * scale;
                     const targetY = centerY - target.position.z * scale; // 注意这里是减号
     
+                    // 限制目标在小地图范围内
+                    const minX = 0, maxX = 176;
+                    const minY = 0, maxY = 176;
+                    targetX = Math.max(minX, Math.min(maxX, targetX));
+                    targetY = Math.max(minY, Math.min(maxY, targetY));
+
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetY, 3, 0, Math.PI * 2);
