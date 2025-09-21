@@ -1359,16 +1359,8 @@
                 
                 // 绘制目标
                 targets.forEach(target => {
-                    const targetX = centerX + (target.position.x / 50) * radius * 0.8;
-                    const targetY = centerY - (target.position.z / 50) * radius * 0.8; // 使用减号来反转Z轴
-    
-                    // 确保目标在小地图范围内
-                    const clampedX = Math.max(centerX - radius, Math.min(centerX + radius, targetX));
-                    const clampedY = Math.max(centerY - radius, Math.min(centerY + radius, targetY));
-
-                    // 添加调试信息
-                    console.log("Target 3D position:", target.position.x, target.position.z);
-                    console.log("Mini map position:", targetX, targetY);
+                    const targetX = centerX + target.position.x * scaleFactor;
+                    const targetY = centerY - target.position.z * scaleFactor; 
 
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
