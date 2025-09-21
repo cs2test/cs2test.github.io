@@ -1359,13 +1359,19 @@
                 
                 // 绘制目标
                 targets.forEach(target => {
-                    const targetX = centerX + target.position.x * scaleFactor;
-                    const targetY = centerY - target.position.z * scaleFactor; 
-
+                    // 将3D坐标转换为小地图坐标
+                    // 小地图中心点 (88, 71) 对应3D场景的 (0, 0)
+                    const targetX = 88 + (target.position.x / 50) * 42.24; // 130.24 - 88 = 42.24
+                    const targetY = 71 - (target.position.z / 50) * 42.24; // 71 - 71.095945 ≈ 0.095945 (误差很小)
+    
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetY, 3, 0, Math.PI * 2);
                     miniMapCtx.fill();
+    
+                    // 调试信息
+                    console.log("Target 3D position:", target.position.x, target.position.z);
+                    console.log("Mini map position:", targetX, targetY);
                 });
             }
 
