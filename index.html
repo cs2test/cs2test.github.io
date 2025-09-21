@@ -1341,7 +1341,7 @@
                 
                 // 绘制玩家视角方向（扇形区域）
                 // 计算方向角度
-                const directionAngle = cameraRotation.y;
+                const directionAngle = cameraRotation.y + Math.PI/2;
 
                 const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
