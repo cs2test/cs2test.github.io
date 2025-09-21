@@ -1363,7 +1363,7 @@
                 targets.forEach(target => {
 
                     // 使用正确的小地图中心点 (88, 88)
-                    const scale = radius / wallDistance;
+                    const scale = 1.76;
                     const targetX = centerX + target.position.x * scale;
                     const targetY = centerY - target.position.z * scale; // 注意这里是减号
     
