@@ -1363,9 +1363,9 @@
                 targets.forEach(target => {
 
                     // 使用正确的小地图中心点 (88, 88)
-                    const scale = 1.76;
+                    const scale = 1.5;
                     let targetX = 88 + target.position.x * scale;
-                    let targetY = 88 - target.position.z * scale;
+                    let targetY = 88 + target.position.z * scale;
     
                     // 计算目标到中心的距离
                     const dx = targetX - 88;
