@@ -1316,7 +1316,7 @@
                 const centerX = width / 2;
                 const centerY = height / 2;
                 
-                console.log("Mini map center:", centerX, centerY); // 先查看中心点坐标
+                //console.log("Mini map center:", centerX, centerY); // 先查看中心点坐标
 
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
@@ -1362,12 +1362,10 @@
                 // 绘制目标
                 targets.forEach(target => {
 
-                    const targetX = centerX + (target.position.x / 50) * radius * 0.8;
-                    const targetY = centerY - (target.position.z / 50) * radius * 0.8; // 使用减号来反转Z轴
-    
-                    // 确保目标在小地图范围内
-                    const clampedX = Math.max(centerX - radius, Math.min(centerX + radius, targetX));
-                    const clampedY = Math.max(centerY - radius, Math.min(centerY + radius, targetY));
+                    // 使用正确的小地图中心点 (88, 88)
+                    const scale = radius * 0.8 / wallDistance;
+                    const targetX = centerX + target.position.x * scale;
+                    const targetY = centerY - target.position.z * scale; // 注意这里是减号
     
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
