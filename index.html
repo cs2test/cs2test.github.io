@@ -946,15 +946,19 @@
                     const distanceToCenter = localPoint.length();
                     const radius = target.geometry.parameters.radius;
 
+
+                    // 如果长度不为0，则将其缩放到精确的半径长度（强制投影到球面）
+                    if (currentLength > 0) {
+                        localPoint.multiplyScalar(radius / currentLength);
+                    }
+                    // ===============================================
+
+                    // 现在，localPoint 已经在球体表面上，我们只关心它在XZ平面上的投影
+                    const distance2D = Math.sqrt(localPoint.x * localPoint.x + localPoint.z * localPoint.z);
                     // 计算标准化距离（0表示击中中心，1表示击中边缘）
-                    const normalizedDistance = Math.min(1, distanceToCenter / radius);
-
-                    // 为了让“视觉中心”更容易得高分，我们对中心区域进行非线性压缩
-                    // 例如，距离中心 30% 以内的区域都算作 10 分
-                    const adjustedDistance = Math.pow(normalizedDistance, 0.5); // 使用平方根函数，让中心区域变大
-
-                    // 根据调整后的距离计算得分
-                    const points = Math.max(1, 10 - Math.floor(adjustedDistance * 9));
+                    const normalizedDistance = Math.min(1, distance2D / radius);
+                    // 根据距离计算得分：中心10分，边缘1分，其余按比例向下取整
+                    const points = Math.max(1, 10 - Math.floor(normalizedDistance * 9));
     
                     console.log('距离到中心:', distanceToCenter);
                     console.log('球体半径:', radius);
