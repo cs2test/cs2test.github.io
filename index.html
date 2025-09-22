@@ -945,9 +945,13 @@
                     // 计算点击点到球体中心的距离（在球体局部坐标系中，中心是原点）
                     const distanceToCenter = localPoint.length();
                     const radius = target.geometry.parameters.radius;
+
+                    const localPoint = target.worldToLocal(clickPoint.clone());
+                    // 只考虑X和Z分量来计算二维距离
+                    const distanceToCenter2D = Math.sqrt(localPoint.x * localPoint.x + localPoint.z * localPoint.z);
                     // 计算标准化距离（0表示击中中心，1表示击中边缘）
-                    const normalizedDistance = Math.min(1, distanceToCenter / radius);
-                    // 根据距离计算得分：中心10分，边缘1分
+                    const normalizedDistance = Math.min(1, distanceToCenter2D / radius);
+                    // 根据距离计算得分：中心10分，边缘1分，其余按比例向下取整
                     const points = Math.max(1, 10 - Math.floor(normalizedDistance * 9));
     
                     targetHit(target, points);
