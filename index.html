@@ -950,7 +950,7 @@
                     // 根据距离计算得分：中心10分，边缘1分
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
     
-                    targetHit(target, points);
+                    targetHit(target, points, intersects); // <-- 关键修改：传递 intersects 参数
                 } else {
                     combo = 0;
                     comboDisplay.textContent = combo;
@@ -1052,7 +1052,7 @@
                 }, settings.speed);
             }
             // 处理目标命中
-            function targetHit(target, points) {
+            function targetHit(target, points, intersects) { // <-- 关键修改：添加 intersects 参数
                 if (target.userData.isHit) return;
                 target.userData.isHit = true;
     
