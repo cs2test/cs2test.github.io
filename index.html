@@ -948,7 +948,7 @@
                     // 计算标准化距离（0表示击中中心，1表示击中边缘）
                     const normalizedDistance = Math.min(1, distanceToCenter / radius);
                     // 根据距离计算得分：中心10分，边缘1分
-                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
+                    const points = Math.max(1, 10 - Math.floor(normalizedDistance * 9));
     
                     targetHit(target, points);
                 } else {
