@@ -1258,7 +1258,7 @@
                 // 计算方向角度 - 修正方向对应关系
                 // 在3D空间中，cameraRotation.y=0 时面朝A墙（Z-方向）
                 // 在小地图上，A墙在顶部，所以需要将3D的Y旋转角度转换为小地图上的角度
-                const directionAngle = -cameraRotation.y + Math.PI/2; // 修正角度对应关系
+                const directionAngle = -cameraRotation.y - Math.PI/2; // 修正角度对应关系
                 const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
                 // 绘制视角扇形
