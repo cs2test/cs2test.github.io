@@ -942,8 +942,8 @@
                     const clickPoint = intersects[0].point;
                     // 将点击点转换到目标球体的局部坐标系
                     const localPoint = target.worldToLocal(clickPoint.clone());
-                    // 计算点击点到球体中心的距离（在球体局部坐标系中，中心是原点）
-                    const distanceToCenter = localPoint.length();
+                    // 计算当前向量的长度
+                    const currentLength = localPoint.length();
                     const radius = target.geometry.parameters.radius;
 
 
