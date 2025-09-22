@@ -947,16 +947,8 @@
                     const radius = target.geometry.parameters.radius;
                     // 计算标准化距离（0表示击中中心，1表示击中边缘）
                     const normalizedDistance = Math.min(1, distanceToCenter / radius);
-                    // 调试信息 - 打印距离和半径
-                    console.log("点击点距离中心:", distanceToCenter, "半径:", radius, "标准化距离:", normalizedDistance);
-
-                    // 计算环数（10环到1环）
-                    // 10环: 0-0.1半径, 9环: 0.1-0.2半径, ..., 1环: 0.9-1.0半径
-                    const ringValue = 10 - Math.ceil(normalizedDistance * 10);
-                    const points = Math.max(1, Math.min(10, ringValue));
-
-                    // 调试信息 - 打印得分
-                    console.log("击中环数:", ringValue, "得分:", points);
+                    // 根据距离计算得分：中心10分，边缘1分
+                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
     
                     targetHit(target, points);
                 } else {
@@ -1078,9 +1070,6 @@
 
                 // 关键修改：在这里调用 showScoreIndicator，并传递 totalPoints
                 showScoreIndicator(totalPoints, 0, 0);
-
-                // 调试信息 - 打印总得分
-                console.log("基础得分:", points, "连击奖励:", comboBonus, "总得分:", totalPoints);
 
                 createExplosionEffect(target.position);
                 setTimeout(() => {
