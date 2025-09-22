@@ -946,13 +946,16 @@
                     const distanceToCenter = localPoint.length();
                     const radius = target.geometry.parameters.radius;
 
-                    // 只考虑X和Z分量来计算二维距离
-                    const distanceToCenter2D = Math.sqrt(localPoint.x * localPoint.x + localPoint.z * localPoint.z);
                     // 计算标准化距离（0表示击中中心，1表示击中边缘）
-                    const normalizedDistance = Math.min(1, distanceToCenter2D / radius);
+                    const normalizedDistance = Math.min(1, distanceToCenter / radius);
                     // 根据距离计算得分：中心10分，边缘1分，其余按比例向下取整
                     const points = Math.max(1, 10 - Math.floor(normalizedDistance * 9));
     
+                    console.log('距离到中心:', distanceToCenter);
+                    console.log('球体半径:', radius);
+                    console.log('标准化距离:', normalizedDistance);
+                    console.log('得分:', points);
+
                     targetHit(target, points);
                 } else {
                     combo = 0;
