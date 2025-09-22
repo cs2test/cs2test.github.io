@@ -952,7 +952,7 @@
 
                     // 计算环数（10环到1环）
                     // 10环: 0-0.1半径, 9环: 0.1-0.2半径, ..., 1环: 0.9-1.0半径
-                    const ringValue = 11 - Math.ceil(normalizedDistance * 10);
+                    const ringValue = 10 - Math.ceil(normalizedDistance * 10);
                     const points = Math.max(1, Math.min(10, ringValue));
 
                     // 调试信息 - 打印得分
