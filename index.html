@@ -820,27 +820,27 @@
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
             wallMaterial.map.repeat.set(10, 2);
             wallMaterial.map.needsUpdate = true;
-            // 后墙 (Z+)
+            // 后墙 (Z+) - 标签C
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
             backWall.position.set(0, wallHeight/2, wallDistance);
             scene.add(backWall);
-            // 前墙 (Z-)
+            // 前墙 (Z-) - 标签A
             const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
             frontWall.position.set(0, wallHeight/2, -wallDistance);
             scene.add(frontWall);
-            // 左墙 (X-)
+            // 左墙 (X-) - 标签D
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-wallDistance, wallHeight/2, 0);
             leftWall.rotation.y = Math.PI / 2;
             scene.add(leftWall);
-            // 右墙 (X+)
+            // 右墙 (X+) - 标签B
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
             // 添加墙壁标签
             const wallLabels = [];
-            // 创建墙壁标签 - 修正标签位置和方向
+            // 创建墙壁标签
             function createWallLabel(text, position, rotation, flipX = false) {
                 const canvas = document.createElement('canvas');
                 canvas.width = 256;
@@ -873,14 +873,19 @@
                 wallLabels.push(label);
                 return label;
             }
-            // 添加A、B、C、D四个墙壁标签 - 修正位置和方向
-            createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0)); // 前墙 (Z-)
-            createWallLabel('B', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0)); // 右墙 (X-)
-            createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true); // 后墙 (Z+) - 水平翻转
-            createWallLabel('D', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, Math.PI/2, 0)); // 左墙 (X+)
-            // 设置相机初始位置
+            // 添加A、B、C、D四个墙壁标签
+            // A墙在前 (Z-)
+            createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0));
+            // B墙在右 (X+)
+            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
+            // C墙在后 (Z+)
+            createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true);
+            // D墙在左 (X-)
+            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
+            // 设置相机初始位置 - 面朝A墙
             camera.position.set(0, 5, 0);
-            camera.lookAt(0, 0, 0);
+            camera.rotation.set(0, 0, 0, 'YXZ'); // 初始朝向Z-方向（A墙）
+            camera.lookAt(0, 5, -10); // 看向A墙
             // 创建射线投射器用于检测点击
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
@@ -989,7 +994,7 @@
                 y = 5;
                 if (snakeTrail.length === 0) {
                     x = 0;
-                    z = 15;
+                    z = -15; // 初始位置靠近A墙
                 } else {
                     const lastPos = snakeTrail[snakeTrail.length - 1];
                     angleChangeCounter++;
@@ -1225,14 +1230,13 @@
                 updateMiniMap();
             }
             animate();
-            // 更新小地图 - 修正墙壁标签对应关系
+            // 更新小地图 - 完全重构，确保方向正确
             function updateMiniMap() {
                 const width = miniMapCanvas.width;
                 const height = miniMapCanvas.height;
                 const radius = Math.min(width, height) / 2;
                 const centerX = width / 2;
                 const centerY = height / 2;
-                //console.log("Mini map center:", centerX, centerY); // 先查看中心点坐标
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
                 // 绘制背景 - 淡蓝色
@@ -1240,19 +1244,21 @@
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
-                // 绘制墙壁标签 - 修正对应关系
+                // 绘制墙壁标签 - 确保与3D空间对应
                 miniMapCtx.fillStyle = '#ffd166';
                 miniMapCtx.font = 'bold 16px Arial';
                 miniMapCtx.textAlign = 'center';
                 miniMapCtx.textBaseline = 'middle';
-                // 修正标签对应关系
-                miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);  // 前墙
-                miniMapCtx.fillText('B', centerX - radius * 0.7, centerY);  // 右墙
-                miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);  // 后墙
-                miniMapCtx.fillText('D', centerX + radius * 0.7, centerY);  // 左墙
+                // 在小地图上，A墙在顶部（北），B墙在右侧（东），C墙在底部（南），D墙在左侧（西）
+                miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);  // 北
+                miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);  // 东
+                miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);  // 南
+                miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);  // 西
                 // 绘制玩家视角方向（扇形区域）
-                // 计算方向角度
-                const directionAngle = cameraRotation.y + Math.PI/2;
+                // 计算方向角度 - 修正方向对应关系
+                // 在3D空间中，cameraRotation.y=0 时面朝A墙（Z-方向）
+                // 在小地图上，A墙在顶部，所以需要将3D的Y旋转角度转换为小地图上的角度
+                const directionAngle = -cameraRotation.y + Math.PI/2; // 修正角度对应关系
                 const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
                 // 绘制视角扇形
@@ -1270,27 +1276,25 @@
                 miniMapCtx.fill();
                 // 绘制目标
                 targets.forEach(target => {
-                    // 使用正确的小地图中心点 (88, 88)
+                    // 使用正确的小地图中心点
                     const scale = 1.5;
-                    let targetX = 88 + target.position.x * scale;
-                    let targetY = 88 + target.position.z * scale;
+                    // 修正坐标映射：3D空间的X对应小地图的X，3D空间的Z对应小地图的Y（但需要反转，因为A墙在前对应小地图顶部）
+                    let targetX = centerX + target.position.x * scale;
+                    let targetY = centerY - target.position.z * scale; // 注意这里是减号，因为Z-方向对应小地图上方
                     // 计算目标到中心的距离
-                    const dx = targetX - 88;
-                    const dy = targetY - 88;
+                    const dx = targetX - centerX;
+                    const dy = targetY - centerY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     // 如果目标超出小地图圆形范围，将其限制在边缘
-                    if (distance > 88) {
+                    if (distance > radius * 0.9) {
                         const angle = Math.atan2(dy, dx);
-                        targetX = 88 + Math.cos(angle) * 88;
-                        targetY = 88 + Math.sin(angle) * 88;
+                        targetX = centerX + Math.cos(angle) * radius * 0.9;
+                        targetY = centerY + Math.sin(angle) * radius * 0.9;
                     }
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetY, 3, 0, Math.PI * 2);
                     miniMapCtx.fill();
-                    // 调试信息
-                    console.log("Target 3D position:", target.position.x, target.position.z);
-                    console.log("Mini map position:", targetX, targetY);
                 });
             }
             // 调整小地图大小
@@ -1338,6 +1342,11 @@
                         document.exitPointerLock();
                     }
                 }
+                // 重置相机位置和旋转
+                camera.position.set(0, 5, 0);
+                cameraRotation = { x: 0, y: 0 };
+                camera.rotation.set(0, 0, 0, 'YXZ');
+                camera.lookAt(0, 5, -10);
             }
             // 更新统计信息
             function updateStats() {
@@ -1388,4 +1397,4 @@
         });
     </script>
 </body>
-</html>    
+</html>
