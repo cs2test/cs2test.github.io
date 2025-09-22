@@ -950,8 +950,6 @@
                     // 根据距离计算得分：中心10分，边缘1分
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
     
-                    // 显示实际得分，包括连击加成
-                    showScoreIndicator(points, 0, 0);
                     targetHit(target, points);
                 } else {
                     combo = 0;
@@ -1069,6 +1067,10 @@
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
+
+                // 关键修改：在这里调用 showScoreIndicator，并传递 totalPoints
+                showScoreIndicator(totalPoints, 0, 0);
+
                 createExplosionEffect(target.position);
                 setTimeout(() => {
                     if (target.parent) {
@@ -1134,7 +1136,7 @@
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
                 scoreIndicator.className = 'score-indicator';
-                scoreIndicator.textContent = '+' + points; // 关键修改：使用传入的 points 参数
+                scoreIndicator.textContent = '+' + points; // 显示实际得分
                 const rect = trainingArea.getBoundingClientRect();
                 const screenX = rect.width / 2;
                 const screenY = rect.height / 2;
