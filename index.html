@@ -1134,7 +1134,7 @@
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
                 scoreIndicator.className = 'score-indicator';
-                scoreIndicator.textContent = '+' + points; // 显示实际得分
+                scoreIndicator.textContent = '+' + points; // 关键修改：使用传入的 points 参数
                 const rect = trainingArea.getBoundingClientRect();
                 const screenX = rect.width / 2;
                 const screenY = rect.height / 2;
