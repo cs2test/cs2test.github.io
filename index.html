@@ -1073,6 +1073,9 @@
                 // 关键修改：在这里调用 showScoreIndicator，并传递 totalPoints
                 showScoreIndicator(totalPoints, 0, 0);
 
+                // 调试信息 - 打印总得分
+                console.log("基础得分:", points, "连击奖励:", comboBonus, "总得分:", totalPoints);
+
                 createExplosionEffect(target.position);
                 setTimeout(() => {
                     if (target.parent) {
