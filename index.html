@@ -698,6 +698,7 @@
             let angleChangeCounter = 0;
             let minAngleChange = -30;
             let maxAngleChange = 30;
+            let cameraRotation = { x: 0, y: 0 }; // <-- 在这里统一声明
             // Difficulty settings
             const difficultySettings = {
                 easy: { size: 5, speed: 5000, spawnRate: 800 }
@@ -1432,7 +1433,7 @@
                 }
                 // 重置相机位置和旋转
                 camera.position.set(0, 5, 0);
-                cameraRotation = { x: 0, y: 0 };
+                let cameraRotation = { x: 0, y: 0 }; 
                 camera.rotation.set(0, 0, 0, 'YXZ');
                 camera.lookAt(0, 5, -10);
             }
