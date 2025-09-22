@@ -649,7 +649,6 @@
             const sensitivityInput = document.getElementById('sensitivity-input');
             const miniMapCanvas = document.getElementById('mini-map-canvas');
             const miniMapCtx = miniMapCanvas.getContext('2d');
-            
             // Stats elements
             const shotsElement = document.getElementById('shots');
             const hitsElement = document.getElementById('hits');
@@ -659,7 +658,6 @@
             const scoreElement = document.getElementById('score');
             const comboDisplay = document.getElementById('combo-display');
             const scoreDisplay = document.getElementById('score-display');
-            
             // Language elements
             const titleElement = document.getElementById('title');
             const subtitleElement = document.getElementById('subtitle');
@@ -679,7 +677,6 @@
             const instruction6 = document.getElementById('instruction-6');
             const instruction7 = document.getElementById('instruction-7');
             const footerText = document.getElementById('footer-text');
-            
             // Game state
             let gameActive = false;
             let shots = 0;
@@ -701,15 +698,12 @@
             let angleChangeCounter = 0;
             let minAngleChange = -30;
             let maxAngleChange = 30;
-            
             // Difficulty settings
             const difficultySettings = {
                 easy: { size: 5, speed: 5000, spawnRate: 800 }
             };
-            
             // 灵敏度设置
             let sensitivity = 0.002;
-            
             // Language translations
             const translations = {
                 en: {
@@ -769,7 +763,6 @@
                     stopped: "已停止"
                 }
             };
-
             // ==================== THREE.JS SETUP ====================
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
@@ -777,14 +770,12 @@
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
             renderer.setClearColor(0x111133);
             trainingArea.appendChild(renderer.domElement);
-
             // 添加光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
-
             // 创建天空盒
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
             const skyboxMaterial = new THREE.MeshBasicMaterial({
@@ -795,7 +786,6 @@
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
-
             // 创建地面
             const tileGeometry = new THREE.PlaneGeometry(100, 100);
             const tileMaterial = new THREE.MeshStandardMaterial({
@@ -814,14 +804,12 @@
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
-
             // === 创建墙壁 ===
             const wallWidth = 100;
             const wallDepth = 10;
             const wallHeight = 20;
             const wallDistance = 50;
             const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
-            
             const wallMaterial = new THREE.MeshStandardMaterial({
                 color: 0x444444,
                 roughness: 0.7,
@@ -832,32 +820,26 @@
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
             wallMaterial.map.repeat.set(10, 2);
             wallMaterial.map.needsUpdate = true;
-
             // 后墙 (Z+)
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
             backWall.position.set(0, wallHeight/2, wallDistance);
             scene.add(backWall);
-
             // 前墙 (Z-)
             const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
             frontWall.position.set(0, wallHeight/2, -wallDistance);
             scene.add(frontWall);
-
             // 左墙 (X-)
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-wallDistance, wallHeight/2, 0);
             leftWall.rotation.y = Math.PI / 2;
             scene.add(leftWall);
-
             // 右墙 (X+)
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
-
             // 添加墙壁标签
             const wallLabels = [];
-            
             // 创建墙壁标签 - 修正标签位置和方向
             function createWallLabel(text, position, rotation, flipX = false) {
                 const canvas = document.createElement('canvas');
@@ -870,58 +852,47 @@
                 ctx.fillStyle = '#ffd166';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                
                 // 如果需要水平翻转
                 if (flipX) {
                     ctx.translate(canvas.width/2, canvas.height/2);
                     ctx.scale(-1, 1);
                     ctx.translate(-canvas.width/2, -canvas.height/2);
                 }
-                
                 ctx.fillText(text, canvas.width/2, canvas.height/2);
-                
                 const texture = new THREE.CanvasTexture(canvas);
                 const material = new THREE.MeshBasicMaterial({
                     map: texture,
                     transparent: true,
                     side: THREE.DoubleSide
                 });
-                
                 const geometry = new THREE.PlaneGeometry(15, 15);
                 const label = new THREE.Mesh(geometry, material);
                 label.position.copy(position);
                 if (rotation) label.rotation.copy(rotation);
-                
                 scene.add(label);
                 wallLabels.push(label);
                 return label;
             }
-
             // 添加A、B、C、D四个墙壁标签 - 修正位置和方向
-            createWallLabel('A', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, 0, 0)); // 前墙
-            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0)); // 右墙
-            createWallLabel('C', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, Math.PI, 0), true); // 后墙 - 水平翻转
-            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0)); // 左墙
-
+            createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0)); // 前墙 (Z-)
+            createWallLabel('B', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0)); // 右墙 (X-)
+            createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true); // 后墙 (Z+) - 水平翻转
+            createWallLabel('D', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, Math.PI/2, 0)); // 左墙 (X+)
             // 设置相机初始位置
             camera.position.set(0, 5, 0);
             camera.lookAt(0, 0, 0);
-
             // 创建射线投射器用于检测点击
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
-
             // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
             crosshair.style.top = '50%';
             crosshair.style.transform = 'translate(-50%, -50%)';
             trainingArea.style.cursor = 'none';
-
             // ==================== 3D 控制逻辑 ====================
             let inShootingMode = false;
             let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
-
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
@@ -938,7 +909,6 @@
                     toggleTraining();
                 }
             });
-
             // 监听指针锁定状态变化
             document.addEventListener('pointerlockchange', function() {
                 if (document.pointerLockElement === trainingArea) {
@@ -952,31 +922,23 @@
                     trainingArea.style.cursor = 'default';
                 }
             });
-
             // 处理鼠标移动以控制3D视角
             document.addEventListener('mousemove', function(e) {
                 if (!inShootingMode || !isPointerLocked) return;
-                
                 const deltaX = e.movementX;
                 const deltaY = e.movementY;
-                
                 cameraRotation.y -= deltaX * sensitivity;
                 cameraRotation.x -= deltaY * sensitivity;
-                
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
-                
                 camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
             });
-
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
                 shots++;
                 updateStats();
                 if (!gameActive) return;
                 if (!inShootingMode) return;
-                
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
-                
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
                     const target = intersects[0].object;
@@ -984,12 +946,10 @@
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
                     targetCount++;
-                    
                     const distanceToCenter = intersects[0].distance;
                     const radius = target.geometry.parameters.radius;
                     const normalizedDistance = distanceToCenter / radius;
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                    
                     showScoreIndicator(points, 0, 0);
                     targetHit(target, points);
                 } else {
@@ -998,7 +958,6 @@
                     updateStats();
                 }
             });
-
             // ==================== 3D 游戏逻辑 ====================
             // 创建棋盘格纹理
             function createCheckerboardTexture() {
@@ -1016,7 +975,6 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-
             // 生成目标函数
             function spawnTargets() {
                 if (!gameActive) return;
@@ -1025,19 +983,15 @@
                     return;
                 }
                 lastSpawnTime = now;
-                
                 const settings = difficultySettings.easy;
                 const size = settings.size;
                 let x, y, z;
-                
                 y = 5;
-                
                 if (snakeTrail.length === 0) {
                     x = 0;
                     z = 15;
                 } else {
                     const lastPos = snakeTrail[snakeTrail.length - 1];
-                    
                     angleChangeCounter++;
                     if (angleChangeCounter >= angleChangeFrequency) {
                         angleChangeCounter = 0;
@@ -1045,15 +999,12 @@
                         currentAngle = (currentAngle + angleChange) % 360;
                         if (currentAngle < 0) currentAngle += 360;
                     }
-                    
                     const minStep = 15;
                     const maxStep = 30;
                     const step = Math.floor(Math.random() * (maxStep - minStep + 1)) + minStep;
-                    
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
                     let newZ = lastPos.z + Math.sin(radians) * step;
-                    
                     const padding = wallDistance - 20;
                     if (newX < -padding) {
                         newX = -padding;
@@ -1072,13 +1023,10 @@
                     x = newX;
                     z = newZ;
                 }
-                
                 snakeTrail.push({ x: x, y: y, z: z });
-                
                 if (snakeTrail.length > snakeLength) {
                     snakeTrail.shift();
                 }
-                
                 const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
                 const material = new THREE.MeshBasicMaterial({ 
                     color: 0xff0000, 
@@ -1090,10 +1038,8 @@
                 target.position.set(x, y, z);
                 target.userData.spawnTime = Date.now().toString();
                 target.userData.isHit = false;
-                
                 scene.add(target);
                 targets.push(target);
-                
                 setTimeout(() => {
                     if (!target.userData.isHit && target.parent) {
                         totalReactionTime += settings.speed;
@@ -1106,7 +1052,6 @@
                     }
                 }, settings.speed);
             }
-
             // 处理目标命中
             function targetHit(target, points) {
                 if (target.userData.isHit) return;
@@ -1118,15 +1063,12 @@
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
-                
                 const comboBonus = Math.min(combo, 10) * 1;
                 const totalPoints = points + comboBonus;
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
-                
                 createExplosionEffect(target.position);
-                
                 setTimeout(() => {
                     if (target.parent) {
                         scene.remove(target);
@@ -1134,27 +1076,23 @@
                     }
                 }, 200);
             }
-
             // 创建爆炸效果 - 重新设计
             function createExplosionEffect(position) {
                 const particleCount = 30;
                 const particles = new THREE.Group();
                 scene.add(particles);
-                
                 // 创建粒子材质
                 const particleMaterial = new THREE.MeshBasicMaterial({ 
                     color: 0xff3333,
                     transparent: true,
                     opacity: 0.9
                 });
-                
                 // 创建爆炸粒子
                 for (let i = 0; i < particleCount; i++) {
                     const size = Math.random() * 0.3 + 0.1;
                     const geometry = new THREE.SphereGeometry(size, 8, 8);
                     const particle = new THREE.Mesh(geometry, particleMaterial);
                     particle.position.copy(position);
-                    
                     // 随机速度 - 向外爆炸效果
                     const speed = 2.5;
                     const angle1 = Math.random() * Math.PI * 2;
@@ -1164,30 +1102,24 @@
                         Math.sin(angle1) * Math.sin(angle2) * speed,
                         Math.cos(angle1) * speed
                     );
-                    
                     // 随机旋转
                     particle.userData.rotationSpeed = new THREE.Vector3(
                         (Math.random() - 0.5) * 0.4,
                         (Math.random() - 0.5) * 0.4,
                         (Math.random() - 0.5) * 0.4
                     );
-                    
                     particles.add(particle);
                 }
-                
                 // 动画粒子
                 const startTime = Date.now();
                 const duration = 300; // 0.3秒
-                
                 const animateParticles = () => {
                     const elapsed = Date.now() - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    
                     if (progress >= 1) {
                         scene.remove(particles);
                         return;
                     }
-                    
                     // 更新粒子位置和旋转
                     particles.children.forEach(particle => {
                         if (particle.userData.velocity) {
@@ -1195,46 +1127,37 @@
                             particle.rotation.x += particle.userData.rotationSpeed.x;
                             particle.rotation.y += particle.userData.rotationSpeed.y;
                             particle.rotation.z += particle.userData.rotationSpeed.z;
-                            
                             // 逐渐减速
                             particle.userData.velocity.multiplyScalar(0.9);
-                            
                             // 逐渐消失
                             particle.material.opacity = 0.9 * (1 - progress);
                         }
                     });
-                    
                     requestAnimationFrame(animateParticles);
                 };
-                
                 animateParticles();
             }
-
             // 显示得分指示器
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
                 scoreIndicator.className = 'score-indicator';
                 scoreIndicator.textContent = '+' + points;
-                
                 const rect = trainingArea.getBoundingClientRect();
                 const screenX = rect.width / 2;
                 const screenY = rect.height / 2;
                 scoreIndicator.style.left = (screenX - 25) + 'px';
                 scoreIndicator.style.top = (screenY - 50) + 'px';
                 trainingArea.appendChild(scoreIndicator);
-                
                 setTimeout(() => {
                     scoreIndicator.style.opacity = '1';
                     scoreIndicator.style.transform = 'translateY(-20px)';
                 }, 10);
-                
                 setTimeout(() => {
                     if (scoreIndicator && scoreIndicator.parentNode) {
                         scoreIndicator.remove();
                     }
                 }, 1000);
             }
-
             // 开始/暂停训练
             function toggleTraining() {
                 if (countdownTimer) {
@@ -1273,7 +1196,6 @@
                     }, 1000);
                 }
             }
-
             // 显示游戏状态消息
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -1282,16 +1204,13 @@
                     gameStatus.classList.remove('visible');
                 }, 1000);
             }
-
             // 重置统计数据
             resetBtn.addEventListener('click', resetGame);
-
             // 语言切换
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
-
             // 灵敏度输入框事件监听
             sensitivityInput.addEventListener('input', function() {
                 const newSensitivity = parseFloat(this.value);
@@ -1299,7 +1218,6 @@
                     sensitivity = newSensitivity;
                 }
             });
-
             // 渲染循环
             function animate() {
                 requestAnimationFrame(animate);
@@ -1307,7 +1225,6 @@
                 updateMiniMap();
             }
             animate();
-
             // 更新小地图 - 修正墙壁标签对应关系
             function updateMiniMap() {
                 const width = miniMapCanvas.width;
@@ -1315,37 +1232,29 @@
                 const radius = Math.min(width, height) / 2;
                 const centerX = width / 2;
                 const centerY = height / 2;
-                
                 //console.log("Mini map center:", centerX, centerY); // 先查看中心点坐标
-
                 // 清除画布
                 miniMapCtx.clearRect(0, 0, width, height);
-                
                 // 绘制背景 - 淡蓝色
                 miniMapCtx.fillStyle = 'rgba(30, 144, 255, 0.2)';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
-                
                 // 绘制墙壁标签 - 修正对应关系
                 miniMapCtx.fillStyle = '#ffd166';
                 miniMapCtx.font = 'bold 16px Arial';
                 miniMapCtx.textAlign = 'center';
                 miniMapCtx.textBaseline = 'middle';
-                
                 // 修正标签对应关系
                 miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);  // 前墙
-                miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);  // 右墙
+                miniMapCtx.fillText('B', centerX - radius * 0.7, centerY);  // 右墙
                 miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);  // 后墙
-                miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);  // 左墙
-                
+                miniMapCtx.fillText('D', centerX + radius * 0.7, centerY);  // 左墙
                 // 绘制玩家视角方向（扇形区域）
                 // 计算方向角度
                 const directionAngle = cameraRotation.y + Math.PI/2;
-
                 const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
-                
                 // 绘制视角扇形
                 miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.3)';
                 miniMapCtx.beginPath();
@@ -1354,54 +1263,44 @@
                                directionAngle - fov/2, directionAngle + fov/2);
                 miniMapCtx.closePath();
                 miniMapCtx.fill();
-                
                 // 绘制玩家位置
                 miniMapCtx.fillStyle = '#00ff88';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
                 miniMapCtx.fill();
-                
                 // 绘制目标
                 targets.forEach(target => {
-
                     // 使用正确的小地图中心点 (88, 88)
                     const scale = 1.5;
                     let targetX = 88 + target.position.x * scale;
                     let targetY = 88 + target.position.z * scale;
-    
                     // 计算目标到中心的距离
                     const dx = targetX - 88;
                     const dy = targetY - 88;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-    
                     // 如果目标超出小地图圆形范围，将其限制在边缘
                     if (distance > 88) {
                         const angle = Math.atan2(dy, dx);
                         targetX = 88 + Math.cos(angle) * 88;
                         targetY = 88 + Math.sin(angle) * 88;
                     }
-
                     miniMapCtx.fillStyle = '#ff0000';
                     miniMapCtx.beginPath();
                     miniMapCtx.arc(targetX, targetY, 3, 0, Math.PI * 2);
                     miniMapCtx.fill();
-    
                     // 调试信息
                     console.log("Target 3D position:", target.position.x, target.position.z);
                     console.log("Mini map position:", targetX, targetY);
                 });
             }
-
             // 调整小地图大小
             function resizeMiniMap() {
                 miniMapCanvas.width = miniMapCanvas.offsetWidth;
                 miniMapCanvas.height = miniMapCanvas.offsetHeight;
             }
-
             // 初始化小地图
             resizeMiniMap();
             window.addEventListener('resize', resizeMiniMap);
-
             // 重置游戏
             function resetGame() {
                 gameActive = false;
@@ -1412,7 +1311,6 @@
                     countdownTimer = null;
                 }
                 startBtn.disabled = false;
-                
                 shots = 0;
                 hits = 0;
                 totalReactionTime = 0;
@@ -1422,22 +1320,18 @@
                 score = 0;
                 comboDisplay.textContent = combo;
                 scoreDisplay.textContent = score;
-                
                 snakeTrail = [];
                 currentAngle = 0;
                 angleChangeCounter = 0;
-                
                 targets.forEach(target => {
                     if (target.parent) {
                         scene.remove(target);
                     }
                 });
                 targets = [];
-                
                 updateStats();
                 maxComboElement.textContent = maxCombo;
                 showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
-                
                 if (inShootingMode) {
                     inShootingMode = false;
                     if (isPointerLocked) {
@@ -1445,19 +1339,16 @@
                     }
                 }
             }
-
             // 更新统计信息
             function updateStats() {
                 const accuracy = shots > 0 ? Math.min(100, Math.round((hits / shots) * 100)) : 0;
                 const averageReactionTime = targetCount > 0 ? Math.round(totalReactionTime / targetCount) : 0;
-                
                 shotsElement.textContent = shots;
                 hitsElement.textContent = hits;
                 accuracyElement.textContent = accuracy + '%';
                 reactionElement.textContent = averageReactionTime + 'ms';
                 scoreElement.textContent = score;
             }
-
             // 更新语言
             function updateLanguage() {
                 const t = translations[language];
@@ -1470,10 +1361,8 @@
                 reactionLabel.innerHTML = t.reactionLabel;
                 maxComboLabel.innerHTML = t.maxComboLabel;
                 scoreLabel.innerHTML = t.scoreLabel;
-                
                 comboDisplay.textContent = '0';
                 scoreDisplay.textContent = '0';
-                
                 startBtn.innerHTML = t.startBtn;
                 resetBtn.innerHTML = t.resetBtn;
                 langBtn.innerHTML = t.langBtn;
@@ -1486,14 +1375,12 @@
                 instruction6.innerHTML = t.instruction6;
                 instruction7.innerHTML = t.instruction7;
                 footerText.innerHTML = t.footerText;
-                
                 if (gameActive) {
                     startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                 } else {
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
-
             // 初始化
             updateStats();
             updateLanguage();
