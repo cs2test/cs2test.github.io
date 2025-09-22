@@ -946,7 +946,6 @@
                     const distanceToCenter = localPoint.length();
                     const radius = target.geometry.parameters.radius;
 
-                    const localPoint = target.worldToLocal(clickPoint.clone());
                     // 只考虑X和Z分量来计算二维距离
                     const distanceToCenter2D = Math.sqrt(localPoint.x * localPoint.x + localPoint.z * localPoint.z);
                     // 计算标准化距离（0表示击中中心，1表示击中边缘）
