@@ -753,7 +753,7 @@
             const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
-            renderer.setClearColor(0x1E3A8A); // 更深的蓝色天空
+            renderer.setClearColor(0x4A90E2); // 更深的蓝色天空
             trainingArea.appendChild(renderer.domElement);
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
@@ -763,7 +763,7 @@
             // 创建更深的天空盒
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
             const skyboxMaterial = new THREE.MeshBasicMaterial({
-                color: 0x1E3A8A, // 更深的蓝色
+                color: 0x4A90E2, // 更深的蓝色
                 side: THREE.BackSide,
                 transparent: true,
                 opacity: 0.95
@@ -942,9 +942,7 @@
                     const normalizedDistance = distanceToCenter / radius;
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
                     // 显示实际得分，包括连击加成
-                    const comboBonus = Math.min(combo + 1, 10) * 1;
-                    const totalPoints = points + comboBonus;
-                    showScoreIndicator(totalPoints, 0, 0);
+                    showScoreIndicator(points, 0, 0);
                     targetHit(target, points);
                 } else {
                     combo = 0;
