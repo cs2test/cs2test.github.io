@@ -950,7 +950,7 @@
                     // 根据距离计算得分：中心10分，边缘1分
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
     
-                    targetHit(target, points, intersects); // <-- 关键修改：传递 intersects 参数
+                    targetHit(target, points); // 传入计算好的 points
                 } else {
                     combo = 0;
                     comboDisplay.textContent = combo;
@@ -1112,7 +1112,7 @@
                 }
     
                 const comboBonus = Math.min(combo, 10) * 1;
-                const totalPoints = scorePoints + comboBonus;
+                const totalPoints = points + comboBonus; // 使用传入的 points
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
