@@ -698,19 +698,12 @@
             let angleChangeCounter = 0;
             let minAngleChange = -30;
             let maxAngleChange = 30;
-            let cameraRotation = { x: 0, y: 0 }; // <-- 在这里统一声明
             // Difficulty settings
             const difficultySettings = {
                 easy: { size: 5, speed: 5000, spawnRate: 800 }
             };
             // 灵敏度设置
             let sensitivity = 0.002;
-            
-            // 后坐力设置
-            let recoilStrength = 0.1; // 后坐力强度，可调整
-            let recoilRecovery = 0.95; // 后坐力恢复速度，可调整
-            let currentRecoil = { x: 0, y: 0 }; // 当前后坐力偏移
-            
             // Language translations
             const translations = {
                 en: {
@@ -775,7 +768,7 @@
             const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
-            renderer.setClearColor(0x87CEEB); // 设置天空背景色为天蓝色
+            renderer.setClearColor(0x111133);
             trainingArea.appendChild(renderer.domElement);
             // 添加光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -783,72 +776,16 @@
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
-            
-            // 创建真实的白云效果
-            const cloudGroup = new THREE.Group();
-            scene.add(cloudGroup);
-            
-            // 创建云朵材质
-            const cloudMaterial = new THREE.MeshStandardMaterial({
-                color: 0xffffff,
-                roughness: 0.8,
-                metalness: 0.1,
-                transparent: true,
-                opacity: 0.8
-            });
-            
-            // 创建多个云朵
-            function createCloud(x, y, z, scale) {
-                const cloud = new THREE.Group();
-                
-                // 创建多个球体组成云朵
-                const cloudParts = [
-                    { x: 0, y: 0, z: 0, radius: 5 },
-                    { x: 3, y: 1, z: 2, radius: 4 },
-                    { x: -3, y: 1, z: -1, radius: 4.5 },
-                    { x: 2, y: -1, z: -3, radius: 3.5 },
-                    { x: -2, y: 2, z: 3, radius: 3 },
-                    { x: 4, y: -0.5, z: 1, radius: 3.8 }
-                ];
-                
-                cloudParts.forEach(part => {
-                    const geometry = new THREE.SphereGeometry(part.radius, 16, 16);
-                    const mesh = new THREE.Mesh(geometry, cloudMaterial);
-                    mesh.position.set(part.x, part.y, part.z);
-                    cloud.add(mesh);
-                });
-                
-                cloud.position.set(x, y, z);
-                cloud.scale.set(scale, scale, scale);
-                return cloud;
-            }
-            
-            // 在天空中添加云朵
-            const cloudPositions = [
-                { x: -300, y: 150, z: -200, scale: 3 },
-                { x: 200, y: 200, z: -150, scale: 2.5 },
-                { x: -150, y: 180, z: 100, scale: 3.2 },
-                { x: 300, y: 160, z: 200, scale: 2.8 },
-                { x: 0, y: 220, z: -250, scale: 3.5 },
-                { x: -250, y: 190, z: 250, scale: 2.7 }
-            ];
-            
-            cloudPositions.forEach(pos => {
-                const cloud = createCloud(pos.x, pos.y, pos.z, pos.scale);
-                cloudGroup.add(cloud);
-            });
-            
-            // 创建天空盒（在云朵之后，作为背景）
+            // 创建天空盒 - 修改为蓝天颜色
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
             const skyboxMaterial = new THREE.MeshBasicMaterial({
-                color: 0x87CEEB,
+                color: 0x87CEEB, // 天空蓝
                 side: THREE.BackSide,
                 transparent: true,
-                opacity: 0.6
+                opacity: 0.9
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
-            
             // 创建地面
             const tileGeometry = new THREE.PlaneGeometry(100, 100);
             const tileMaterial = new THREE.MeshStandardMaterial({
@@ -947,7 +884,6 @@
             createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
             // 设置相机初始位置 - 面朝A墙
             camera.position.set(0, 5, 0);
-            cameraRotation = { x: 0, y: 0 };
             camera.rotation.set(0, 0, 0, 'YXZ'); // 初始朝向Z-方向（A墙）
             camera.lookAt(0, 5, -10); // 看向A墙
             // 创建射线投射器用于检测点击
@@ -961,6 +897,7 @@
             // ==================== 3D 控制逻辑 ====================
             let inShootingMode = false;
             let isPointerLocked = false;
+            let cameraRotation = { x: 0, y: 0 };
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
@@ -995,22 +932,10 @@
                 if (!inShootingMode || !isPointerLocked) return;
                 const deltaX = e.movementX;
                 const deltaY = e.movementY;
-                
-                // 应用后坐力恢复
-                cameraRotation.y -= deltaX * sensitivity + currentRecoil.y;
-                cameraRotation.x -= deltaY * sensitivity + currentRecoil.x;
-                
-                // 限制上下视角
+                cameraRotation.y -= deltaX * sensitivity;
+                cameraRotation.x -= deltaY * sensitivity;
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
                 camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
-                
-                // 逐渐恢复后坐力
-                currentRecoil.x *= recoilRecovery;
-                currentRecoil.y *= recoilRecovery;
-                
-                // 如果后坐力很小，就重置为0
-                if (Math.abs(currentRecoil.x) < 0.001) currentRecoil.x = 0;
-                if (Math.abs(currentRecoil.y) < 0.001) currentRecoil.y = 0;
             });
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
@@ -1018,11 +943,6 @@
                 updateStats();
                 if (!gameActive) return;
                 if (!inShootingMode) return;
-                
-                // 应用后坐力
-                currentRecoil.x += (Math.random() - 0.5) * recoilStrength * 0.5; // 垂直后坐力
-                currentRecoil.y += (Math.random() - 0.5) * recoilStrength; // 水平后坐力
-                
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
@@ -1031,17 +951,16 @@
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
                     targetCount++;
-                    
-                    // 计算击中位置得分（1-10环）
-                    const distanceToCenter = intersects[0].distance;
+                    // 计算命中得分 - 从1到10环
+                    const point = intersects[0].point;
+                    const targetCenter = target.position;
+                    const localPoint = point.clone().sub(targetCenter);
+                    const distanceFromCenter = localPoint.length();
                     const radius = target.geometry.parameters.radius;
-                    const normalizedDistance = distanceToCenter / radius;
-                    
-                    // 10环到1环的得分计算：中心为10分，边缘为1分
-                    // 使用线性插值：points = 10 - 9 * normalizedDistance
-                    // 然后取整确保是整数分
-                    let points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                    
+                    // 计算环数：距离越小，环数越高
+                    // 0环 = 半径处，10环 = 中心处
+                    const ring = Math.max(0, Math.ceil(10 - (distanceFromCenter / radius) * 10));
+                    const points = Math.max(1, ring); // 确保至少得1分
                     showScoreIndicator(points, 0, 0);
                     targetHit(target, points);
                 } else {
@@ -1414,7 +1333,6 @@
                 snakeTrail = [];
                 currentAngle = 0;
                 angleChangeCounter = 0;
-                currentRecoil = { x: 0, y: 0 }; // 重置后坐力
                 targets.forEach(target => {
                     if (target.parent) {
                         scene.remove(target);
@@ -1432,7 +1350,7 @@
                 }
                 // 重置相机位置和旋转
                 camera.position.set(0, 5, 0);
-                let cameraRotation = { x: 0, y: 0 }; 
+                cameraRotation = { x: 0, y: 0 };
                 camera.rotation.set(0, 0, 0, 'YXZ');
                 camera.lookAt(0, 5, -10);
             }
