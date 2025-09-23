@@ -789,8 +789,8 @@
             scene.add(ground);
             // === 创建墙壁 ===
             const wallWidth = 100;
-            const wallDepth = 25;
-            const wallHeight = 50;
+            const wallDepth = 10;
+            const wallHeight = 20;
             const wallDistance = 50;
             const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
             const wallMaterial = new THREE.MeshStandardMaterial({
@@ -805,20 +805,20 @@
             wallMaterial.map.needsUpdate = true;
             // 后墙 (Z+) - 标签C
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
-            backWall.position.set(0, -1, wallDistance); // 将 y 位置改为 -1
+            backWall.position.set(0, -0.1, wallDistance); // 将 y 位置改为 -1
             scene.add(backWall);
             // 前墙 (Z-) - 标签A
             const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
-            frontWall.position.set(0, -1, -wallDistance); // 将 y 位置改为 -1
+            frontWall.position.set(0, -0.1, -wallDistance); // 将 y 位置改为 -1
             scene.add(frontWall);
             // 左墙 (X-) - 标签D
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
-            leftWall.position.set(-wallDistance, -1, 0); // 将 y 位置改为 -1
+            leftWall.position.set(-wallDistance, -0.1, 0); // 将 y 位置改为 -1
             leftWall.rotation.y = Math.PI / 2;
             scene.add(leftWall);
             // 右墙 (X+) - 标签B
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
-            rightWall.position.set(wallDistance, -1, 0); // 将 y 位置改为 -1
+            rightWall.position.set(wallDistance, -0.1, 0); // 将 y 位置改为 -1
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
             // 添加墙壁标签 - 修复若隐若现的问题
