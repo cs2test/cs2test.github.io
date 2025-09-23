@@ -620,9 +620,9 @@
                 <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
                 <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
                 <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
-                <li id="instruction-4">在射击模式下，点击敌人进行射击</li>
-                <li id="instruction-5">击中头部得 <span class='highlight'>2分</span>，击中身体得 <span class='highlight'>1分</span></li>
-                <li id="instruction-6">必须一枪爆头或两枪打中身体才能消灭敌人</li>
+                <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
+                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span></li>
+                <li id="instruction-6">连续命中会获得额外连击加成</li>
                 <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
             </ul>
         </div>
@@ -687,8 +687,12 @@
             let angleChangeCounter = 0;
             let minAngleChange = -30;
             let maxAngleChange = 30;
+            // === 关键修改: 设置小球生成的最小和最大半径 ===
+            const minSpawnRadius = 15; // 小球生成的最近距离
+            const maxSpawnRadius = 35; // 小球生成的最远距离
+            // === 关键修改: 将小球大小从 5 减小到 3 ===
             const difficultySettings = {
-                easy: { size: 5, speed: 5000, spawnRate: 800 }
+                easy: { size: 3, speed: 5000, spawnRate: 800 } // 备注: 小球大小已调整
             };
             let sensitivity = 0.002;
             const translations = {
@@ -711,9 +715,9 @@
                     instruction1: "Press <span class='highlight'>A</span> key to enter shooting mode, mouse becomes a crosshair and can drag the 3D view",
                     instruction2: "Press <span class='highlight'>A</span> key again to exit shooting mode, mouse returns to normal",
                     instruction3: "Press <span class='highlight'>S</span> key to start/pause/resume training",
-                    instruction4: "In shooting mode, click on enemies to shoot",
-                    instruction5: "Hit head for <span class='highlight'>2 points</span>, body for <span class='highlight'>1 point</span>",
-                    instruction6: "Must headshot or two body shots to eliminate enemy",
+                    instruction4: "In shooting mode, click on red spheres to shoot",
+                    instruction5: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
+                    instruction6: "Consecutive hits earn bonus points",
                     instruction7: "Press <span class='highlight'>F11</span> for fullscreen",
                     footerText: "CS2 3D Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
                     ready: "READY",
@@ -739,9 +743,9 @@
                     instruction1: "按下 <span class='highlight'>A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面",
                     instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
                     instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
-                    instruction4: "在射击模式下，点击敌人进行射击",
-                    instruction5: "击中头部得 <span class='highlight'>2分</span>，击中身体得 <span class='highlight'>1分</span>",
-                    instruction6: "必须一枪爆头或两枪打中身体才能消灭敌人",
+                    instruction4: "在射击模式下，点击红色球体进行射击",
+                    instruction5: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
+                    instruction6: "连续命中会获得额外连击加成",
                     instruction7: "按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
                     footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
@@ -770,9 +774,8 @@
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
-            // === 创建黑白格子地面 ===
-            const groundGeometry = new THREE.PlaneGeometry(100, 100);
-            const groundMaterial = new THREE.MeshStandardMaterial({
+            const tileGeometry = new THREE.PlaneGeometry(100, 100);
+            const tileMaterial = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
                 roughness: 0.8,
                 metalness: 0.2,
@@ -780,11 +783,11 @@
                 opacity: 0.8,
                 map: createCheckerboardTexture()
             });
-            groundMaterial.map.wrapS = THREE.RepeatWrapping;
-            groundMaterial.map.wrapT = THREE.RepeatWrapping;
-            groundMaterial.map.repeat.set(10, 10);
-            groundMaterial.map.needsUpdate = true;
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            tileMaterial.map.wrapS = THREE.RepeatWrapping;
+            tileMaterial.map.wrapT = THREE.RepeatWrapping;
+            tileMaterial.map.repeat.set(10, 10);
+            tileMaterial.map.needsUpdate = true;
+            const ground = new THREE.Mesh(tileGeometry, tileMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = 1;
             scene.add(ground);
@@ -940,57 +943,16 @@
                     targetCount++;
                     // 获取点击点的世界坐标
                     const clickPoint = intersects[0].point;
-                    // 将点击点转换到目标人体的局部坐标系
+                    // 将点击点转换到目标球体的局部坐标系
                     const localPoint = target.worldToLocal(clickPoint.clone());
-                    // 计算点击点到头部中心的距离（在人体局部坐标系中，头部中心是 (0, 2, 0)）
-                    const headCenter = new THREE.Vector3(0, 2, 0);
-                    const distanceToHead = localPoint.distanceTo(headCenter);
-                    // 计算点击点到身体中心的距离（在人体局部坐标系中，身体中心是 (0, 0, 0)）
-                    const bodyCenter = new THREE.Vector3(0, 0, 0);
-                    const distanceToBody = localPoint.distanceTo(bodyCenter);
-                    // 定义头部和身体的半径
-                    const headRadius = 0.8;
-                    const bodyRadius = 1.5;
-                    // 判断是否击中头部
-                    const hitHead = distanceToHead <= headRadius;
-                    // 判断是否击中身体
-                    const hitBody = distanceToBody <= bodyRadius && !hitHead;
-                    // 根据击中部位计算得分
-                    let points = 0;
-                    if (hitHead) {
-                        points = 2;
-                    } else if (hitBody) {
-                        points = 1;
-                    }
-                    // 更新目标的命中信息
-                    if (hitHead) {
-                        target.userData.headHit = true;
-                        target.userData.bodyHits = 0;
-                    } else if (hitBody) {
-                        target.userData.bodyHits = (target.userData.bodyHits || 0) + 1;
-                    }
-                    // 检查是否满足消灭条件
-                    if ((target.userData.headHit && target.userData.bodyHits === 0) || 
-                        (target.userData.bodyHits >= 2)) {
-                        // 消灭目标
-                        targetHit(target, points);
-                    } else {
-                        // 不满足消灭条件，仅增加连击
-                        if (points > 0) {
-                            hits++;
-                            combo++;
-                            comboDisplay.textContent = combo;
-                            if (combo > maxCombo) {
-                                maxCombo = combo;
-                                maxComboElement.textContent = maxCombo;
-                            }
-                            score += points;
-                            scoreDisplay.textContent = score;
-                            updateStats();
-                            showScoreIndicator(points, 0, 0);
-                            createExplosionEffect(target.position);
-                        }
-                    }
+                    // 计算点击点到球体中心的距离（在球体局部坐标系中，中心是原点）
+                    const distanceToCenter = localPoint.length();
+                    const radius = target.geometry.parameters.radius;
+                    // 计算标准化距离（0表示击中中心，1表示击中边缘）
+                    const normalizedDistance = Math.min(1, distanceToCenter / radius);
+                    // 根据距离计算得分：中心10分，边缘1分
+                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
+                    targetHit(target, points);
                 } else {
                     combo = 0;
                     comboDisplay.textContent = combo;
@@ -1014,57 +976,6 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-            // 创建人形模型
-            function createHumanModel(x, y, z) {
-                const group = new THREE.Group();
-                // 创建头部
-                const headGeometry = new THREE.SphereGeometry(0.8, 16, 16);
-                const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f5dc }); // 肉色
-                const head = new THREE.Mesh(headGeometry, headMaterial);
-                head.position.y = 2;
-                group.add(head);
-                // 创建身体
-                const bodyGeometry = new THREE.CylinderGeometry(1.5, 1.5, 2, 16);
-                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 }); // 黑色衣服
-                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-                body.position.y = 1;
-                body.rotation.z = Math.PI;
-                group.add(body);
-                // 创建左臂
-                const armGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.5, 16);
-                const armMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 }); // 黑色衣服
-                const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-                leftArm.position.set(-1.5, 1.5, 0);
-                leftArm.rotation.z = Math.PI/4;
-                group.add(leftArm);
-                // 创建右臂
-                const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-                rightArm.position.set(1.5, 1.5, 0);
-                rightArm.rotation.z = -Math.PI/4;
-                group.add(rightArm);
-                // 创建左腿
-                const legGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.5, 16);
-                const legMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 }); // 黑色裤子
-                const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-                leftLeg.position.set(-0.75, 0.5, 0);
-                leftLeg.rotation.z = Math.PI/8;
-                group.add(leftLeg);
-                // 创建右腿
-                const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-                rightLeg.position.set(0.75, 0.5, 0);
-                rightLeg.rotation.z = -Math.PI/8;
-                group.add(rightLeg);
-                // 设置位置
-                group.position.set(x, y, z);
-                // 添加用户数据
-                group.userData = {
-                    spawnTime: Date.now().toString(),
-                    headHit: false,
-                    bodyHits: 0,
-                    isAlive: true
-                };
-                return group;
-            }
             // 生成目标函数
             function spawnTargets() {
                 if (!gameActive) return;
@@ -1074,6 +985,7 @@
                 }
                 lastSpawnTime = now;
                 const settings = difficultySettings.easy;
+                const size = settings.size;
                 let x, y, z;
                 y = 5;
                 if (snakeTrail.length === 0) {
@@ -1094,6 +1006,19 @@
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
                     let newZ = lastPos.z + Math.sin(radians) * step;
+                    // === 关键修改: 限制小球生成的半径范围 ===
+                    const distanceFromCenter = Math.sqrt(newX * newX + newZ * newZ);
+                    if (distanceFromCenter < minSpawnRadius) {
+                        // 如果太近，按比例放大到最小半径
+                        const scaleFactor = minSpawnRadius / distanceFromCenter;
+                        newX *= scaleFactor;
+                        newZ *= scaleFactor;
+                    } else if (distanceFromCenter > maxSpawnRadius) {
+                        // 如果太远，按比例缩小到最大半径
+                        const scaleFactor = maxSpawnRadius / distanceFromCenter;
+                        newX *= scaleFactor;
+                        newZ *= scaleFactor;
+                    }
                     const padding = wallDistance - 20;
                     if (newX < -padding) {
                         newX = -padding;
@@ -1116,15 +1041,25 @@
                 if (snakeTrail.length > snakeLength) {
                     snakeTrail.shift();
                 }
-                const humanModel = createHumanModel(x, y, z);
-                scene.add(humanModel);
-                targets.push(humanModel);
+                const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 0xff0000, 
+                    transparent: true, 
+                    opacity: 0.9,
+                    depthTest: true
+                });
+                const target = new THREE.Mesh(geometry, material);
+                target.position.set(x, y, z);
+                target.userData.spawnTime = Date.now().toString();
+                target.userData.isHit = false;
+                scene.add(target);
+                targets.push(target);
                 setTimeout(() => {
-                    if (humanModel.userData.isAlive && humanModel.parent) {
+                    if (!target.userData.isHit && target.parent) {
                         totalReactionTime += settings.speed;
                         targetCount++;
-                        scene.remove(humanModel);
-                        targets.splice(targets.indexOf(humanModel), 1);
+                        scene.remove(target);
+                        targets.splice(targets.indexOf(target), 1);
                         combo = 0;
                         comboDisplay.textContent = combo;
                         updateStats();
@@ -1133,8 +1068,8 @@
             }
             // 处理目标命中
             function targetHit(target, points) {
-                if (!target.userData.isAlive) return;
-                target.userData.isAlive = false;
+                if (target.userData.isHit) return;
+                target.userData.isHit = true;
                 hits++;
                 combo++;
                 comboDisplay.textContent = combo;
@@ -1142,11 +1077,13 @@
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
-                score += points;
+                const comboBonus = Math.min(combo, 10) * 1;
+                const totalPoints = points + comboBonus;
+                score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
-                // 关键修改：在这里调用 showScoreIndicator，并传递 points
-                showScoreIndicator(points, 0, 0);
+                // 关键修改：在这里调用 showScoreIndicator，并传递 totalPoints
+                showScoreIndicator(totalPoints, 0, 0);
                 createExplosionEffect(target.position);
                 setTimeout(() => {
                     if (target.parent) {
