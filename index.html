@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cnonono</title>
+    <title>CS2 3D 精准度训练模拟器</title>
     <script src="https://cs2test.github.io/three.js"></script>
     <style>
         * {
@@ -620,9 +620,9 @@
                 <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
                 <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
                 <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
-                <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
-                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span></li>
-                <li id="instruction-6">连续命中会获得额外连击加成</li>
+                <li id="instruction-4">在射击模式下，点击敌人进行射击</li>
+                <li id="instruction-5">击中头部得 <span class='highlight'>2分</span>，击中身体得 <span class='highlight'>1分</span></li>
+                <li id="instruction-6">必须一枪爆头或两枪打中身体才能消灭敌人</li>
                 <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
             </ul>
         </div>
@@ -711,9 +711,9 @@
                     instruction1: "Press <span class='highlight'>A</span> key to enter shooting mode, mouse becomes a crosshair and can drag the 3D view",
                     instruction2: "Press <span class='highlight'>A</span> key again to exit shooting mode, mouse returns to normal",
                     instruction3: "Press <span class='highlight'>S</span> key to start/pause/resume training",
-                    instruction4: "In shooting mode, click on red spheres to shoot",
-                    instruction5: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
-                    instruction6: "Consecutive hits earn bonus points",
+                    instruction4: "In shooting mode, click on enemies to shoot",
+                    instruction5: "Hit head for <span class='highlight'>2 points</span>, body for <span class='highlight'>1 point</span>",
+                    instruction6: "Must headshot or two body shots to eliminate enemy",
                     instruction7: "Press <span class='highlight'>F11</span> for fullscreen",
                     footerText: "CS2 3D Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
                     ready: "READY",
@@ -739,9 +739,9 @@
                     instruction1: "按下 <span class='highlight'>A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面",
                     instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
                     instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
-                    instruction4: "在射击模式下，点击红色球体进行射击",
-                    instruction5: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
-                    instruction6: "连续命中会获得额外连击加成",
+                    instruction4: "在射击模式下，点击敌人进行射击",
+                    instruction5: "击中头部得 <span class='highlight'>2分</span>，击中身体得 <span class='highlight'>1分</span>",
+                    instruction6: "必须一枪爆头或两枪打中身体才能消灭敌人",
                     instruction7: "按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
                     footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
@@ -770,15 +770,15 @@
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
-            // === 创建沙漠地面 ===
+            // === 创建黑白格子地面 ===
             const groundGeometry = new THREE.PlaneGeometry(100, 100);
             const groundMaterial = new THREE.MeshStandardMaterial({
-                color: 0xf5f5dc, // 沙地颜色
-                roughness: 0.9,
-                metalness: 0.1,
+                color: 0xffffff,
+                roughness: 0.8,
+                metalness: 0.2,
                 transparent: true,
                 opacity: 0.8,
-                map: createDesertTexture()
+                map: createCheckerboardTexture()
             });
             groundMaterial.map.wrapS = THREE.RepeatWrapping;
             groundMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -795,10 +795,10 @@
             const wallDistance = 50;
             const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
             const wallMaterial = new THREE.MeshStandardMaterial({
-                color: 0xe6d6b8, // 石墙颜色
+                color: 0x444444,
                 roughness: 0.7,
                 metalness: 0.3,
-                map: createStoneTexture()
+                map: createCheckerboardTexture()
             });
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -822,82 +822,9 @@
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
-            // === 添加障碍物 ===
-            const crateGeometry = new THREE.BoxGeometry(5, 5, 5);
-            const crateMaterial = new THREE.MeshStandardMaterial({
-                color: 0x8b7355, // 木箱颜色
-                roughness: 0.8,
-                metalness: 0.1,
-                map: createWoodTexture()
-            });
-            crateMaterial.map.wrapS = THREE.RepeatWrapping;
-            crateMaterial.map.wrapT = THREE.RepeatWrapping;
-            crateMaterial.map.repeat.set(2, 2);
-            crateMaterial.map.needsUpdate = true;
-            // 添加多个木箱作为障碍物
-            const crates = [
-                { x: 0, y: 5, z: 30 }, { x: 0, y: 5, z: -30 },
-                { x: 30, y: 5, z: 0 }, { x: -30, y: 5, z: 0 },
-                { x: 15, y: 5, z: 15 }, { x: -15, y: 5, z: -15 },
-                { x: 20, y: 5, z: 20 }, { x: -20, y: 5, z: -20 }
-            ];
-            crates.forEach(crate => {
-                const crateMesh = new THREE.Mesh(crateGeometry, crateMaterial);
-                crateMesh.position.set(crate.x, crate.y, crate.z);
-                scene.add(crateMesh);
-            });
-            // === 添加石阶 ===
-            const stairGeometry = new THREE.BoxGeometry(10, 1, 10);
-            const stairMaterial = new THREE.MeshStandardMaterial({
-                color: 0xd2b48c, // 石阶颜色
-                roughness: 0.7,
-                metalness: 0.2,
-                map: createStoneTexture()
-            });
-            stairMaterial.map.wrapS = THREE.RepeatWrapping;
-            stairMaterial.map.wrapT = THREE.RepeatWrapping;
-            stairMaterial.map.repeat.set(2, 2);
-            stairMaterial.map.needsUpdate = true;
-            // 创建楼梯
-            const stairs = [
-                { x: 20, y: 5, z: 20, rotationY: Math.PI/2 }, // 右侧楼梯
-                { x: -20, y: 5, z: 20, rotationY: Math.PI/2 }, // 左侧楼梯
-                { x: 20, y: 5, z: -20, rotationY: Math.PI/2 }, // 右侧楼梯
-                { x: -20, y: 5, z: -20, rotationY: Math.PI/2 } // 左侧楼梯
-            ];
-            stairs.forEach(stair => {
-                const stairMesh = new THREE.Mesh(stairGeometry, stairMaterial);
-                stairMesh.position.set(stair.x, stair.y, stair.z);
-                if (stair.rotationY) stairMesh.rotation.y = stair.rotationY;
-                scene.add(stairMesh);
-            });
-            // === 添加拱门 ===
-            const archGeometry = new THREE.CylinderGeometry(1, 1, 5, 16);
-            const archMaterial = new THREE.MeshStandardMaterial({
-                color: 0xe6d6b8, // 石墙颜色
-                roughness: 0.7,
-                metalness: 0.3,
-                map: createStoneTexture()
-            });
-            archMaterial.map.wrapS = THREE.RepeatWrapping;
-            archMaterial.map.wrapT = THREE.RepeatWrapping;
-            archMaterial.map.repeat.set(2, 2);
-            archMaterial.map.needsUpdate = true;
-            // 创建拱门
-            const arches = [
-                { x: 0, y: 5, z: 20, rotationY: Math.PI/2 },
-                { x: 0, y: 5, z: -20, rotationY: Math.PI/2 },
-                { x: 20, y: 5, z: 0, rotationY: 0 },
-                { x: -20, y: 5, z: 0, rotationY: 0 }
-            ];
-            arches.forEach(arch => {
-                const archMesh = new THREE.Mesh(archGeometry, archMaterial);
-                archMesh.position.set(arch.x, arch.y, arch.z);
-                if (arch.rotationY) archMesh.rotation.y = arch.rotationY;
-                scene.add(archMesh);
-            });
-            // === 添加墙壁标签 ===
+            // 添加墙壁标签 - 修复若隐若现的问题
             const wallLabels = [];
+            // 创建墙壁标签
             function createWallLabel(text, position, rotation, flipX = false) {
                 const canvas = document.createElement('canvas');
                 canvas.width = 256;
@@ -909,6 +836,7 @@
                 ctx.fillStyle = '#ffd166';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
+                // 如果需要水平翻转
                 if (flipX) {
                     ctx.translate(canvas.width/2, canvas.height/2);
                     ctx.scale(-1, 1);
@@ -916,12 +844,13 @@
                 }
                 ctx.fillText(text, canvas.width/2, canvas.height/2);
                 const texture = new THREE.CanvasTexture(canvas);
+                // 使用 MeshBasicMaterial 并设置 depthTest: false 来避免若隐若现的问题
                 const material = new THREE.MeshBasicMaterial({
                     map: texture,
                     transparent: true,
                     side: THREE.DoubleSide,
-                    depthTest: false,
-                    depthWrite: false
+                    depthTest: false, // 关键：关闭深度测试，确保标签始终可见
+                    depthWrite: false // 关键：关闭深度写入
                 });
                 const geometry = new THREE.PlaneGeometry(15, 15);
                 const label = new THREE.Mesh(geometry, material);
@@ -932,9 +861,13 @@
                 return label;
             }
             // 添加A、B、C、D四个墙壁标签
+            // A墙在前 (Z-)
             createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0));
+            // B墙在右 (X+)
             createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
+            // C墙在后 (Z+)
             createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true);
+            // D墙在左 (X-)
             createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
             // 设置相机初始位置 - 面朝A墙
             camera.position.set(0, 5, 0);
@@ -1007,16 +940,57 @@
                     targetCount++;
                     // 获取点击点的世界坐标
                     const clickPoint = intersects[0].point;
-                    // 将点击点转换到目标球体的局部坐标系
+                    // 将点击点转换到目标人体的局部坐标系
                     const localPoint = target.worldToLocal(clickPoint.clone());
-                    // 计算点击点到球体中心的距离（在球体局部坐标系中，中心是原点）
-                    const distanceToCenter = localPoint.length();
-                    const radius = target.geometry.parameters.radius;
-                    // 计算标准化距离（0表示击中中心，1表示击中边缘）
-                    const normalizedDistance = Math.min(1, distanceToCenter / radius);
-                    // 根据距离计算得分：中心10分，边缘1分
-                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                    targetHit(target, points);
+                    // 计算点击点到头部中心的距离（在人体局部坐标系中，头部中心是 (0, 2, 0)）
+                    const headCenter = new THREE.Vector3(0, 2, 0);
+                    const distanceToHead = localPoint.distanceTo(headCenter);
+                    // 计算点击点到身体中心的距离（在人体局部坐标系中，身体中心是 (0, 0, 0)）
+                    const bodyCenter = new THREE.Vector3(0, 0, 0);
+                    const distanceToBody = localPoint.distanceTo(bodyCenter);
+                    // 定义头部和身体的半径
+                    const headRadius = 0.8;
+                    const bodyRadius = 1.5;
+                    // 判断是否击中头部
+                    const hitHead = distanceToHead <= headRadius;
+                    // 判断是否击中身体
+                    const hitBody = distanceToBody <= bodyRadius && !hitHead;
+                    // 根据击中部位计算得分
+                    let points = 0;
+                    if (hitHead) {
+                        points = 2;
+                    } else if (hitBody) {
+                        points = 1;
+                    }
+                    // 更新目标的命中信息
+                    if (hitHead) {
+                        target.userData.headHit = true;
+                        target.userData.bodyHits = 0;
+                    } else if (hitBody) {
+                        target.userData.bodyHits = (target.userData.bodyHits || 0) + 1;
+                    }
+                    // 检查是否满足消灭条件
+                    if ((target.userData.headHit && target.userData.bodyHits === 0) || 
+                        (target.userData.bodyHits >= 2)) {
+                        // 消灭目标
+                        targetHit(target, points);
+                    } else {
+                        // 不满足消灭条件，仅增加连击
+                        if (points > 0) {
+                            hits++;
+                            combo++;
+                            comboDisplay.textContent = combo;
+                            if (combo > maxCombo) {
+                                maxCombo = combo;
+                                maxComboElement.textContent = maxCombo;
+                            }
+                            score += points;
+                            scoreDisplay.textContent = score;
+                            updateStats();
+                            showScoreIndicator(points, 0, 0);
+                            createExplosionEffect(target.position);
+                        }
+                    }
                 } else {
                     combo = 0;
                     comboDisplay.textContent = combo;
@@ -1040,71 +1014,56 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-            // 创建沙漠纹理
-            function createDesertTexture() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 64;
-                canvas.height = 64;
-                const ctx = canvas.getContext('2d');
-                // 绘制沙地纹理
-                ctx.fillStyle = '#f5f5dc';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                // 添加一些随机的暗色斑点来模拟沙地上的污渍
-                for (let i = 0; i < 50; i++) {
-                    const x = Math.random() * canvas.width;
-                    const y = Math.random() * canvas.height;
-                    const size = Math.random() * 10 + 2;
-                    ctx.fillStyle = '#d2b48c';
-                    ctx.beginPath();
-                    ctx.arc(x, y, size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                return new THREE.CanvasTexture(canvas);
-            }
-            // 创建石墙纹理
-            function createStoneTexture() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 64;
-                canvas.height = 64;
-                const ctx = canvas.getContext('2d');
-                // 绘制石墙纹理
-                ctx.fillStyle = '#e6d6b8';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                // 添加一些随机的暗色斑点来模拟石墙上的污渍
-                for (let i = 0; i < 30; i++) {
-                    const x = Math.random() * canvas.width;
-                    const y = Math.random() * canvas.height;
-                    const size = Math.random() * 10 + 2;
-                    ctx.fillStyle = '#8b7355';
-                    ctx.beginPath();
-                    ctx.arc(x, y, size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                return new THREE.CanvasTexture(canvas);
-            }
-            // 创建木箱纹理
-            function createWoodTexture() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 64;
-                canvas.height = 64;
-                const ctx = canvas.getContext('2d');
-                // 绘制木箱纹理
-                ctx.fillStyle = '#8b7355';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                // 添加木纹效果
-                for (let i = 0; i < 5; i++) {
-                    const x = Math.random() * canvas.width;
-                    const y = Math.random() * canvas.height;
-                    const length = Math.random() * 30 + 10;
-                    const width = Math.random() * 2 + 1;
-                    ctx.strokeStyle = '#654321';
-                    ctx.lineWidth = width;
-                    ctx.beginPath();
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x + length, y + Math.random() * 10 - 5);
-                    ctx.stroke();
-                }
-                return new THREE.CanvasTexture(canvas);
+            // 创建人形模型
+            function createHumanModel(x, y, z) {
+                const group = new THREE.Group();
+                // 创建头部
+                const headGeometry = new THREE.SphereGeometry(0.8, 16, 16);
+                const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f5dc }); // 肉色
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 2;
+                group.add(head);
+                // 创建身体
+                const bodyGeometry = new THREE.CylinderGeometry(1.5, 1.5, 2, 16);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 }); // 黑色衣服
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 1;
+                body.rotation.z = Math.PI;
+                group.add(body);
+                // 创建左臂
+                const armGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.5, 16);
+                const armMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 }); // 黑色衣服
+                const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+                leftArm.position.set(-1.5, 1.5, 0);
+                leftArm.rotation.z = Math.PI/4;
+                group.add(leftArm);
+                // 创建右臂
+                const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+                rightArm.position.set(1.5, 1.5, 0);
+                rightArm.rotation.z = -Math.PI/4;
+                group.add(rightArm);
+                // 创建左腿
+                const legGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.5, 16);
+                const legMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 }); // 黑色裤子
+                const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+                leftLeg.position.set(-0.75, 0.5, 0);
+                leftLeg.rotation.z = Math.PI/8;
+                group.add(leftLeg);
+                // 创建右腿
+                const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+                rightLeg.position.set(0.75, 0.5, 0);
+                rightLeg.rotation.z = -Math.PI/8;
+                group.add(rightLeg);
+                // 设置位置
+                group.position.set(x, y, z);
+                // 添加用户数据
+                group.userData = {
+                    spawnTime: Date.now().toString(),
+                    headHit: false,
+                    bodyHits: 0,
+                    isAlive: true
+                };
+                return group;
             }
             // 生成目标函数
             function spawnTargets() {
@@ -1115,7 +1074,6 @@
                 }
                 lastSpawnTime = now;
                 const settings = difficultySettings.easy;
-                const size = settings.size;
                 let x, y, z;
                 y = 5;
                 if (snakeTrail.length === 0) {
@@ -1158,25 +1116,15 @@
                 if (snakeTrail.length > snakeLength) {
                     snakeTrail.shift();
                 }
-                const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
-                const material = new THREE.MeshBasicMaterial({ 
-                    color: 0xff0000, 
-                    transparent: true, 
-                    opacity: 0.9,
-                    depthTest: true
-                });
-                const target = new THREE.Mesh(geometry, material);
-                target.position.set(x, y, z);
-                target.userData.spawnTime = Date.now().toString();
-                target.userData.isHit = false;
-                scene.add(target);
-                targets.push(target);
+                const humanModel = createHumanModel(x, y, z);
+                scene.add(humanModel);
+                targets.push(humanModel);
                 setTimeout(() => {
-                    if (!target.userData.isHit && target.parent) {
+                    if (humanModel.userData.isAlive && humanModel.parent) {
                         totalReactionTime += settings.speed;
                         targetCount++;
-                        scene.remove(target);
-                        targets.splice(targets.indexOf(target), 1);
+                        scene.remove(humanModel);
+                        targets.splice(targets.indexOf(humanModel), 1);
                         combo = 0;
                         comboDisplay.textContent = combo;
                         updateStats();
@@ -1185,8 +1133,8 @@
             }
             // 处理目标命中
             function targetHit(target, points) {
-                if (target.userData.isHit) return;
-                target.userData.isHit = true;
+                if (!target.userData.isAlive) return;
+                target.userData.isAlive = false;
                 hits++;
                 combo++;
                 comboDisplay.textContent = combo;
@@ -1194,12 +1142,11 @@
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
-                const comboBonus = Math.min(combo, 10) * 1;
-                const totalPoints = points + comboBonus;
-                score += totalPoints;
+                score += points;
                 scoreDisplay.textContent = score;
                 updateStats();
-                showScoreIndicator(totalPoints, 0, 0);
+                // 关键修改：在这里调用 showScoreIndicator，并传递 points
+                showScoreIndicator(points, 0, 0);
                 createExplosionEffect(target.position);
                 setTimeout(() => {
                     if (target.parent) {
@@ -1265,7 +1212,7 @@
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
                 scoreIndicator.className = 'score-indicator';
-                scoreIndicator.textContent = '+' + points;
+                scoreIndicator.textContent = '+' + points; // 显示实际得分
                 const rect = trainingArea.getBoundingClientRect();
                 const screenX = rect.width / 2;
                 const screenY = rect.height / 2;
