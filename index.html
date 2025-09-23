@@ -777,8 +777,7 @@
                 metalness: 0.2,
                 transparent: true,
                 opacity: 0.8,
-                map: createCheckerboardTexture(),
-                depthWrite: false // 添加这一行
+                map: createCheckerboardTexture()
             });
             tileMaterial.map.wrapS = THREE.RepeatWrapping;
             tileMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -966,15 +965,29 @@
                 canvas.height = 64;
                 const ctx = canvas.getContext('2d');
                 const tileSize = 32;
+
+                // 设置画布背景为白色
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 使用半透明的黑色绘制方块，这样可以自然地混合边缘，形成柔和的过渡
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 for (let i = 0; i < canvas.width; i += tileSize) {
                     for (let j = 0; j < canvas.height; j += tileSize) {
-                        const isEven = ((i / tileSize) + (j / tileSize)) % 2 === 0;
-                        ctx.fillStyle = isEven ? '#ffffff' : '#000000';
-                        ctx.fillRect(i, j, tileSize, tileSize);
+                        // 只绘制奇数位置的方块（即黑格）
+                        if (((i / tileSize) + (j / tileSize)) % 2 === 1) {
+                            ctx.fillRect(i, j, tileSize, tileSize);
+                        }
                     }
                 }
+                // 将整个画布应用一个轻微的高斯模糊，进一步柔化边缘
+                ctx.filter = 'blur(0.5px)';
+                ctx.drawImage(canvas, 0, 0);
+                ctx.filter = 'none'; // 重置滤镜
+
                 return new THREE.CanvasTexture(canvas);
             }
+
             // 生成目标函数
             function spawnTargets() {
                 if (!gameActive) return;
