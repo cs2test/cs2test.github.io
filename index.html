@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -688,7 +689,7 @@
             let minAngleChange = -30;
             let maxAngleChange = 30;
             const difficultySettings = {
-                easy: { size: 5, speed: 5000, spawnRate: 800 }
+                easy: { size: 3, speed: 5000, spawnRate: 800 } // 备注小球大小: 将 size 从 5 改为 3
             };
             let sensitivity = 0.002;
             const translations = {
@@ -1136,20 +1137,18 @@
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
                     let newZ = lastPos.z + Math.sin(radians) * step;
-                    const padding = wallDistance - 20;
-                    if (newX < -padding) {
-                        newX = -padding;
-                        currentAngle = 0;
-                    } else if (newX > padding) {
-                        newX = padding;
-                        currentAngle = 180;
-                    }
-                    if (newZ < -padding) {
-                        newZ = -padding;
-                        currentAngle = 90;
-                    } else if (newZ > padding) {
-                        newZ = padding;
-                        currentAngle = 270;
+                    // 备注半径: 添加最小和最大半径限制
+                    const minRadius = 10; // 最近半径
+                    const maxRadius = 20; // 最远半径
+                    const currentRadius = Math.sqrt(newX * newX + newZ * newZ);
+                    if (currentRadius < minRadius) {
+                        const scale = minRadius / currentRadius;
+                        newX *= scale;
+                        newZ *= scale;
+                    } else if (currentRadius > maxRadius) {
+                        const scale = maxRadius / currentRadius;
+                        newX *= scale;
+                        newZ *= scale;
                     }
                     x = newX;
                     z = newZ;
@@ -1171,17 +1170,8 @@
                 target.userData.isHit = false;
                 scene.add(target);
                 targets.push(target);
-                setTimeout(() => {
-                    if (!target.userData.isHit && target.parent) {
-                        totalReactionTime += settings.speed;
-                        targetCount++;
-                        scene.remove(target);
-                        targets.splice(targets.indexOf(target), 1);
-                        combo = 0;
-                        comboDisplay.textContent = combo;
-                        updateStats();
-                    }
-                }, settings.speed);
+                // 备注: 移除了目标自动消失的代码
+                // 原来的自动消失代码已被删除，目标现在只会在被击中时消失
             }
             // 处理目标命中
             function targetHit(target, points) {
@@ -1500,3 +1490,4 @@
     </script>
 </body>
 </html>
+```
