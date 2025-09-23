@@ -621,7 +621,7 @@
                 <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
                 <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
                 <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
-                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span></li>
+                <li id="instruction-5">击中目标得 <span class='highlight'>1分</span>（固定得分）</li>
                 <li id="instruction-6">连续命中会获得额外连击加成</li>
                 <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
             </ul>
@@ -710,7 +710,7 @@
                     instruction2: "Press <span class='highlight'>A</span> key again to exit shooting mode, mouse returns to normal",
                     instruction3: "Press <span class='highlight'>S</span> key to start/pause/resume training",
                     instruction4: "In shooting mode, click on red spheres to shoot",
-                    instruction5: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
+                    instruction5: "Each hit gives <span class='highlight'>1 point</span> (fixed score)",
                     instruction6: "Consecutive hits earn bonus points",
                     instruction7: "Press <span class='highlight'>F11</span> for fullscreen",
                     footerText: "CS2 3D Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
@@ -738,7 +738,7 @@
                     instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
                     instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
                     instruction4: "在射击模式下，点击红色球体进行射击",
-                    instruction5: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
+                    instruction5: "击中目标得 <span class='highlight'>1分</span>（固定得分）",
                     instruction6: "连续命中会获得额外连击加成",
                     instruction7: "按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
                     footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
@@ -1003,18 +1003,8 @@
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
                     targetCount++;
-                    // 获取点击点的世界坐标
-                    const clickPoint = intersects[0].point;
-                    // 将点击点转换到目标球体的局部坐标系
-                    const localPoint = target.worldToLocal(clickPoint.clone());
-                    // 计算点击点到球体中心的距离（在球体局部坐标系中，中心是原点）
-                    const distanceToCenter = localPoint.length();
-                    const radius = target.geometry.parameters.radius;
-                    // 计算标准化距离（0表示击中中心，1表示击中边缘）
-                    const normalizedDistance = Math.min(1, distanceToCenter / radius);
-                    // 根据距离计算得分：中心10分，边缘1分
-                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                    targetHit(target, points);
+                    // 修复: 打破一个球固定得1分
+                    targetHit(target, 1);
                 } else {
                     combo = 0;
                     comboDisplay.textContent = combo;
@@ -1104,7 +1094,7 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-            // 生成目标函数 - 优化为相对于玩家视角左右移动
+            // 生成目标函数 - 优化为在玩家前方集中区域生成
             function spawnTargets() {
                 if (!gameActive) return;
                 const now = Date.now();
@@ -1119,60 +1109,21 @@
                 const minHeight = 3;   // 最低高度
                 const maxHeight = 12;  // 最大高度
                 y = minHeight + Math.random() * (maxHeight - minHeight); // 随机高度
-                // 获取当前相机朝向
-                const cameraDirection = new THREE.Vector3();
-                camera.getWorldDirection(cameraDirection);
-                // 基础距离
-                const baseDistance = 30;
-                // 角度变化控制
-                angleChangeCounter++;
-                if (angleChangeCounter >= 5) { // 每5个目标改变一次角度
-                    angleChangeCounter = 0;
-                    const angleChange = Math.random() * (maxAngleChange - minAngleChange) + minAngleChange;
-                    currentAngle = (currentAngle + angleChange) % 360;
-                    if (currentAngle < 0) currentAngle += 360;
-                }
-                // 计算相对于相机视角的偏移
-                const radians = currentAngle * Math.PI / 180;
-                const offsetDistance = 15 + Math.random() * 20; // 15-35的偏移距离
-                // 创建一个垂直于相机朝向的向量
-                const perpendicular = new THREE.Vector3(-cameraDirection.z, 0, cameraDirection.x);
-                perpendicular.normalize();
-                // 计算基础位置（相机前方）
-                const basePosition = new THREE.Vector3(
-                    camera.position.x + cameraDirection.x * baseDistance,
-                    y,  // 使用随机高度
-                    camera.position.z + cameraDirection.z * baseDistance
-                );
-                // 添加垂直偏移
-                const offsetX = perpendicular.x * offsetDistance;
-                const offsetZ = perpendicular.z * offsetDistance;
-                x = basePosition.x + offsetX;
-                z = basePosition.z + offsetZ;
-                // 备注半径: 添加最小和最大半径限制
-                const minRadius = 10; // 最近半径
-                const maxRadius = 12; // 最远半径
-                // 计算从相机到目标的距离
-                const distanceFromCamera = Math.sqrt(
-                    Math.pow(x - camera.position.x, 2) + 
-                    Math.pow(z - camera.position.z, 2)
-                );
-                // 如果距离超出范围，进行调整
-                if (distanceFromCamera < minRadius || distanceFromCamera > maxRadius) {
-                    const directionX = x - camera.position.x;
-                    const directionZ = z - camera.position.z;
-                    const currentDistance = Math.sqrt(directionX * directionX + directionZ * directionZ);
-                    let targetDistance;
-                    if (distanceFromCamera < minRadius) {
-                        targetDistance = minRadius;
-                    } else {
-                        targetDistance = maxRadius;
-                    }
-                    // 按比例缩放位置
-                    const scale = targetDistance / currentDistance;
-                    x = camera.position.x + directionX * scale;
-                    z = camera.position.z + directionZ * scale;
-                }
+                // 获取当前相机位置和朝向
+                const cameraPos = camera.position.clone();
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+                // 备注半径: 设置小球离玩家的最小距离为10，最大距离为12
+                const minDistance = 10;
+                const maxDistance = 12;
+                const distance = minDistance + Math.random() * (maxDistance - minDistance);
+                // 在相机前方的一个小区域内随机生成
+                const spread = 8; // 生成区域的扩散范围
+                const offsetX = (Math.random() - 0.5) * spread;
+                const offsetZ = (Math.random() - 0.5) * spread;
+                // 计算目标位置
+                x = cameraPos.x + forward.x * distance + offsetX;
+                z = cameraPos.z + forward.z * distance + offsetZ;
                 // 边界限制
                 const padding = wallDistance - 15;
                 x = Math.max(-padding, Math.min(padding, x));
@@ -1204,12 +1155,11 @@
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
-                const comboBonus = Math.min(combo, 10) * 1;
-                const totalPoints = points + comboBonus;
-                score += totalPoints;
+                // 修复: 不再添加连击奖励，固定得1分
+                score += points;
                 scoreDisplay.textContent = score;
                 updateStats();
-                showScoreIndicator(totalPoints, 0, 0);
+                showScoreIndicator(points, 0, 0);
                 createExplosionEffect(target.position);
                 setTimeout(() => {
                     if (target.parent) {
@@ -1320,8 +1270,6 @@
                             startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
                             startBtn.disabled = false;
                             gameActive = true;
-                            currentAngle = Math.random() * 360;
-                            angleChangeCounter = 0;
                             spawnTargets();
                             targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
                             showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
@@ -1436,8 +1384,6 @@
                 score = 0;
                 comboDisplay.textContent = combo;
                 scoreDisplay.textContent = score;
-                currentAngle = 0;
-                angleChangeCounter = 0;
                 targets.forEach(target => {
                     if (target.parent) {
                         scene.remove(target);
