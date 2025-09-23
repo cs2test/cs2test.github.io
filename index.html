@@ -755,26 +755,24 @@
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
             renderer.setClearColor(0x87CEEB); // 更深的蓝色天空
             trainingArea.appendChild(renderer.domElement);
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 10, 7);
-            scene.add(directionalLight);
             
-            // 添加太阳光效果
-            const sunLight = new THREE.DirectionalLight(0xffeecc, 1.0);
-            sunLight.position.set(50, 80, 30);
-            sunLight.castShadow = true;
-            sunLight.shadow.mapSize.width = 2048;
-            sunLight.shadow.mapSize.height = 2048;
-            sunLight.shadow.camera.near = 0.5;
-            sunLight.shadow.camera.far = 500;
-            sunLight.shadow.camera.left = -50;
-            sunLight.shadow.camera.right = 50;
-            sunLight.shadow.camera.top = 50;
-            sunLight.shadow.camera.bottom = -50;
-            scene.add(sunLight);
-
+            // 主环境光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            
+            // 顶部主光源 - 关键修改：移到头顶上方
+            const topLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            topLight.position.set(0, 50, 0); // 从正上方照射
+            topLight.castShadow = true;
+            topLight.shadow.mapSize.width = 2048;
+            topLight.shadow.mapSize.height = 2048;
+            scene.add(topLight);
+            
+            // 辅助光源 - 从前方稍微照射，避免完全平面化
+            const frontLight = new THREE.DirectionalLight(0xffeecc, 0.6);
+            frontLight.position.set(0, 10, -20);
+            scene.add(frontLight);
+            
             // 创建更深的天空盒
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
             const skyboxMaterial = new THREE.MeshBasicMaterial({
@@ -793,7 +791,7 @@
                 transparent: true,
                 opacity: 0.8,
                 map: createCheckerboardTexture(),
-                envMapIntensity: 1.0 // 增加环境反射强度
+                envMapIntensity: 1.0
             });
             tileMaterial.map.wrapS = THREE.RepeatWrapping;
             tileMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -814,7 +812,7 @@
                 roughness: 0.7,
                 metalness: 0.3,
                 map: createCheckerboardTexture(),
-                envMapIntensity: 1.0 // 增加环境反射强度
+                envMapIntensity: 1.0
             });
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -1046,9 +1044,9 @@
                     color: 0xff0000, 
                     transparent: true, 
                     opacity: 0.9,
-                    metalness: 0.7, // 增加金属感
-                    roughness: 0.3, // 降低粗糙度，增加反光
-                    envMapIntensity: 1.0 // 增加环境反射强度
+                    metalness: 0.6, // 增加金属感
+                    roughness: 0.4, // 降低粗糙度，增加反光
+                    envMapIntensity: 1.0
                 });
                 const target = new THREE.Mesh(geometry, material);
                 target.position.set(x, y, z);
