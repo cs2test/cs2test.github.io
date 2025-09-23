@@ -778,6 +778,7 @@
                 transparent: true,
                 opacity: 0.8,
                 map: createCheckerboardTexture()
+                depthWrite: false // 添加这一行
             });
             tileMaterial.map.wrapS = THREE.RepeatWrapping;
             tileMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -798,6 +799,7 @@
                 roughness: 0.7,
                 metalness: 0.3,
                 map: createCheckerboardTexture()
+                depthWrite: false // 添加这一行
             });
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
