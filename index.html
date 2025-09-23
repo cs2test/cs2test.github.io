@@ -755,24 +755,11 @@
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
             renderer.setClearColor(0x87CEEB); // 更深的蓝色天空
             trainingArea.appendChild(renderer.domElement);
-            
-            // 主环境光
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
-            
-            // 顶部主光源 - 关键修改：移到头顶上方
-            const topLight = new THREE.DirectionalLight(0xffffff, 1.0);
-            topLight.position.set(0, 50, 0); // 从正上方照射
-            topLight.castShadow = true;
-            topLight.shadow.mapSize.width = 2048;
-            topLight.shadow.mapSize.height = 2048;
-            scene.add(topLight);
-            
-            // 辅助光源 - 从前方稍微照射，避免完全平面化
-            const frontLight = new THREE.DirectionalLight(0xffeecc, 0.6);
-            frontLight.position.set(0, 10, -20);
-            scene.add(frontLight);
-            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
             // 创建更深的天空盒
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
             const skyboxMaterial = new THREE.MeshBasicMaterial({
@@ -790,8 +777,7 @@
                 metalness: 0.2,
                 transparent: true,
                 opacity: 0.8,
-                map: createCheckerboardTexture(),
-                envMapIntensity: 1.0
+                map: createCheckerboardTexture()
             });
             tileMaterial.map.wrapS = THREE.RepeatWrapping;
             tileMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -811,8 +797,7 @@
                 color: 0x444444,
                 roughness: 0.7,
                 metalness: 0.3,
-                map: createCheckerboardTexture(),
-                envMapIntensity: 1.0
+                map: createCheckerboardTexture()
             });
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -952,6 +937,7 @@
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
                     targetCount++;
+
                     // 获取点击点的世界坐标
                     const clickPoint = intersects[0].point;
                     // 将点击点转换到目标球体的局部坐标系
@@ -963,6 +949,7 @@
                     const normalizedDistance = Math.min(1, distanceToCenter / radius);
                     // 根据距离计算得分：中心10分，边缘1分
                     const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
+    
                     targetHit(target, points);
                 } else {
                     combo = 0;
@@ -1040,13 +1027,11 @@
                     snakeTrail.shift();
                 }
                 const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
-                const material = new THREE.MeshStandardMaterial({ 
+                const material = new THREE.MeshBasicMaterial({ 
                     color: 0xff0000, 
                     transparent: true, 
                     opacity: 0.9,
-                    metalness: 0.6, // 增加金属感
-                    roughness: 0.4, // 降低粗糙度，增加反光
-                    envMapIntensity: 1.0
+                    depthTest: true
                 });
                 const target = new THREE.Mesh(geometry, material);
                 target.position.set(x, y, z);
@@ -1082,8 +1067,10 @@
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
+
                 // 关键修改：在这里调用 showScoreIndicator，并传递 totalPoints
                 showScoreIndicator(totalPoints, 0, 0);
+
                 createExplosionEffect(target.position);
                 setTimeout(() => {
                     if (target.parent) {
