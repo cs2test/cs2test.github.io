@@ -621,8 +621,8 @@
                 <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
                 <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
                 <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
-                <li id="instruction-5">击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span></li>
-                <li id="instruction-6">连续命中会获得额外连击加成</li>
+                <li id="instruction-5">击中目标得 <span class='highlight'>1分</span>（固定得分）</li>
+                <li id="instruction-6">连续命中会增加连击数（不影响得分）</li>
                 <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
             </ul>
         </div>
@@ -680,10 +680,6 @@
             let countdownTimer = null;
             let language = 'zh';
             let lastSpawnTime = 0;
-            let currentAngle = 0;
-            let angleChangeCounter = 0;
-            let minAngleChange = -30;
-            let maxAngleChange = 30;
             // 备注小球大小: 将 size 从 5 改为 3
             const difficultySettings = {
                 easy: { size: 3, speed: 5000, spawnRate: 800 }
@@ -710,8 +706,8 @@
                     instruction2: "Press <span class='highlight'>A</span> key again to exit shooting mode, mouse returns to normal",
                     instruction3: "Press <span class='highlight'>S</span> key to start/pause/resume training",
                     instruction4: "In shooting mode, click on red spheres to shoot",
-                    instruction5: "Hit center for <span class='highlight'>10 points</span>, edge for <span class='highlight'>1 point</span>",
-                    instruction6: "Consecutive hits earn bonus points",
+                    instruction5: "Each hit gives <span class='highlight'>1 point</span> (fixed score)",
+                    instruction6: "Consecutive hits increase combo (doesn't affect score)",
                     instruction7: "Press <span class='highlight'>F11</span> for fullscreen",
                     footerText: "CS2 3D Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
                     ready: "READY",
@@ -738,8 +734,8 @@
                     instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
                     instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
                     instruction4: "在射击模式下，点击红色球体进行射击",
-                    instruction5: "击中目标中心得 <span class='highlight'>10分</span>，边缘得 <span class='highlight'>1分</span>",
-                    instruction6: "连续命中会获得额外连击加成",
+                    instruction5: "击中目标得 <span class='highlight'>1分</span>（固定得分）",
+                    instruction6: "连续命中会增加连击数（不影响得分）",
                     instruction7: "按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
                     footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
                     ready: "准备就绪",
@@ -1003,18 +999,8 @@
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
                     targetCount++;
-                    // 获取点击点的世界坐标
-                    const clickPoint = intersects[0].point;
-                    // 将点击点转换到目标球体的局部坐标系
-                    const localPoint = target.worldToLocal(clickPoint.clone());
-                    // 计算点击点到球体中心的距离（在球体局部坐标系中，中心是原点）
-                    const distanceToCenter = localPoint.length();
-                    const radius = target.geometry.parameters.radius;
-                    // 计算标准化距离（0表示击中中心，1表示击中边缘）
-                    const normalizedDistance = Math.min(1, distanceToCenter / radius);
-                    // 根据距离计算得分：中心10分，边缘1分
-                    const points = Math.max(1, Math.round(10 - 9 * normalizedDistance));
-                    targetHit(target, points);
+                    // 修复: 打破一个球固定得1分（不再根据击中位置计算不同分数）
+                    targetHit(target, 1);
                 } else {
                     combo = 0;
                     comboDisplay.textContent = combo;
@@ -1104,7 +1090,7 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-            // 生成目标函数 - 优化为在玩家周围随机分布
+            // 生成目标函数 - 优化为在玩家周围随机分布，避免顺时针路径
             function spawnTargets() {
                 if (!gameActive) return;
                 const now = Date.now();
@@ -1169,12 +1155,11 @@
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
-                const comboBonus = Math.min(combo, 10) * 1;
-                const totalPoints = points + comboBonus;
-                score += totalPoints;
+                // 修复: 打破一个球固定得1分，不再添加连击奖励
+                score += points;
                 scoreDisplay.textContent = score;
                 updateStats();
-                showScoreIndicator(totalPoints, 0, 0);
+                showScoreIndicator(points, 0, 0);
                 createExplosionEffect(target.position);
                 setTimeout(() => {
                     if (target.parent) {
