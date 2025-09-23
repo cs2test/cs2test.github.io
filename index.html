@@ -687,12 +687,8 @@
             let angleChangeCounter = 0;
             let minAngleChange = -30;
             let maxAngleChange = 30;
-            // === 关键修改: 设置小球生成的最小和最大半径 ===
-            const minSpawnRadius = 15; // 小球生成的最近距离
-            const maxSpawnRadius = 35; // 小球生成的最远距离
-            // === 关键修改: 将小球大小从 5 减小到 3 ===
             const difficultySettings = {
-                easy: { size: 3, speed: 5000, spawnRate: 800 } // 备注: 小球大小已调整
+                easy: { size: 5, speed: 5000, spawnRate: 800 }
             };
             let sensitivity = 0.002;
             const translations = {
@@ -774,20 +770,21 @@
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
-            const tileGeometry = new THREE.PlaneGeometry(100, 100);
-            const tileMaterial = new THREE.MeshStandardMaterial({
-                color: 0xffffff,
-                roughness: 0.8,
-                metalness: 0.2,
+            // === 创建沙漠地面 ===
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf5f5dc, // 沙地颜色
+                roughness: 0.9,
+                metalness: 0.1,
                 transparent: true,
                 opacity: 0.8,
-                map: createCheckerboardTexture()
+                map: createDesertTexture()
             });
-            tileMaterial.map.wrapS = THREE.RepeatWrapping;
-            tileMaterial.map.wrapT = THREE.RepeatWrapping;
-            tileMaterial.map.repeat.set(10, 10);
-            tileMaterial.map.needsUpdate = true;
-            const ground = new THREE.Mesh(tileGeometry, tileMaterial);
+            groundMaterial.map.wrapS = THREE.RepeatWrapping;
+            groundMaterial.map.wrapT = THREE.RepeatWrapping;
+            groundMaterial.map.repeat.set(10, 10);
+            groundMaterial.map.needsUpdate = true;
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = 1;
             scene.add(ground);
@@ -798,10 +795,10 @@
             const wallDistance = 50;
             const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
             const wallMaterial = new THREE.MeshStandardMaterial({
-                color: 0x444444,
+                color: 0xe6d6b8, // 石墙颜色
                 roughness: 0.7,
                 metalness: 0.3,
-                map: createCheckerboardTexture()
+                map: createStoneTexture()
             });
             wallMaterial.map.wrapS = THREE.RepeatWrapping;
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
@@ -825,9 +822,82 @@
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
-            // 添加墙壁标签 - 修复若隐若现的问题
+            // === 添加障碍物 ===
+            const crateGeometry = new THREE.BoxGeometry(5, 5, 5);
+            const crateMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b7355, // 木箱颜色
+                roughness: 0.8,
+                metalness: 0.1,
+                map: createWoodTexture()
+            });
+            crateMaterial.map.wrapS = THREE.RepeatWrapping;
+            crateMaterial.map.wrapT = THREE.RepeatWrapping;
+            crateMaterial.map.repeat.set(2, 2);
+            crateMaterial.map.needsUpdate = true;
+            // 添加多个木箱作为障碍物
+            const crates = [
+                { x: 0, y: 5, z: 30 }, { x: 0, y: 5, z: -30 },
+                { x: 30, y: 5, z: 0 }, { x: -30, y: 5, z: 0 },
+                { x: 15, y: 5, z: 15 }, { x: -15, y: 5, z: -15 },
+                { x: 20, y: 5, z: 20 }, { x: -20, y: 5, z: -20 }
+            ];
+            crates.forEach(crate => {
+                const crateMesh = new THREE.Mesh(crateGeometry, crateMaterial);
+                crateMesh.position.set(crate.x, crate.y, crate.z);
+                scene.add(crateMesh);
+            });
+            // === 添加石阶 ===
+            const stairGeometry = new THREE.BoxGeometry(10, 1, 10);
+            const stairMaterial = new THREE.MeshStandardMaterial({
+                color: 0xd2b48c, // 石阶颜色
+                roughness: 0.7,
+                metalness: 0.2,
+                map: createStoneTexture()
+            });
+            stairMaterial.map.wrapS = THREE.RepeatWrapping;
+            stairMaterial.map.wrapT = THREE.RepeatWrapping;
+            stairMaterial.map.repeat.set(2, 2);
+            stairMaterial.map.needsUpdate = true;
+            // 创建楼梯
+            const stairs = [
+                { x: 20, y: 5, z: 20, rotationY: Math.PI/2 }, // 右侧楼梯
+                { x: -20, y: 5, z: 20, rotationY: Math.PI/2 }, // 左侧楼梯
+                { x: 20, y: 5, z: -20, rotationY: Math.PI/2 }, // 右侧楼梯
+                { x: -20, y: 5, z: -20, rotationY: Math.PI/2 } // 左侧楼梯
+            ];
+            stairs.forEach(stair => {
+                const stairMesh = new THREE.Mesh(stairGeometry, stairMaterial);
+                stairMesh.position.set(stair.x, stair.y, stair.z);
+                if (stair.rotationY) stairMesh.rotation.y = stair.rotationY;
+                scene.add(stairMesh);
+            });
+            // === 添加拱门 ===
+            const archGeometry = new THREE.CylinderGeometry(1, 1, 5, 16);
+            const archMaterial = new THREE.MeshStandardMaterial({
+                color: 0xe6d6b8, // 石墙颜色
+                roughness: 0.7,
+                metalness: 0.3,
+                map: createStoneTexture()
+            });
+            archMaterial.map.wrapS = THREE.RepeatWrapping;
+            archMaterial.map.wrapT = THREE.RepeatWrapping;
+            archMaterial.map.repeat.set(2, 2);
+            archMaterial.map.needsUpdate = true;
+            // 创建拱门
+            const arches = [
+                { x: 0, y: 5, z: 20, rotationY: Math.PI/2 },
+                { x: 0, y: 5, z: -20, rotationY: Math.PI/2 },
+                { x: 20, y: 5, z: 0, rotationY: 0 },
+                { x: -20, y: 5, z: 0, rotationY: 0 }
+            ];
+            arches.forEach(arch => {
+                const archMesh = new THREE.Mesh(archGeometry, archMaterial);
+                archMesh.position.set(arch.x, arch.y, arch.z);
+                if (arch.rotationY) archMesh.rotation.y = arch.rotationY;
+                scene.add(archMesh);
+            });
+            // === 添加墙壁标签 ===
             const wallLabels = [];
-            // 创建墙壁标签
             function createWallLabel(text, position, rotation, flipX = false) {
                 const canvas = document.createElement('canvas');
                 canvas.width = 256;
@@ -839,7 +909,6 @@
                 ctx.fillStyle = '#ffd166';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                // 如果需要水平翻转
                 if (flipX) {
                     ctx.translate(canvas.width/2, canvas.height/2);
                     ctx.scale(-1, 1);
@@ -847,13 +916,12 @@
                 }
                 ctx.fillText(text, canvas.width/2, canvas.height/2);
                 const texture = new THREE.CanvasTexture(canvas);
-                // 使用 MeshBasicMaterial 并设置 depthTest: false 来避免若隐若现的问题
                 const material = new THREE.MeshBasicMaterial({
                     map: texture,
                     transparent: true,
                     side: THREE.DoubleSide,
-                    depthTest: false, // 关键：关闭深度测试，确保标签始终可见
-                    depthWrite: false // 关键：关闭深度写入
+                    depthTest: false,
+                    depthWrite: false
                 });
                 const geometry = new THREE.PlaneGeometry(15, 15);
                 const label = new THREE.Mesh(geometry, material);
@@ -864,13 +932,9 @@
                 return label;
             }
             // 添加A、B、C、D四个墙壁标签
-            // A墙在前 (Z-)
             createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0));
-            // B墙在右 (X+)
             createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
-            // C墙在后 (Z+)
             createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true);
-            // D墙在左 (X-)
             createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
             // 设置相机初始位置 - 面朝A墙
             camera.position.set(0, 5, 0);
@@ -976,6 +1040,72 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
+            // 创建沙漠纹理
+            function createDesertTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                // 绘制沙地纹理
+                ctx.fillStyle = '#f5f5dc';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // 添加一些随机的暗色斑点来模拟沙地上的污渍
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 10 + 2;
+                    ctx.fillStyle = '#d2b48c';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+            // 创建石墙纹理
+            function createStoneTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                // 绘制石墙纹理
+                ctx.fillStyle = '#e6d6b8';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // 添加一些随机的暗色斑点来模拟石墙上的污渍
+                for (let i = 0; i < 30; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 10 + 2;
+                    ctx.fillStyle = '#8b7355';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+            // 创建木箱纹理
+            function createWoodTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                // 绘制木箱纹理
+                ctx.fillStyle = '#8b7355';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // 添加木纹效果
+                for (let i = 0; i < 5; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const length = Math.random() * 30 + 10;
+                    const width = Math.random() * 2 + 1;
+                    ctx.strokeStyle = '#654321';
+                    ctx.lineWidth = width;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + length, y + Math.random() * 10 - 5);
+                    ctx.stroke();
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
             // 生成目标函数
             function spawnTargets() {
                 if (!gameActive) return;
@@ -1006,19 +1136,6 @@
                     const radians = currentAngle * Math.PI / 180;
                     let newX = lastPos.x + Math.cos(radians) * step;
                     let newZ = lastPos.z + Math.sin(radians) * step;
-                    // === 关键修改: 限制小球生成的半径范围 ===
-                    const distanceFromCenter = Math.sqrt(newX * newX + newZ * newZ);
-                    if (distanceFromCenter < minSpawnRadius) {
-                        // 如果太近，按比例放大到最小半径
-                        const scaleFactor = minSpawnRadius / distanceFromCenter;
-                        newX *= scaleFactor;
-                        newZ *= scaleFactor;
-                    } else if (distanceFromCenter > maxSpawnRadius) {
-                        // 如果太远，按比例缩小到最大半径
-                        const scaleFactor = maxSpawnRadius / distanceFromCenter;
-                        newX *= scaleFactor;
-                        newZ *= scaleFactor;
-                    }
                     const padding = wallDistance - 20;
                     if (newX < -padding) {
                         newX = -padding;
@@ -1082,7 +1199,6 @@
                 score += totalPoints;
                 scoreDisplay.textContent = score;
                 updateStats();
-                // 关键修改：在这里调用 showScoreIndicator，并传递 totalPoints
                 showScoreIndicator(totalPoints, 0, 0);
                 createExplosionEffect(target.position);
                 setTimeout(() => {
@@ -1149,7 +1265,7 @@
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
                 scoreIndicator.className = 'score-indicator';
-                scoreIndicator.textContent = '+' + points; // 显示实际得分
+                scoreIndicator.textContent = '+' + points;
                 const rect = trainingArea.getBoundingClientRect();
                 const screenX = rect.width / 2;
                 const screenY = rect.height / 2;
