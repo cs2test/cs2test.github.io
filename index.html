@@ -832,12 +832,12 @@
             crateMaterial.map.wrapT = THREE.RepeatWrapping;
             crateMaterial.map.repeat.set(2, 2);
             crateMaterial.map.needsUpdate = true;
-            // 添加多个木箱作为障碍物
+            // 备注: 将箱子移得更远，避免阻挡小球
             const crates = [
-                { x: 0, y: 5, z: 30 }, { x: 0, y: 5, z: -30 },
-                { x: 30, y: 5, z: 0 }, { x: -30, y: 5, z: 0 },
-                { x: 15, y: 5, z: 15 }, { x: -15, y: 5, z: -15 },
-                { x: 20, y: 5, z: 20 }, { x: -20, y: 5, z: -20 }
+                { x: 0, y: 5, z: 40 }, { x: 0, y: 5, z: -40 },
+                { x: 40, y: 5, z: 0 }, { x: -40, y: 5, z: 0 },
+                { x: 25, y: 5, z: 25 }, { x: -25, y: 5, z: -25 },
+                { x: 30, y: 5, z: 30 }, { x: -30, y: 5, z: -30 }
             ];
             crates.forEach(crate => {
                 const crateMesh = new THREE.Mesh(crateGeometry, crateMaterial);
@@ -1115,15 +1115,17 @@
                 const settings = difficultySettings.easy;
                 const size = settings.size;
                 let x, y, z;
-                y = 5;
+                
+                // 备注最大高度和最低高度: 设置小球生成的垂直范围
+                const minHeight = 3;   // 最低高度
+                const maxHeight = 12;  // 最大高度
+                y = minHeight + Math.random() * (maxHeight - minHeight); // 随机高度
                 
                 // 获取当前相机朝向
                 const cameraDirection = new THREE.Vector3();
                 camera.getWorldDirection(cameraDirection);
-                
                 // 基础距离
                 const baseDistance = 30;
-                
                 // 角度变化控制
                 angleChangeCounter++;
                 if (angleChangeCounter >= 5) { // 每5个目标改变一次角度
@@ -1132,63 +1134,51 @@
                     currentAngle = (currentAngle + angleChange) % 360;
                     if (currentAngle < 0) currentAngle += 360;
                 }
-                
                 // 计算相对于相机视角的偏移
                 const radians = currentAngle * Math.PI / 180;
                 const offsetDistance = 15 + Math.random() * 20; // 15-35的偏移距离
-                
                 // 创建一个垂直于相机朝向的向量
                 const perpendicular = new THREE.Vector3(-cameraDirection.z, 0, cameraDirection.x);
                 perpendicular.normalize();
-                
                 // 计算基础位置（相机前方）
                 const basePosition = new THREE.Vector3(
                     camera.position.x + cameraDirection.x * baseDistance,
-                    y,
+                    y,  // 使用随机高度
                     camera.position.z + cameraDirection.z * baseDistance
                 );
-                
                 // 添加垂直偏移
                 const offsetX = perpendicular.x * offsetDistance;
                 const offsetZ = perpendicular.z * offsetDistance;
-                
                 x = basePosition.x + offsetX;
                 z = basePosition.z + offsetZ;
-                
                 // 备注半径: 添加最小和最大半径限制
                 const minRadius = 15; // 最近半径
                 const maxRadius = 20; // 最远半径
-                
                 // 计算从相机到目标的距离
                 const distanceFromCamera = Math.sqrt(
                     Math.pow(x - camera.position.x, 2) + 
                     Math.pow(z - camera.position.z, 2)
                 );
-                
                 // 如果距离超出范围，进行调整
                 if (distanceFromCamera < minRadius || distanceFromCamera > maxRadius) {
                     const directionX = x - camera.position.x;
                     const directionZ = z - camera.position.z;
                     const currentDistance = Math.sqrt(directionX * directionX + directionZ * directionZ);
-                    
                     let targetDistance;
                     if (distanceFromCamera < minRadius) {
                         targetDistance = minRadius;
                     } else {
                         targetDistance = maxRadius;
                     }
-                    
                     // 按比例缩放位置
                     const scale = targetDistance / currentDistance;
                     x = camera.position.x + directionX * scale;
                     z = camera.position.z + directionZ * scale;
                 }
-                
                 // 边界限制
                 const padding = wallDistance - 15;
                 x = Math.max(-padding, Math.min(padding, x));
                 z = Math.max(-padding, Math.min(padding, z));
-                
                 const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
                 const material = new THREE.MeshBasicMaterial({ 
                     color: 0xff0000, 
@@ -1202,7 +1192,6 @@
                 target.userData.isHit = false;
                 scene.add(target);
                 targets.push(target);
-                
                 // 备注: 移除了目标自动消失的代码
                 // 目标现在只会在被击中时消失
             }
