@@ -994,13 +994,14 @@
 
             // 创建枪口闪光效果
             function createMuzzleFlash() {
+                // 使用 MeshBasicMaterial 并设置 emissive 属性
                 const flashGeometry = new THREE.SphereGeometry(0.05, 8, 8);
                 const flashMaterial = new THREE.MeshBasicMaterial({
                     color: 0xffff00,
                     transparent: true,
                     opacity: 0.8,
-                    emissive: 0xffff00,
-                    emissiveIntensity: 1.0
+                    // emissive: 0xffff00, // 这是 MeshBasicMaterial 不支持的属性，已移除
+                    // emissiveIntensity: 1.0 // 这是 MeshBasicMaterial 不支持的属性，已移除
                 });
                 const flash = new THREE.Mesh(flashGeometry, flashMaterial);
                 flash.visible = false;
@@ -1023,6 +1024,10 @@
             let inShootingMode = false;
             let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
+
+            // 创建射线投射器 (已修复)
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
 
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
@@ -1076,6 +1081,7 @@
                 // 触发开枪动画和闪光
                 fireWeapon();
 
+                // 设置射线投射器
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
