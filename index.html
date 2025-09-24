@@ -1323,26 +1323,34 @@
             // 创建手枪模型
             const gunGroup = new THREE.Group();
 
-            // 握把
+            // 握把 (Grip)
             const gripGeometry = new THREE.BoxGeometry(0.08, 0.12, 0.05);
-            const gripMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const gripMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8, metalness: 0.3 });
             const grip = new THREE.Mesh(gripGeometry, gripMaterial);
             grip.position.set(0, -0.06, 0);
             gunGroup.add(grip);
 
-            // 枪管
-            const barrelGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.25);
-            const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            // 枪管 (Barrel) - 使用圆柱体模拟更真实的枪管
+            const barrelGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.25, 16);
+            const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.8 });
             const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
             barrel.position.set(0, -0.025, -0.125); // 连接到握把
+            barrel.rotation.x = Math.PI / 2; // 使圆柱体沿Z轴延伸
             gunGroup.add(barrel);
 
-            // 套筒
+            // 套筒 (Slide) - 使用长方体模拟
             const slideGeometry = new THREE.BoxGeometry(0.08, 0.06, 0.2);
-            const slideMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const slideMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5, metalness: 0.9 });
             const slide = new THREE.Mesh(slideGeometry, slideMaterial);
             slide.position.set(0, 0, -0.1); // 覆盖枪管后半部分
             gunGroup.add(slide);
+
+            // 弹匣 (Magazine) - 一个小方块，增加细节
+            const magazineGeometry = new THREE.BoxGeometry(0.04, 0.08, 0.05);
+            const magazineMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8, metalness: 0.3 });
+            const magazine = new THREE.Mesh(magazineGeometry, magazineMaterial);
+            magazine.position.set(0, -0.08, 0); // 位于握把下方
+            gunGroup.add(magazine);
 
             // 将枪模型附加到手上
             gunGroup.position.set(0, 0, 0); // 相对于手的位置
