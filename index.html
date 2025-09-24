@@ -96,7 +96,6 @@
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
             cursor: none !important;
-            position: relative; /* 确保子元素可以绝对定位 */
         }
         .score-section {
             display: flex;
@@ -554,56 +553,6 @@
                 left: 10px;
             }
         }
-
-        /* ==================== 新增：手枪和闪光样式 ==================== */
-
-        /* 手枪容器，固定在屏幕底部中央 */
-        .pistol-container {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            pointer-events: none; /* 让点击事件穿透到3D场景 */
-        }
-
-        /* 手枪图片 */
-        .pistol-image {
-            width: 200px; /* 可根据需要调整大小 */
-            height: auto;
-            image-rendering: pixelated; /* 如果是像素图，可以加这个 */
-            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
-            transition: transform 0.1s ease-out;
-        }
-
-        /* 后坐力动画 */
-        @keyframes recoil {
-            0% { transform: translateY(0) rotate(0deg); }
-            20% { transform: translateY(-5px) rotate(2deg); }
-            100% { transform: translateY(0) rotate(0deg); }
-        }
-
-        /* 枪口闪光 */
-        .muzzle-flash {
-            position: absolute;
-            top: 30px; /* 根据图片调整，指向枪口位置 */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%);
-            box-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 101;
-            animation: flash 0.1s ease-out;
-        }
-
-        @keyframes flash {
-            0% { opacity: 1; transform: translateX(-50%) scale(1); }
-            100% { opacity: 0; transform: translateX(-50%) scale(2); }
-        }
-
     </style>
 </head>
 <body>
@@ -620,15 +569,6 @@
                 <div class="training-area" id="training-area">
                     <div class="crosshair" id="crosshair"></div>
                     <div class="game-status" id="game-status">准备就绪</div>
-
-                    <!-- ==================== 新增：手枪和闪光的HTML元素 ==================== -->
-                    <div class="pistol-container">
-                        <!-- 这里使用一个占位符图片。在实际项目中，你需要替换为一张真实的CS手枪PNG图片 -->
-                        <!-- 为了演示，这里使用一个简单的灰色矩形代替 -->
-                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzQ0NDQiIC8+PC9zdmc+" alt="手枪" class="pistol-image" id="pistol-image">
-                        <div class="muzzle-flash" id="muzzle-flash"></div>
-                    </div>
-
                 </div>
                 <div class="score-section">
                     <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
@@ -999,9 +939,177 @@
             camera.rotation.set(0, 0, 0, 'YXZ');
             camera.lookAt(0, 5, -10);
 
-            // ==================== 新增：获取手枪和闪光的DOM元素 ====================
-            const pistolImage = document.getElementById('pistol-image');
-            const muzzleFlash = document.getElementById('muzzle-flash');
+            // ==================== 手枪模型相关变量 ====================
+            let pistolModel = null;
+            let isFiring = false;
+            let muzzleFlash = null;
+            let muzzleFlashTimeout = null;
+
+            // ==================== 创建手枪模型 ====================
+            function createPistolModel() {
+                // 清除旧模型
+                if (pistolModel) {
+                    scene.remove(pistolModel);
+                }
+
+                // 创建一个组来包含整个手枪
+                pistolModel = new THREE.Group();
+
+                // 手柄 (Grip)
+                const gripGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.3);
+                const gripMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x333333, // 黑色
+                    roughness: 0.8,
+                    metalness: 0.3
+                });
+                const grip = new THREE.Mesh(gripGeometry, gripMaterial);
+                grip.position.set(0, -0.4, 0); // 调整位置，使其位于枪身下方
+                pistolModel.add(grip);
+
+                // 枪身主体 (Slide & Frame)
+                const frameGeometry = new THREE.BoxGeometry(1.5, 0.6, 0.3);
+                const frameMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x555555, // 深灰色金属
+                    roughness: 0.6,
+                    metalness: 0.8
+                });
+                const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+                frame.position.set(0, 0, 0);
+                pistolModel.add(frame);
+
+                // 枪管 (Barrel)
+                const barrelGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 16);
+                const barrelMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x777777, // 灰色金属
+                    roughness: 0.5,
+                    metalness: 0.9
+                });
+                const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+                barrel.position.set(0.75, 0, 0); // 从枪身前端伸出
+                pistolModel.add(barrel);
+
+                // 准星 (Front Sight)
+                const frontSightGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+                const frontSightMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xff0000, // 红色
+                    roughness: 0.8,
+                    metalness: 0.2
+                });
+                const frontSight = new THREE.Mesh(frontSightGeometry, frontSightMaterial);
+                frontSight.position.set(0.75, 0.1, 0); // 位于枪管上方
+                pistolModel.add(frontSight);
+
+                // 瞄准镜基座 (Rear Sight Base) - 简化表示
+                const rearSightBaseGeometry = new THREE.BoxGeometry(0.2, 0.1, 0.1);
+                const rearSightBaseMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x555555, // 与枪身同色
+                    roughness: 0.6,
+                    metalness: 0.8
+                });
+                const rearSightBase = new THREE.Mesh(rearSightBaseGeometry, rearSightBaseMaterial);
+                rearSightBase.position.set(-0.2, 0.1, 0); // 位于枪身后部上方
+                pistolModel.add(rearSightBase);
+
+                // 将手枪模型添加到场景中
+                scene.add(pistolModel);
+
+                // 初始位置设置
+                updatePistolPosition();
+            }
+
+            // ==================== 更新手枪位置 ====================
+            function updatePistolPosition() {
+                if (!pistolModel) return;
+
+                // 将手枪放在相机前方下方，模拟第一人称视角
+                // 使用相机的位置和方向
+                const cameraPos = camera.position.clone();
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+
+                // 计算手枪的位置：在相机前方一定距离，下方一定高度
+                const distance = 0.5; // 距离相机的距离
+                const heightOffset = -0.5; // 在相机下方的高度
+
+                const pistolPos = cameraPos.clone().add(forward.multiplyScalar(distance));
+                pistolPos.y += heightOffset;
+
+                // 设置手枪的位置
+                pistolModel.position.copy(pistolPos);
+
+                // 设置手枪的旋转，使其指向相机的前方
+                pistolModel.rotation.copy(camera.rotation);
+                // 微调旋转，使手枪看起来更自然（例如，稍微向下倾斜）
+                pistolModel.rotation.x += Math.PI / 12; // 向下倾斜约15度
+                pistolModel.rotation.y += Math.PI / 12; // 稍微向右倾斜（根据个人喜好调整）
+
+                // 如果正在开火，则应用后坐力动画
+                if (isFiring) {
+                    pistolModel.position.y -= 0.05; // 向上移动
+                    pistolModel.position.z -= 0.05; // 向后移动
+                    pistolModel.rotation.x -= 0.05; // 枪口上抬
+                }
+            }
+
+            // ==================== 开枪动画 ====================
+            function fireAnimation() {
+                if (!pistolModel) return;
+
+                // 触发后坐力动画
+                isFiring = true;
+
+                // 创建枪口闪光
+                createMuzzleFlash();
+
+                // 重置动画状态
+                setTimeout(() => {
+                    isFiring = false;
+                }, 100); // 动画持续时间
+
+                // 移除旧的闪光
+                if (muzzleFlashTimeout) {
+                    clearTimeout(muzzleFlashTimeout);
+                }
+            }
+
+            // ==================== 创建枪口闪光 ====================
+            function createMuzzleFlash() {
+                // 清除旧的闪光
+                if (muzzleFlash) {
+                    scene.remove(muzzleFlash);
+                }
+
+                // 创建一个平面作为闪光
+                const flashGeometry = new THREE.PlaneGeometry(0.3, 0.3);
+                const flashMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffff00, // 黄色
+                    transparent: true,
+                    opacity: 0.8,
+                    side: THREE.DoubleSide
+                });
+                muzzleFlash = new THREE.Mesh(flashGeometry, flashMaterial);
+
+                // 将闪光放置在枪口位置
+                const barrelTip = new THREE.Vector3(0.75, 0, 0); // 枪管前端
+                muzzleFlash.position.copy(pistolModel.localToWorld(barrelTip));
+
+                // 旋转闪光，使其面向相机
+                muzzleFlash.lookAt(camera.position);
+
+                scene.add(muzzleFlash);
+
+                // 设置闪光消失的时间
+                muzzleFlashTimeout = setTimeout(() => {
+                    if (muzzleFlash && muzzleFlash.parent) {
+                        scene.remove(muzzleFlash);
+                        muzzleFlash = null;
+                    }
+                }, 100); // 闪光持续100毫秒
+            }
+
+            // ==================== 创建射线投射器用于检测点击 ====================
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
 
             // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
@@ -1063,8 +1171,8 @@
                 if (!gameActive) return;
                 if (!inShootingMode) return;
 
-                // ==================== 新增：触发开枪动画和闪光 ====================
-                fireWeapon();
+                // 触发开枪动画
+                fireAnimation();
 
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
@@ -1082,27 +1190,6 @@
                     updateStats();
                 }
             });
-
-            // ==================== 新增：开火函数 ====================
-            function fireWeapon() {
-                // 1. 播放后坐力动画
-                // 使用CSS动画类来触发
-                pistolImage.classList.remove('recoil-animation'); // 移除旧的动画类，确保可以重新触发
-                void pistolImage.offsetWidth; // 强制重排，确保浏览器知道要移除类
-                pistolImage.classList.add('recoil-animation');
-
-                // 2. 显示枪口闪光
-                muzzleFlash.style.opacity = '1';
-                muzzleFlash.style.transform = 'translateX(-50%) scale(1)';
-                // 为了让动画可以重复播放，我们需要在动画结束后重置状态
-                setTimeout(() => {
-                    muzzleFlash.style.opacity = '0';
-                    muzzleFlash.style.transform = 'translateX(-50%) scale(2)';
-                }, 100); // 动画持续时间为0.1s
-
-                // 3. （可选）播放音效
-                // 这里省略音效，因为需要加载音频文件
-            }
 
             // ==================== 3D 游戏逻辑 ====================
             // 创建棋盘格纹理
@@ -1397,6 +1484,7 @@
                 requestAnimationFrame(animate);
                 renderer.render(scene, camera);
                 updateMiniMap();
+                updatePistolPosition(); // 在每一帧都更新手枪的位置和动画
             }
             animate();
             // 更新小地图
@@ -1496,6 +1584,8 @@
                 cameraRotation = { x: 0, y: 0 };
                 camera.rotation.set(0, 0, 0, 'YXZ');
                 camera.lookAt(0, 5, -10);
+                // 重置手枪模型
+                createPistolModel();
             }
             // 更新统计信息
             function updateStats() {
@@ -1543,6 +1633,8 @@
             updateStats();
             updateLanguage();
             showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
+            // 在初始化时创建手枪模型
+            createPistolModel();
         });
     </script>
 </body>
