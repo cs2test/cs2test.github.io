@@ -949,10 +949,10 @@
 
                 // 手柄部分
                 const handleGeometry = new THREE.BoxGeometry(0.3, 0.6, 0.3);
-                const handleMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x333333,
-                    roughness: 0.8,
-                    metalness: 0.3
+                // 使用 MeshBasicMaterial 并设置明亮的颜色，使其在场景中更显眼
+                const handleMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffffff, // 白色
+                    wireframe: false
                 });
                 const handle = new THREE.Mesh(handleGeometry, handleMaterial);
                 handle.position.set(0, -0.3, 0);
@@ -960,10 +960,9 @@
 
                 // 枪管部分
                 const barrelGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 8);
-                const barrelMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x555555,
-                    roughness: 0.6,
-                    metalness: 0.7
+                const barrelMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x888888, // 灰色
+                    wireframe: false
                 });
                 const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
                 barrel.position.set(0, 0.4, 0);
@@ -972,10 +971,9 @@
 
                 // 弹匣部分
                 const magazineGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.4);
-                const magazineMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x222222,
-                    roughness: 0.8,
-                    metalness: 0.2
+                const magazineMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x222222, // 深灰色
+                    wireframe: false
                 });
                 const magazine = new THREE.Mesh(magazineGeometry, magazineMaterial);
                 magazine.position.set(0, -0.4, 0);
@@ -985,23 +983,22 @@
                 camera.add(pistolGroup);
 
                 // 设置手枪的初始位置和旋转，使其出现在屏幕右下角
-                // 这里我们调整的是手枪在相机坐标系下的位置
-                pistolGroup.position.set(0.8, -0.8, 0.5); // 调整X和Y值来控制在屏幕上的位置
-                pistolGroup.rotation.set(0, 0, 0); // 初始旋转
+                // 调整X和Y值来控制在屏幕上的位置
+                // 调整Z值来控制深度（离镜头的距离）
+                pistolGroup.position.set(0.8, -0.8, 0.5);
+                // 初始旋转
+                pistolGroup.rotation.set(0, 0, 0);
 
                 return pistolGroup;
             }
 
             // 创建枪口闪光效果
             function createMuzzleFlash() {
-                // 使用 MeshBasicMaterial 并设置 emissive 属性
                 const flashGeometry = new THREE.SphereGeometry(0.05, 8, 8);
                 const flashMaterial = new THREE.MeshBasicMaterial({
                     color: 0xffff00,
                     transparent: true,
-                    opacity: 0.8,
-                    // emissive: 0xffff00, // 这是 MeshBasicMaterial 不支持的属性，已移除
-                    // emissiveIntensity: 1.0 // 这是 MeshBasicMaterial 不支持的属性，已移除
+                    opacity: 0.8
                 });
                 const flash = new THREE.Mesh(flashGeometry, flashMaterial);
                 flash.visible = false;
@@ -1025,7 +1022,7 @@
             let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
 
-            // 创建射线投射器 (已修复)
+            // 创建射线投射器
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
 
@@ -1081,7 +1078,6 @@
                 // 触发开枪动画和闪光
                 fireWeapon();
 
-                // 设置射线投射器
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
