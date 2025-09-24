@@ -1,20 +1,3 @@
-好的，这是根据您的要求修改后的完整代码。我已添加了基于 Three.js 的逼真手枪模型，并实现了在射击时在枪口产生闪光的效果。
-
-主要改动如下：
-
-1.  **模型加载**：使用 `THREE.OBJLoader` 和 `THREE.MTLLoader`（需要引入）来加载一个 `.obj` 和 `.mtl` 格式的枪模型。为了方便，我使用了 `OBJLoader` 和 `MTLLoader` 的 CDN 链接。
-2.  **玩家视角模型**：创建了一个 `playerModel` 对象，它是一个 `THREE.Group`，包含了代表玩家手和枪的模型。这个模型会跟随相机的移动和旋转，但会保持在相机前方的一个固定位置（模拟第一人称视角）。
-3.  **射击闪光**：在 `targetHit` 函数中，当击中目标时，会在枪口位置（需要根据模型调整）创建一个短暂的、明亮的 `PointLight`（点光源）作为闪光效果，并在很短的时间后移除它。
-4.  **模型调整**：模型被缩放、旋转和定位，使其看起来像是从玩家手中伸出。具体的位置和旋转可能需要根据模型的实际比例和原点进行微调。
-
-**重要说明**：
-*   代码中使用了一个示例模型 (`https://threejs.org/examples/obj/male02/male02.obj` 和 `https://threejs.org/examples/obj/male02/male02.mtl`)。您需要将这些 URL 替换为您自己的、符合要求的枪模型文件的 URL。
-*   枪口闪光的位置 (`gunMuzzlePosition`) 是硬编码的。您需要根据您使用的模型，找到其枪口的大致坐标（在模型的本地坐标系中），并将其设置为 `gunMuzzlePosition` 的值，以确保闪光效果出现在正确的位置。
-*   为了使模型加载和动画同步，渲染循环 (`animate`) 已更新以包含 `controls.update()` 和 `updatePlayerModel()`。
-
-以下是完整的 HTML 代码：
-
-```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
