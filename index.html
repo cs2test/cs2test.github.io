@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
-    <!-- 引入 Three.js 及其扩展加载器 -->
+    <!-- 引入 Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.min.js"></script>
+    <!-- 引入 PointerLockControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1347,53 +1347,73 @@
                 }
             });
 
-            // --- 新增：玩家视角手枪模型 ---
-            let playerModel = new THREE.Group();
-            let gunModel = null; // 用于存储加载的枪模型
-            let gunMuzzlePosition = new THREE.Vector3(0.1, -0.05, -0.3); // 枪口相对模型的位置 (需要根据模型调整)
+            // --- 新增：玩家视角手枪模型和枪口闪光 ---
+            const playerModel = new THREE.Group();
+            const gunMuzzleOffset = new THREE.Vector3(0, -0.1, -0.5); // 枪口相对模型的位置
 
-            function loadGunModel() {
-                const mtlLoader = new THREE.MTLLoader();
-                // 替换为您的枪模型的 .mtl 文件路径
-                mtlLoader.load('https://threejs.org/examples/obj/male02/male02.mtl', function(materials) {
-                    materials.preload();
-                    const objLoader = new THREE.OBJLoader();
-                    // 替换为您的枪模型的 .obj 文件路径
-                    objLoader.load('https://threejs.org/examples/obj/male02/male02.obj', function(object) {
-                        gunModel = object;
-                        // 调整模型大小、旋转和位置
-                        gunModel.scale.set(0.2, 0.2, 0.2);
-                        gunModel.rotation.set(0, Math.PI, -Math.PI / 2, 'XYZ');
-                        gunModel.position.set(0.1, -0.1, -0.2);
-                        playerModel.add(gunModel);
-                    }, undefined, function(error) {
-                        console.error('Error loading gun model:', error);
-                    });
-                });
+            function createGunModel() {
+                // 创建一个简化的手枪模型，使用多个BoxGeometry
+                const gunGroup = new THREE.Group();
+
+                // 手枪握把 (主干)
+                const gripGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.05);
+                const gripMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const grip = new THREE.Mesh(gripGeometry, gripMaterial);
+                grip.position.set(0, -0.15, 0);
+                gunGroup.add(grip);
+
+                // 手枪扳机护环
+                const triggerGuardGeometry = new THREE.BoxGeometry(0.08, 0.1, 0.05);
+                const triggerGuardMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
+                const triggerGuard = new THREE.Mesh(triggerGuardGeometry, triggerGuardMaterial);
+                triggerGuard.position.set(0, -0.05, 0);
+                gunGroup.add(triggerGuard);
+
+                // 手枪枪管 (主要部分)
+                const barrelGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.4);
+                const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+                const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+                barrel.position.set(0, -0.025, -0.2); // 靠近握把
+                gunGroup.add(barrel);
+
+                // 手枪枪管前端 (稍细)
+                const frontBarrelGeometry = new THREE.BoxGeometry(0.04, 0.04, 0.1);
+                const frontBarrel = new THREE.Mesh(frontBarrelGeometry, barrelMaterial);
+                frontBarrel.position.set(0, -0.025, -0.4); // 连接到枪管
+                gunGroup.add(frontBarrel);
+
+                // 手枪滑套 (覆盖枪管)
+                const slideGeometry = new THREE.BoxGeometry(0.12, 0.08, 0.3);
+                const slideMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+                const slide = new THREE.Mesh(slideGeometry, slideMaterial);
+                slide.position.set(0, 0, -0.15); // 覆盖枪管后半部分
+                gunGroup.add(slide);
+
+                // 调整模型整体位置和旋转，使其看起来像握在手中
+                gunGroup.position.set(0.1, -0.1, -0.2); // 相对于玩家模型的位置
+                gunGroup.rotation.set(0, Math.PI, -Math.PI / 2, 'XYZ'); // 旋转使其指向Z轴负方向
+
+                playerModel.add(gunGroup);
             }
 
             function updatePlayerModel() {
-                if (gunModel) {
-                    // 将玩家模型定位在相机前方
-                    const forward = new THREE.Vector3(0, 0, -1);
-                    forward.applyQuaternion(camera.quaternion);
-                    const offset = new THREE.Vector3(0, -0.5, -1.5); // 调整偏移量以改变模型在屏幕上的位置
-                    offset.applyQuaternion(camera.quaternion);
-                    playerModel.position.copy(camera.position).add(offset);
-                    // 旋转模型以匹配相机
-                    playerModel.rotation.copy(camera.rotation);
-                }
+                // 将玩家模型定位在相机前方，模拟第一人称视角
+                const offset = new THREE.Vector3(0, -0.5, -1.0); // 调整此偏移量以改变手枪在屏幕上的位置
+                offset.applyQuaternion(camera.quaternion);
+                playerModel.position.copy(camera.position).add(offset);
+
+                // 旋转模型以匹配相机
+                playerModel.rotation.copy(camera.rotation);
             }
 
             // --- 新增：枪口闪光效果 ---
             function createGunshotFlash() {
-                if (!gunModel) return; // 如果模型未加载，则不创建闪光
-
                 // 将枪口位置从模型本地坐标转换为世界坐标
-                const worldMuzzlePos = gunMuzzlePosition.clone();
-                worldMuzzlePos.applyMatrix4(gunModel.matrixWorld);
+                const worldMuzzlePos = gunMuzzleOffset.clone();
+                worldMuzzlePos.applyMatrix4(playerModel.matrixWorld);
 
-                const flashLight = new THREE.PointLight(0xffffff, 2, 1.5); // 白色强光，范围1.5单位
+                // 创建一个短暂的强光
+                const flashLight = new THREE.PointLight(0xffffff, 2, 1.0); // 白色强光，范围1.0单位
                 flashLight.position.copy(worldMuzzlePos);
                 scene.add(flashLight);
 
@@ -1405,6 +1425,11 @@
                 }, 50); // 50毫秒后移除
             }
 
+            // 将玩家模型添加到场景中
+            scene.add(playerModel);
+            // 初始化时创建枪模型
+            createGunModel();
+
             // 渲染循环
             function animate() {
                 requestAnimationFrame(animate);
@@ -1413,9 +1438,6 @@
                 updatePlayerModel(); // 更新玩家模型位置
             }
             animate();
-
-            // 初始化时加载模型
-            loadGunModel();
 
             // 更新小地图
             function updateMiniMap() {
@@ -1570,4 +1592,3 @@
     </script>
 </body>
 </html>
-```
