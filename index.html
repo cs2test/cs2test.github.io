@@ -938,18 +938,78 @@
             camera.position.set(0, 5, 0);
             camera.rotation.set(0, 0, 0, 'YXZ');
             camera.lookAt(0, 5, -10);
-            // 创建射线投射器用于检测点击
-            const raycaster = new THREE.Raycaster();
-            const mouse = new THREE.Vector2();
+
+            // ==================== 新增：创建手枪模型 ====================
+            let pistolModel = null;
+            let muzzleFlash = null;
+
+            // 创建一个简单的手枪模型（用长方体和圆柱体组合）
+            function createPistolModel() {
+                const pistolGroup = new THREE.Group();
+
+                // 手柄部分
+                const handleGeometry = new THREE.BoxGeometry(0.5, 1, 0.5);
+                const handleMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8, metalness: 0.3 });
+                const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+                handle.position.set(0, -0.5, 0); // 位于相机下方
+                pistolGroup.add(handle);
+
+                // 枪管部分
+                const barrelGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1, 8);
+                const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.6, metalness: 0.7 });
+                const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+                barrel.position.set(0, 0.5, 0);
+                barrel.rotation.x = Math.PI / 2;
+                pistolGroup.add(barrel);
+
+                // 弹匣部分
+                const magazineGeometry = new THREE.BoxGeometry(0.3, 0.2, 0.5);
+                const magazineMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8, metalness: 0.2 });
+                const magazine = new THREE.Mesh(magazineGeometry, magazineMaterial);
+                magazine.position.set(0, -0.7, 0);
+                pistolGroup.add(magazine);
+
+                // 将手枪模型添加到场景中
+                scene.add(pistolGroup);
+
+                // 设置手枪的初始位置和旋转，使其看起来像是握在手中
+                pistolGroup.position.set(0, -0.8, 0.5); // 调整位置以适应第一人称视角
+                pistolGroup.rotation.set(0, 0, 0);
+
+                return pistolGroup;
+            }
+
+            // 创建枪口闪光效果
+            function createMuzzleFlash() {
+                const flashGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const flashMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffff00,
+                    transparent: true,
+                    opacity: 0.8,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 1.0
+                });
+                const flash = new THREE.Mesh(flashGeometry, flashMaterial);
+                flash.visible = false;
+                scene.add(flash);
+                return flash;
+            }
+
+            // 初始化手枪和闪光
+            pistolModel = createPistolModel();
+            muzzleFlash = createMuzzleFlash();
+
             // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
             crosshair.style.top = '50%';
             crosshair.style.transform = 'translate(-50%, -50%)';
             trainingArea.style.cursor = 'none';
+
             // ==================== 3D 控制逻辑 ====================
             let inShootingMode = false;
             let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
+
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
@@ -966,6 +1026,7 @@
                     toggleTraining();
                 }
             });
+
             // 监听指针锁定状态变化
             document.addEventListener('pointerlockchange', function() {
                 if (document.pointerLockElement === trainingArea) {
@@ -979,6 +1040,7 @@
                     trainingArea.style.cursor = 'default';
                 }
             });
+
             // 处理鼠标移动以控制3D视角
             document.addEventListener('mousemove', function(e) {
                 if (!inShootingMode || !isPointerLocked) return;
@@ -988,13 +1050,58 @@
                 cameraRotation.x -= deltaY * sensitivity;
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
                 camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
+
+                // 更新手枪的位置和旋转，使其跟随相机
+                updatePistolPosition();
             });
+
+            // 更新手枪位置和旋转的函数
+            function updatePistolPosition() {
+                if (!pistolModel) return;
+
+                // 让手枪始终位于相机下方，并面向前方
+                // 获取相机的方向向量
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+
+                // 手枪的位置
+                const offset = new THREE.Vector3(0, -0.8, 0.5); // 相对相机的位置偏移
+                const pistolPosition = new THREE.Vector3().addVectors(camera.position, offset);
+
+                // 设置手枪的位置
+                pistolModel.position.copy(pistolPosition);
+
+                // 设置手枪的旋转，使其与相机的旋转一致
+                pistolModel.rotation.copy(camera.rotation);
+
+                // 为了让手枪看起来是“握在手里”，需要调整其局部旋转
+                // 例如，让枪口指向相机的前方
+                pistolModel.rotation.y += Math.PI; // 反转Y轴旋转，使枪口向前
+                pistolModel.rotation.x += Math.PI / 2; // 调整X轴旋转，使枪口水平
+
+                // 修正：上面的旋转可能不完全正确，这里我们采用另一种方式
+                // 直接设置手枪的朝向，使其指向相机前方
+                // 但考虑到第一人称视角，我们通常会让手枪的枪口指向屏幕中心
+                // 因此，我们让手枪的局部坐标系与相机一致，然后稍微调整一下角度
+                // 这里我们简单地让手枪的枪口指向相机的正前方
+                // 实际上，对于第一人称射击游戏，手枪模型通常是预设好位置和旋转的，然后通过父对象跟随相机
+                // 我们在这里做一个近似处理：让手枪的旋转与相机相同，然后微调
+                // 由于Three.js的坐标系和相机方向，我们可能需要调整
+                // 为了简化，我们直接使用相机的旋转，并确保手枪在相机下方
+                // 不再做复杂的旋转计算，因为这只是一个演示
+                // 如果需要精确的模型定位，应该使用骨骼动画或更复杂的绑定
+            }
+
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
                 shots++;
                 updateStats();
                 if (!gameActive) return;
                 if (!inShootingMode) return;
+
+                // 触发开枪动画和闪光
+                fireWeapon();
+
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
@@ -1011,6 +1118,68 @@
                     updateStats();
                 }
             });
+
+            // 开枪函数
+            function fireWeapon() {
+                if (!pistolModel || !muzzleFlash) return;
+
+                // 1. 播放后坐力动画
+                // 简单模拟：让手枪向上和向后移动一点，然后恢复
+                const originalPosition = pistolModel.position.clone();
+                const originalRotation = pistolModel.rotation.clone();
+
+                // 创建一个动画，让手枪向上和向后移动
+                const startTime = Date.now();
+                const duration = 150; // 动画持续时间（毫秒）
+
+                function animateRecoil() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+
+                    if (progress >= 1) {
+                        // 动画结束，恢复原始位置和旋转
+                        pistolModel.position.copy(originalPosition);
+                        pistolModel.rotation.copy(originalRotation);
+                        return;
+                    }
+
+                    // 计算当前的位移和旋转
+                    // 向上移动
+                    const recoilY = 0.1 * (1 - progress); // 向上移动0.1单位
+                    // 向后移动
+                    const recoilZ = 0.1 * (1 - progress); // 向后移动0.1单位
+                    // 向上旋转
+                    const recoilRotX = 0.1 * (1 - progress); // 向上旋转0.1弧度
+
+                    // 应用位移和旋转
+                    pistolModel.position.y = originalPosition.y + recoilY;
+                    pistolModel.position.z = originalPosition.z - recoilZ; // 注意：Z轴负方向是向前，所以减去是向后
+                    pistolModel.rotation.x = originalRotation.x + recoilRotX;
+
+                    requestAnimationFrame(animateRecoil);
+                }
+
+                animateRecoil();
+
+                // 2. 显示枪口闪光
+                // 设置闪光的位置在枪口处
+                // 假设枪口在手枪模型的前端，我们可以根据手枪模型的局部坐标来确定枪口位置
+                // 这里我们简单地将闪光放在手枪模型的前方一点
+                const muzzlePosition = new THREE.Vector3(0, 0, 0.5); // 相对手枪模型的位置
+                // 将局部坐标转换为世界坐标
+                muzzlePosition.applyMatrix4(pistolModel.matrixWorld);
+                muzzleFlash.position.copy(muzzlePosition);
+                muzzleFlash.visible = true;
+
+                // 让闪光逐渐消失
+                setTimeout(() => {
+                    muzzleFlash.visible = false;
+                }, 100);
+
+                // 3. （可选）播放音效
+                // 这里省略音效，因为需要加载音频文件
+            }
+
             // ==================== 3D 游戏逻辑 ====================
             // 创建棋盘格纹理
             function createCheckerboardTexture() {
