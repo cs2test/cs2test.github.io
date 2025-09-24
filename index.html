@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
-    <!-- 引入 Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- 引入 PointerLockControls -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.min.js"></script>
+    <script src="https://cs2test.github.io/three.js"></script>
     <style>
         * {
             margin: 0;
@@ -93,8 +90,8 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            width: 100%;
-            flex-grow: 1;
+            width: 100%; 
+            flex-grow: 1; 
             margin: 0 auto;
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
@@ -732,7 +729,7 @@
                     maxComboLabel: "最高连击:",
                     scoreLabel: "当前得分:",
                     comboDisplay: "连击: ",
-                    scoreDisplay: "得分: ",
+                    scoreDisplay: "得分: ", 
                     startBtn: "开始训练",
                     resetBtn: "重置数据",
                     langBtn: "EN/中文",
@@ -750,21 +747,17 @@
                     stopped: "已停止"
                 }
             };
-
-            // --- Three.js 相关初始化 ---
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
             renderer.setClearColor(0x87CEEB); // 更深的蓝色天空
             trainingArea.appendChild(renderer.domElement);
-
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
-
             // 创建更深的天空盒
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
             const skyboxMaterial = new THREE.MeshBasicMaterial({
@@ -775,7 +768,6 @@
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
-
             // === 创建沙漠地面 ===
             const groundGeometry = new THREE.PlaneGeometry(100, 100);
             const groundMaterial = new THREE.MeshStandardMaterial({
@@ -794,7 +786,6 @@
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = 1;
             scene.add(ground);
-
             // === 创建墙壁 ===
             const wallWidth = 100;
             const wallDepth = 10;
@@ -811,29 +802,24 @@
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
             wallMaterial.map.repeat.set(10, 2);
             wallMaterial.map.needsUpdate = true;
-
             // 后墙 (Z+) - 标签C
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
             backWall.position.set(0, wallHeight/2, wallDistance);
             scene.add(backWall);
-
             // 前墙 (Z-) - 标签A
             const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
             frontWall.position.set(0, wallHeight/2, -wallDistance);
             scene.add(frontWall);
-
             // 左墙 (X-) - 标签D
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-wallDistance, wallHeight/2, 0);
             leftWall.rotation.y = Math.PI / 2;
             scene.add(leftWall);
-
             // 右墙 (X+) - 标签B
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
-
             // === 添加障碍物 ===
             const crateGeometry = new THREE.BoxGeometry(5, 5, 5);
             const crateMaterial = new THREE.MeshStandardMaterial({
@@ -846,7 +832,6 @@
             crateMaterial.map.wrapT = THREE.RepeatWrapping;
             crateMaterial.map.repeat.set(2, 2);
             crateMaterial.map.needsUpdate = true;
-
             // 备注: 将箱子移得更远，避免阻挡小球
             const crates = [
                 { x: 0, y: 5, z: 40 }, { x: 0, y: 5, z: -40 },
@@ -859,7 +844,6 @@
                 crateMesh.position.set(crate.x, crate.y, crate.z);
                 scene.add(crateMesh);
             });
-
             // === 添加石阶 ===
             const stairGeometry = new THREE.BoxGeometry(10, 1, 10);
             const stairMaterial = new THREE.MeshStandardMaterial({
@@ -872,7 +856,6 @@
             stairMaterial.map.wrapT = THREE.RepeatWrapping;
             stairMaterial.map.repeat.set(2, 2);
             stairMaterial.map.needsUpdate = true;
-
             // 创建楼梯
             const stairs = [
                 { x: 20, y: 5, z: 20, rotationY: Math.PI/2 }, // 右侧楼梯
@@ -886,7 +869,6 @@
                 if (stair.rotationY) stairMesh.rotation.y = stair.rotationY;
                 scene.add(stairMesh);
             });
-
             // === 添加拱门 ===
             const archGeometry = new THREE.CylinderGeometry(1, 1, 5, 16);
             const archMaterial = new THREE.MeshStandardMaterial({
@@ -899,7 +881,6 @@
             archMaterial.map.wrapT = THREE.RepeatWrapping;
             archMaterial.map.repeat.set(2, 2);
             archMaterial.map.needsUpdate = true;
-
             // 创建拱门
             const arches = [
                 { x: 0, y: 5, z: 20, rotationY: Math.PI/2 },
@@ -913,7 +894,6 @@
                 if (arch.rotationY) archMesh.rotation.y = arch.rotationY;
                 scene.add(archMesh);
             });
-
             // === 添加墙壁标签 ===
             const wallLabels = [];
             function createWallLabel(text, position, rotation, flipX = false) {
@@ -949,33 +929,27 @@
                 wallLabels.push(label);
                 return label;
             }
-
             // 添加A、B、C、D四个墙壁标签
             createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0));
             createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
             createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true);
             createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
-
             // 设置相机初始位置 - 面朝A墙
             camera.position.set(0, 5, 0);
             camera.rotation.set(0, 0, 0, 'YXZ');
             camera.lookAt(0, 5, -10);
-
             // 创建射线投射器用于检测点击
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
-
             // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
             crosshair.style.top = '50%';
             crosshair.style.transform = 'translate(-50%, -50%)';
             trainingArea.style.cursor = 'none';
-
             // ==================== 3D 控制逻辑 ====================
             let inShootingMode = false;
             let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
-
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
@@ -992,7 +966,6 @@
                     toggleTraining();
                 }
             });
-
             // 监听指针锁定状态变化
             document.addEventListener('pointerlockchange', function() {
                 if (document.pointerLockElement === trainingArea) {
@@ -1006,7 +979,6 @@
                     trainingArea.style.cursor = 'default';
                 }
             });
-
             // 处理鼠标移动以控制3D视角
             document.addEventListener('mousemove', function(e) {
                 if (!inShootingMode || !isPointerLocked) return;
@@ -1017,14 +989,13 @@
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
                 camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
             });
-
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
                 shots++;
                 updateStats();
                 if (!gameActive) return;
                 if (!inShootingMode) return;
-                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
                     const target = intersects[0].object;
@@ -1040,7 +1011,6 @@
                     updateStats();
                 }
             });
-
             // ==================== 3D 游戏逻辑 ====================
             // 创建棋盘格纹理
             function createCheckerboardTexture() {
@@ -1058,7 +1028,6 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-
             // 创建沙漠纹理
             function createDesertTexture() {
                 const canvas = document.createElement('canvas');
@@ -1080,7 +1049,6 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-
             // 创建石墙纹理
             function createStoneTexture() {
                 const canvas = document.createElement('canvas');
@@ -1102,7 +1070,6 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-
             // 创建木箱纹理
             function createWoodTexture() {
                 const canvas = document.createElement('canvas');
@@ -1127,7 +1094,6 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
-
             // 生成目标函数 - 优化为在玩家前方集中区域生成
             function spawnTargets() {
                 if (!gameActive) return;
@@ -1162,11 +1128,10 @@
                 const padding = wallDistance - 15;
                 x = Math.max(-padding, Math.min(padding, x));
                 z = Math.max(-padding, Math.min(padding, z));
-
                 const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
-                const material = new THREE.MeshBasicMaterial({
-                    color: 0xff0000,
-                    transparent: true,
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 0xff0000, 
+                    transparent: true, 
                     opacity: 0.9,
                     depthTest: true
                 });
@@ -1179,7 +1144,6 @@
                 // 备注: 移除了目标自动消失的代码
                 // 目标现在只会在被击中时消失
             }
-
             // 处理目标命中
             function targetHit(target, points) {
                 if (target.userData.isHit) return;
@@ -1197,9 +1161,9 @@
                 updateStats();
                 showScoreIndicator(points, 0, 0);
                 createExplosionEffect(target.position);
-
-                // --- 添加枪口闪光效果 ---
+                // --- 新增: 开枪闪光和后坐力 ---
                 createGunshotFlash();
+                triggerRecoilAnimation();
 
                 setTimeout(() => {
                     if (target.parent) {
@@ -1208,13 +1172,12 @@
                     }
                 }, 200);
             }
-
             // 创建爆炸效果
             function createExplosionEffect(position) {
                 const particleCount = 30;
                 const particles = new THREE.Group();
                 scene.add(particles);
-                const particleMaterial = new THREE.MeshBasicMaterial({
+                const particleMaterial = new THREE.MeshBasicMaterial({ 
                     color: 0xff3333,
                     transparent: true,
                     opacity: 0.9
@@ -1262,7 +1225,6 @@
                 };
                 animateParticles();
             }
-
             // 显示得分指示器 - 修复显示问题
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
@@ -1284,7 +1246,6 @@
                     }
                 }, 1000);
             }
-
             // 开始/暂停训练
             function toggleTraining() {
                 if (countdownTimer) {
@@ -1320,7 +1281,6 @@
                     }, 1000);
                 }
             }
-
             // 显示游戏状态消息
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -1329,16 +1289,13 @@
                     gameStatus.classList.remove('visible');
                 }, 1000);
             }
-
             // 重置统计数据
             resetBtn.addEventListener('click', resetGame);
-
             // 语言切换
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
-
             // 灵敏度输入框事件监听
             sensitivityInput.addEventListener('input', function() {
                 const newSensitivity = parseFloat(this.value);
@@ -1347,66 +1304,57 @@
                 }
             });
 
-            // --- 新增：玩家视角手枪模型和枪口闪光 ---
+            // --- 新增: 玩家视角手枪模型和相关动画 ---
+
+            // 用于管理后坐力动画的状态
+            let isRecoiling = false;
+            let recoilStartTime = 0;
+            const RECOIL_DURATION = 200; // 后坐力动画持续时间（毫秒）
+
+            // 创建玩家模型组
             const playerModel = new THREE.Group();
-            const gunMuzzleOffset = new THREE.Vector3(0, -0.1, -0.5); // 枪口相对模型的位置
+            // 创建一个简单的“手”模型
+            const handGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.05);
+            const handMaterial = new THREE.MeshStandardMaterial({ color: 0xccaa88 }); // 皮肤色
+            const hand = new THREE.Mesh(handGeometry, handMaterial);
+            hand.position.set(0.05, -0.05, -0.1); // 手的位置
+            playerModel.add(hand);
 
-            function createGunModel() {
-                // 创建一个简化的手枪模型，使用多个BoxGeometry
-                const gunGroup = new THREE.Group();
+            // 创建手枪模型
+            const gunGroup = new THREE.Group();
 
-                // 手枪握把 (主干)
-                const gripGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.05);
-                const gripMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
-                const grip = new THREE.Mesh(gripGeometry, gripMaterial);
-                grip.position.set(0, -0.15, 0);
-                gunGroup.add(grip);
+            // 握把
+            const gripGeometry = new THREE.BoxGeometry(0.08, 0.12, 0.05);
+            const gripMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const grip = new THREE.Mesh(gripGeometry, gripMaterial);
+            grip.position.set(0, -0.06, 0);
+            gunGroup.add(grip);
 
-                // 手枪扳机护环
-                const triggerGuardGeometry = new THREE.BoxGeometry(0.08, 0.1, 0.05);
-                const triggerGuardMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
-                const triggerGuard = new THREE.Mesh(triggerGuardGeometry, triggerGuardMaterial);
-                triggerGuard.position.set(0, -0.05, 0);
-                gunGroup.add(triggerGuard);
+            // 枪管
+            const barrelGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.25);
+            const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+            barrel.position.set(0, -0.025, -0.125); // 连接到握把
+            gunGroup.add(barrel);
 
-                // 手枪枪管 (主要部分)
-                const barrelGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.4);
-                const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
-                const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
-                barrel.position.set(0, -0.025, -0.2); // 靠近握把
-                gunGroup.add(barrel);
+            // 套筒
+            const slideGeometry = new THREE.BoxGeometry(0.08, 0.06, 0.2);
+            const slideMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const slide = new THREE.Mesh(slideGeometry, slideMaterial);
+            slide.position.set(0, 0, -0.1); // 覆盖枪管后半部分
+            gunGroup.add(slide);
 
-                // 手枪枪管前端 (稍细)
-                const frontBarrelGeometry = new THREE.BoxGeometry(0.04, 0.04, 0.1);
-                const frontBarrel = new THREE.Mesh(frontBarrelGeometry, barrelMaterial);
-                frontBarrel.position.set(0, -0.025, -0.4); // 连接到枪管
-                gunGroup.add(frontBarrel);
+            // 将枪模型附加到手上
+            gunGroup.position.set(0, 0, 0); // 相对于手的位置
+            playerModel.add(gunGroup);
 
-                // 手枪滑套 (覆盖枪管)
-                const slideGeometry = new THREE.BoxGeometry(0.12, 0.08, 0.3);
-                const slideMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
-                const slide = new THREE.Mesh(slideGeometry, slideMaterial);
-                slide.position.set(0, 0, -0.15); // 覆盖枪管后半部分
-                gunGroup.add(slide);
+            // 设置枪口相对于模型的位置（用于闪光）
+            const gunMuzzleOffset = new THREE.Vector3(0, -0.025, -0.25); // 枪口在枪管前端
 
-                // 调整模型整体位置和旋转，使其看起来像握在手中
-                gunGroup.position.set(0.1, -0.1, -0.2); // 相对于玩家模型的位置
-                gunGroup.rotation.set(0, Math.PI, -Math.PI / 2, 'XYZ'); // 旋转使其指向Z轴负方向
+            // 将玩家模型添加到场景
+            scene.add(playerModel);
 
-                playerModel.add(gunGroup);
-            }
-
-            function updatePlayerModel() {
-                // 将玩家模型定位在相机前方，模拟第一人称视角
-                const offset = new THREE.Vector3(0, -0.5, -1.0); // 调整此偏移量以改变手枪在屏幕上的位置
-                offset.applyQuaternion(camera.quaternion);
-                playerModel.position.copy(camera.position).add(offset);
-
-                // 旋转模型以匹配相机
-                playerModel.rotation.copy(camera.rotation);
-            }
-
-            // --- 新增：枪口闪光效果 ---
+            // 创建枪口闪光效果
             function createGunshotFlash() {
                 // 将枪口位置从模型本地坐标转换为世界坐标
                 const worldMuzzlePos = gunMuzzleOffset.clone();
@@ -1425,17 +1373,59 @@
                 }, 50); // 50毫秒后移除
             }
 
-            // 将玩家模型添加到场景中
-            scene.add(playerModel);
-            // 初始化时创建枪模型
-            createGunModel();
+            // 触发后坐力动画
+            function triggerRecoilAnimation() {
+                if (isRecoiling) return; // 如果已经在后坐力动画中，则忽略
+                isRecoiling = true;
+                recoilStartTime = Date.now();
+
+                // 定义后坐力动画的关键帧
+                const startRotation = playerModel.rotation.clone(); // 保存初始旋转
+                const recoilRotation = new THREE.Euler(0.1, 0, 0, 'YXZ'); // 向上和向后旋转
+
+                // 动画函数
+                function animateRecoil() {
+                    const now = Date.now();
+                    const elapsed = now - recoilStartTime;
+                    const progress = Math.min(elapsed / RECOIL_DURATION, 1);
+
+                    if (progress < 1) {
+                        // 使用缓动函数让动画更自然
+                        const easedProgress = 1 - Math.cos(progress * Math.PI / 2); // 缓入缓出
+                        // 应用后坐力旋转
+                        playerModel.rotation.x = startRotation.x + recoilRotation.x * easedProgress;
+                        playerModel.rotation.y = startRotation.y + recoilRotation.y * easedProgress;
+                        playerModel.rotation.z = startRotation.z + recoilRotation.z * easedProgress;
+
+                        requestAnimationFrame(animateRecoil);
+                    } else {
+                        // 动画结束，复位到初始状态
+                        playerModel.rotation.copy(startRotation);
+                        isRecoiling = false;
+                    }
+                }
+
+                animateRecoil();
+            }
+
+            // 更新玩家模型位置和旋转
+            function updatePlayerModel() {
+                // 将玩家模型定位在相机前方，模拟第一人称视角
+                // 使用一个固定的偏移量，使其看起来像是从屏幕底部伸出
+                const offset = new THREE.Vector3(0, -0.5, -1.0); // 调整此偏移量以改变手枪在屏幕上的位置
+                offset.applyQuaternion(camera.quaternion);
+                playerModel.position.copy(camera.position).add(offset);
+
+                // 旋转模型以匹配相机
+                playerModel.rotation.copy(camera.rotation);
+            }
 
             // 渲染循环
             function animate() {
                 requestAnimationFrame(animate);
                 renderer.render(scene, camera);
                 updateMiniMap();
-                updatePlayerModel(); // 更新玩家模型位置
+                updatePlayerModel(); // 更新玩家模型位置和旋转
             }
             animate();
 
@@ -1465,7 +1455,7 @@
                 miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.3)';
                 miniMapCtx.beginPath();
                 miniMapCtx.moveTo(centerX, centerY);
-                miniMapCtx.arc(centerX, centerY, directionLength,
+                miniMapCtx.arc(centerX, centerY, directionLength, 
                                directionAngle - fov/2, directionAngle + fov/2);
                 miniMapCtx.closePath();
                 miniMapCtx.fill();
@@ -1491,7 +1481,6 @@
                     miniMapCtx.fill();
                 });
             }
-
             // 调整小地图大小
             function resizeMiniMap() {
                 miniMapCanvas.width = miniMapCanvas.offsetWidth;
@@ -1499,7 +1488,6 @@
             }
             resizeMiniMap();
             window.addEventListener('resize', resizeMiniMap);
-
             // 重置游戏
             function resetGame() {
                 gameActive = false;
@@ -1539,7 +1527,6 @@
                 camera.rotation.set(0, 0, 0, 'YXZ');
                 camera.lookAt(0, 5, -10);
             }
-
             // 更新统计信息
             function updateStats() {
                 const accuracy = shots > 0 ? Math.min(100, Math.round((hits / shots) * 100)) : 0;
@@ -1550,7 +1537,6 @@
                 reactionElement.textContent = averageReactionTime + 'ms';
                 scoreElement.textContent = score;
             }
-
             // 更新语言
             function updateLanguage() {
                 const t = translations[language];
@@ -1583,7 +1569,6 @@
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
-
             // 初始化
             updateStats();
             updateLanguage();
