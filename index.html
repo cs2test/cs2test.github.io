@@ -947,8 +947,9 @@
             loader.load('lxxx.glb', function(gltf) {
                 gunModel = gltf.scene;
                 // 调整枪械大小和位置，使其位于屏幕底部中央
-                gunModel.scale.set(0.5, 0.5, 0.5); // 缩放模型
-                gunModel.position.set(0, -10, 0); // 初始位置在相机下方
+                gunModel.scale.set(0.03, 0.03, 0.03); // 缩放模型，这是关键！
+                // 设置枪械初始位置和旋转，使其看起来像握在手中
+                gunModel.position.set(0, -0.5, 0.5); // 初始位置在相机下方和前方
                 // 旋转枪械使其朝向正确
                 gunModel.rotation.set(0, 0, 0);
                 scene.add(gunModel);
@@ -965,7 +966,7 @@
                     scene.remove(muzzleFlash);
                 }
                 // 创建一个发光的平面作为闪光
-                const geometry = new THREE.PlaneGeometry(2, 2);
+                const geometry = new THREE.PlaneGeometry(0.5, 0.5);
                 const material = new THREE.MeshBasicMaterial({
                     color: 0xffffff,
                     transparent: true,
@@ -973,7 +974,8 @@
                     side: THREE.DoubleSide
                 });
                 muzzleFlash = new THREE.Mesh(geometry, material);
-                muzzleFlash.position.set(0, -10, 0); // 初始位置与枪口对齐
+                // 让闪光出现在枪口位置
+                muzzleFlash.position.set(0, 0, 0.5); // 在枪口前方一点的位置
                 muzzleFlash.rotation.set(0, 0, 0);
                 scene.add(muzzleFlash);
 
@@ -998,14 +1000,13 @@
             // ==================== 新增：更新枪械位置函数 ====================
             function updateGunPosition() {
                 if (!gunModel) return;
-                // 让枪械跟随相机移动，但保持在屏幕底部
                 // 获取相机位置和朝向
                 const cameraPos = camera.position.clone();
                 const forward = new THREE.Vector3();
                 camera.getWorldDirection(forward);
                 // 计算枪械位置（在相机前方偏下的位置）
-                const distance = 1.5; // 枪口离相机的距离
-                const offsetY = -0.5; // 枪口在相机下方的位置
+                const distance = 0.3; // 枪口离相机的距离
+                const offsetY = -0.2; // 枪口在相机下方的位置
                 gunModel.position.set(
                     cameraPos.x + forward.x * distance,
                     cameraPos.y + forward.y * distance + offsetY,
@@ -1014,7 +1015,9 @@
                 // 让枪械旋转以匹配相机的旋转
                 gunModel.rotation.set(camera.rotation.x, camera.rotation.y, camera.rotation.z);
                 // 为了看起来像第一人称视角，可能需要微调旋转
-                gunModel.rotation.x += Math.PI / 2; // 让枪口朝前
+                // 注意：这里不再添加 Math.PI / 2，因为模型本身应该已经朝向正确
+                // 如果模型方向不对，可以在这里调整，例如：
+                // gunModel.rotation.x += Math.PI / 2;
             }
 
             // ==================== 准星设置 ====================
