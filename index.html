@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
-    <!-- 引入 Three.js -->
+    <!-- 引入 Three.js 核心库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- 引入 GLTFLoader -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
+        /* --- CSS 样式保持不变 --- */
         * {
             margin: 0;
             padding: 0;
@@ -93,8 +94,8 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            width: 100%; 
-            flex-grow: 1; 
+            width: 100%;
+            flex-grow: 1;
             margin: 0 auto;
             border: 2px solid rgba(78, 205, 196, 0.3);
             backdrop-filter: blur(5px);
@@ -732,7 +733,7 @@
                     maxComboLabel: "最高连击:",
                     scoreLabel: "当前得分:",
                     comboDisplay: "连击: ",
-                    scoreDisplay: "得分: ", 
+                    scoreDisplay: "得分: ",
                     startBtn: "开始训练",
                     resetBtn: "重置数据",
                     langBtn: "EN/中文",
@@ -751,7 +752,7 @@
                 }
             };
 
-            // --- Three.js 相关初始化 ---
+            // --- Three.js 初始化 ---
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -1197,11 +1198,9 @@
                 updateStats();
                 showScoreIndicator(points, 0, 0);
                 createExplosionEffect(target.position);
-
                 // --- 新增: 开枪闪光和后坐力 ---
                 createGunshotFlash();
                 triggerRecoilAnimation();
-
                 setTimeout(() => {
                     if (target.parent) {
                         scene.remove(target);
@@ -1348,136 +1347,111 @@
                 }
             });
 
-            // --- 新增: 加载真实3D手枪模型 ---
-
-            // 用于管理后坐力动画的状态
+            // --- 新增: 加载外部手枪模型 ---
+            let playerModel = null; // 存储加载的模型
+            let gunMuzzleOffset = new THREE.Vector3(0, 0, -0.25); // 假设枪口在模型坐标系下的偏移
             let isRecoiling = false;
             let recoilStartTime = 0;
             const RECOIL_DURATION = 200; // 后坐力动画持续时间（毫秒）
 
-            // 创建玩家模型组
-            const playerModel = new THREE.Group();
-
-            // 创建一个简单的“手”模型（可选）
-            const handGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.05);
-            const handMaterial = new THREE.MeshStandardMaterial({ color: 0xccaa88 }); // 皮肤色
-            const hand = new THREE.Mesh(handGeometry, handMaterial);
-            hand.position.set(0.05, -0.05, -0.1); // 手的位置
-            playerModel.add(hand);
-
-            // 创建 GLTFLoader 实例
             const loader = new THREE.GLTFLoader();
-
-            // 加载您的 .glb 模型
-            // 请将 'pistol.glb' 替换为您自己的文件名，例如 'xxx.glb'
-            loader.load('lxxx.glb', function(gltf) {
-                const gunModel = gltf.scene;
-                // 对模型进行缩放和旋转，使其符合第一人称视角
-                gunModel.scale.set(0.05, 0.05, 0.05); // 根据您的模型调整缩放比例
-                gunModel.rotation.set(0, Math.PI, -Math.PI / 2, 'XYZ'); // 调整旋转使枪口指向Z轴负方向
-
-                // 设置枪口相对于模型的位置（用于闪光）
-                // 这个值需要根据您加载的模型进行调整，通常是枪管前端的位置
-                // 一个常见的做法是将枪口设在模型本地坐标系的 (0, 0, -1) 附近
-                const gunMuzzleOffset = new THREE.Vector3(0, 0, -1); // 这是一个示例值，您可能需要调整
-
-                // 将加载的模型添加到玩家模型组中
-                playerModel.add(gunModel);
-
-                // 将玩家模型添加到场景
+            loader.load('https://cs2test.github.io/lxxx.glb', function(gltf) {
+                playerModel = gltf.scene;
+                // 可以对模型进行缩放、旋转、位置调整
+                playerModel.scale.set(0.5, 0.5, 0.5); // 示例缩放
+                playerModel.position.set(0, -0.5, -1.0); // 初始位置
+                // 你可以根据需要调整模型的旋转
+                // playerModel.rotation.set(0, 0, 0, 'YXZ');
                 scene.add(playerModel);
-
-                // 更新玩家模型位置和旋转的函数
-                function updatePlayerModel() {
-                    // 将玩家模型定位在相机前方，模拟第一人称视角
-                    // 使用一个固定的偏移量，使其看起来像是从屏幕底部伸出
-                    const offset = new THREE.Vector3(0, -0.5, -1.0); // 调整此偏移量以改变手枪在屏幕上的位置
-                    offset.applyQuaternion(camera.quaternion);
-                    playerModel.position.copy(camera.position).add(offset);
-
-                    // 旋转模型以匹配相机
-                    playerModel.rotation.copy(camera.rotation);
-                }
-
-                // 创建枪口闪光效果
-                function createGunshotFlash() {
-                    // 将枪口位置从模型本地坐标转换为世界坐标
-                    const worldMuzzlePos = gunMuzzleOffset.clone();
-                    worldMuzzlePos.applyMatrix4(gunModel.matrixWorld);
-
-                    // 创建一个短暂的强光
-                    const flashLight = new THREE.PointLight(0xffffff, 2, 1.0); // 白色强光，范围1.0单位
-                    flashLight.position.copy(worldMuzzlePos);
-                    scene.add(flashLight);
-
-                    // 短暂显示后移除
-                    setTimeout(() => {
-                        if (flashLight.parent) {
-                            scene.remove(flashLight);
-                        }
-                    }, 50); // 50毫秒后移除
-                }
-
-                // 触发后坐力动画
-                function triggerRecoilAnimation() {
-                    if (isRecoiling) return; // 如果已经在后坐力动画中，则忽略
-                    isRecoiling = true;
-                    recoilStartTime = Date.now();
-
-                    // 定义后坐力动画的关键帧
-                    const startRotation = playerModel.rotation.clone(); // 保存初始旋转
-                    const recoilRotation = new THREE.Euler(0.1, 0, 0, 'YXZ'); // 向上和向后旋转
-
-                    // 动画函数
-                    function animateRecoil() {
-                        const now = Date.now();
-                        const elapsed = now - recoilStartTime;
-                        const progress = Math.min(elapsed / RECOIL_DURATION, 1);
-
-                        if (progress < 1) {
-                            // 使用缓动函数让动画更自然
-                            const easedProgress = 1 - Math.cos(progress * Math.PI / 2); // 缓入缓出
-                            // 应用后坐力旋转
-                            playerModel.rotation.x = startRotation.x + recoilRotation.x * easedProgress;
-                            playerModel.rotation.y = startRotation.y + recoilRotation.y * easedProgress;
-                            playerModel.rotation.z = startRotation.z + recoilRotation.z * easedProgress;
-
-                            requestAnimationFrame(animateRecoil);
-                        } else {
-                            // 动画结束，复位到初始状态
-                            playerModel.rotation.copy(startRotation);
-                            isRecoiling = false;
-                        }
-                    }
-
-                    animateRecoil();
-                }
-
-                // 渲染循环
-                function animate() {
-                    requestAnimationFrame(animate);
-                    renderer.render(scene, camera);
-                    updateMiniMap();
-                    updatePlayerModel(); // 更新玩家模型位置和旋转
-                }
-                animate();
-
             }, undefined, function(error) {
-                console.error('Error loading GLB model:', error);
+                console.error('加载手枪模型时出错:', error);
             });
+
+            // 创建枪口闪光效果
+            function createGunshotFlash() {
+                if (!playerModel) return; // 如果模型未加载，则不执行
+                // 将枪口位置从模型本地坐标转换为世界坐标
+                const worldMuzzlePos = gunMuzzleOffset.clone();
+                worldMuzzlePos.applyMatrix4(playerModel.matrixWorld);
+                // 创建一个短暂的强光
+                const flashLight = new THREE.PointLight(0xffffff, 2, 1.0); // 白色强光，范围1.0单位
+                flashLight.position.copy(worldMuzzlePos);
+                scene.add(flashLight);
+                // 短暂显示后移除
+                setTimeout(() => {
+                    if (flashLight.parent) {
+                        scene.remove(flashLight);
+                    }
+                }, 50); // 50毫秒后移除
+            }
+
+            // 触发后坐力动画
+            function triggerRecoilAnimation() {
+                if (!playerModel || isRecoiling) return; // 如果模型未加载或已经在后坐力动画中，则忽略
+                isRecoiling = true;
+                recoilStartTime = Date.now();
+                // 定义后坐力动画的关键帧
+                const startRotation = playerModel.rotation.clone(); // 保存初始旋转
+                const recoilRotation = new THREE.Euler(0.1, 0, 0, 'YXZ'); // 向上和向后旋转
+
+                // 动画函数
+                function animateRecoil() {
+                    const now = Date.now();
+                    const elapsed = now - recoilStartTime;
+                    const progress = Math.min(elapsed / RECOIL_DURATION, 1);
+                    if (progress < 1) {
+                        // 使用缓动函数让动画更自然
+                        const easedProgress = 1 - Math.cos(progress * Math.PI / 2); // 缓入
+                        // 应用后坐力旋转
+                        playerModel.rotation.x = startRotation.x + recoilRotation.x * easedProgress;
+                        playerModel.rotation.y = startRotation.y + recoilRotation.y * easedProgress;
+                        playerModel.rotation.z = startRotation.z + recoilRotation.z * easedProgress;
+                        requestAnimationFrame(animateRecoil);
+                    } else {
+                        // 动画结束，复位到初始状态
+                        playerModel.rotation.copy(startRotation);
+                        isRecoiling = false;
+                    }
+                }
+                animateRecoil();
+            }
+
+            // 更新玩家模型位置和旋转
+            function updatePlayerModel() {
+                if (!playerModel) return; // 如果模型未加载，则不执行
+                // 将玩家模型定位在相机前方，模拟第一人称视角
+                // 使用一个固定的偏移量，使其看起来像是从屏幕底部伸出
+                const offset = new THREE.Vector3(0, -0.5, -1.0); // 调整此偏移量以改变手枪在屏幕上的位置
+                offset.applyQuaternion(camera.quaternion);
+                playerModel.position.copy(camera.position).add(offset);
+                // 旋转模型以匹配相机
+                playerModel.rotation.copy(camera.rotation);
+            }
+
+            // 渲染循环
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+                updateMiniMap();
+                updatePlayerModel(); // 更新玩家模型位置和旋转
+            }
+            animate();
 
             // 更新小地图
             function updateMiniMap() {
+                if (!miniMapCanvas || !miniMapCtx) return;
                 const width = miniMapCanvas.width;
                 const height = miniMapCanvas.height;
                 const radius = Math.min(width, height) / 2;
                 const centerX = width / 2;
                 const centerY = height / 2;
+
                 miniMapCtx.clearRect(0, 0, width, height);
                 miniMapCtx.fillStyle = 'rgba(30, 144, 255, 0.2)';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 miniMapCtx.fill();
+
                 miniMapCtx.fillStyle = '#ffd166';
                 miniMapCtx.font = 'bold 16px Arial';
                 miniMapCtx.textAlign = 'center';
@@ -1486,6 +1460,7 @@
                 miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);
                 miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);
                 miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);
+
                 const directionAngle = -cameraRotation.y - Math.PI/2;
                 const fov = 75 * Math.PI / 180;
                 const directionLength = radius * 0.8;
@@ -1496,10 +1471,12 @@
                                directionAngle - fov/2, directionAngle + fov/2);
                 miniMapCtx.closePath();
                 miniMapCtx.fill();
+
                 miniMapCtx.fillStyle = '#00ff88';
                 miniMapCtx.beginPath();
                 miniMapCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
                 miniMapCtx.fill();
+
                 targets.forEach(target => {
                     const scale = 1.5;
                     let targetX = centerX + target.position.x * scale;
@@ -1521,8 +1498,10 @@
 
             // 调整小地图大小
             function resizeMiniMap() {
-                miniMapCanvas.width = miniMapCanvas.offsetWidth;
-                miniMapCanvas.height = miniMapCanvas.offsetHeight;
+                if (miniMapCanvas) {
+                    miniMapCanvas.width = miniMapCanvas.offsetWidth;
+                    miniMapCanvas.height = miniMapCanvas.offsetHeight;
+                }
             }
             resizeMiniMap();
             window.addEventListener('resize', resizeMiniMap);
