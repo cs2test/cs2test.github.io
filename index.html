@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
+    <!-- 引入 Three.js -->
     <script src="https://cs2test.github.io/three.js"></script>
-    <!-- 添加 GLTFLoader -->
+    <!-- 引入 GLTFLoader -->
     <script src="GLTFLoader.js"></script>
     <style>
         * {
@@ -760,89 +761,22 @@
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7);
             scene.add(directionalLight);
-            // === 创建手枪模型 (新增部分) ===
+            // === 创建手枪模型 ===
             let pistolModel = null;
-            let muzzleFlash = null;
-            let isReloading = false;
-
-            // 加载手枪模型
             const loader = new THREE.GLTFLoader();
+            // 加载手枪模型
             loader.load('lxxx.glb', function(gltf) {
                 pistolModel = gltf.scene;
-                // 调整手枪模型的大小、位置和旋转，使其看起来像握在手中
-                pistolModel.scale.set(0.01, 0.01, 0.01); // 根据您的模型调整缩放比例
-                pistolModel.position.set(0, -1, 0.5); // 位置在相机下方和前方
-                pistolModel.rotation.set(0, Math.PI, 0); // 旋转以面向前方
-
-                // 隐藏手枪模型，直到进入射击模式
-                pistolModel.visible = false;
+                // 调整手枪的比例和位置以适应第一人称视角
+                pistolModel.scale.set(0.3, 0.3, 0.3); // 根据模型实际大小调整比例
+                // 将手枪放在相机前方偏下的位置，模拟持枪
+                pistolModel.position.set(0, -0.5, 1.5); // Y轴负值表示向下，Z轴正值表示向前
+                // 设置初始旋转，使枪口朝前
+                pistolModel.rotation.set(0, 0, 0); // 可能需要根据模型的默认朝向调整
                 scene.add(pistolModel);
-
-                // 创建枪口闪光效果
-                createMuzzleFlash();
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
             });
-
-            // 创建枪口闪光效果函数
-            function createMuzzleFlash() {
-                // 创建一个简单的平面作为闪光
-                const geometry = new THREE.PlaneGeometry(0.5, 0.5);
-                const material = new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
-                    transparent: true,
-                    opacity: 0.8,
-                    side: THREE.DoubleSide
-                });
-                muzzleFlash = new THREE.Mesh(geometry, material);
-                muzzleFlash.visible = false;
-                scene.add(muzzleFlash);
-            }
-
-            // 更新手枪位置和旋转，使其跟随相机
-            function updatePistolPosition() {
-                if (!pistolModel || !inShootingMode) return;
-
-                // 让手枪的位置和旋转跟随相机
-                pistolModel.position.copy(camera.position);
-                pistolModel.rotation.copy(camera.rotation);
-
-                // 微调位置，使其看起来像握在手中（在相机下方和前方）
-                const offset = new THREE.Vector3(0, -0.5, 0.3); // 调整偏移量
-                const worldOffset = offset.applyQuaternion(camera.quaternion);
-                pistolModel.position.add(worldOffset);
-
-                // 如果需要，可以在这里添加轻微的后坐力动画
-                if (isReloading) {
-                    pistolModel.position.y += 0.05; // 向上移动一点
-                    pistolModel.rotation.x -= 0.05; // 向下倾斜一点
-                } else {
-                    pistolModel.position.y -= 0.05; // 回到原位
-                    pistolModel.rotation.x += 0.05; // 回到原位
-                }
-            }
-
-            // 触发枪口闪光
-            function triggerMuzzleFlash() {
-                if (!muzzleFlash || !pistolModel) return;
-
-                // 设置闪光的位置在枪口（需要根据您的模型调整）
-                // 假设枪口在模型的局部坐标系中的某个点，例如 (0, 0, 0.5)
-                const muzzlePoint = new THREE.Vector3(0, 0, 0.5); // 根据您的模型调整
-                const worldMuzzlePoint = muzzlePoint.applyMatrix4(pistolModel.matrixWorld);
-                muzzleFlash.position.copy(worldMuzzlePoint);
-
-                // 设置闪光的旋转，使其面向前方
-                muzzleFlash.lookAt(camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3())));
-
-                // 显示闪光
-                muzzleFlash.visible = true;
-
-                // 设置闪光持续时间
-                setTimeout(() => {
-                    muzzleFlash.visible = false;
-                }, 100); // 闪烁100毫秒
-            }
 
             // === 创建更深的天空盒 ===
             const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
@@ -854,6 +788,7 @@
             });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
+
             // === 创建沙漠地面 ===
             const groundGeometry = new THREE.PlaneGeometry(100, 100);
             const groundMaterial = new THREE.MeshStandardMaterial({
@@ -872,6 +807,7 @@
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = 1;
             scene.add(ground);
+
             // === 创建墙壁 ===
             const wallWidth = 100;
             const wallDepth = 10;
@@ -888,24 +824,29 @@
             wallMaterial.map.wrapT = THREE.RepeatWrapping;
             wallMaterial.map.repeat.set(10, 2);
             wallMaterial.map.needsUpdate = true;
+
             // 后墙 (Z+) - 标签C
             const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
             backWall.position.set(0, wallHeight/2, wallDistance);
             scene.add(backWall);
+
             // 前墙 (Z-) - 标签A
             const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
             frontWall.position.set(0, wallHeight/2, -wallDistance);
             scene.add(frontWall);
+
             // 左墙 (X-) - 标签D
             const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
             leftWall.position.set(-wallDistance, wallHeight/2, 0);
             leftWall.rotation.y = Math.PI / 2;
             scene.add(leftWall);
+
             // 右墙 (X+) - 标签B
             const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
             rightWall.position.set(wallDistance, wallHeight/2, 0);
             rightWall.rotation.y = Math.PI / 2;
             scene.add(rightWall);
+
             // === 添加障碍物 ===
             const crateGeometry = new THREE.BoxGeometry(5, 5, 5);
             const crateMaterial = new THREE.MeshStandardMaterial({
@@ -918,6 +859,7 @@
             crateMaterial.map.wrapT = THREE.RepeatWrapping;
             crateMaterial.map.repeat.set(2, 2);
             crateMaterial.map.needsUpdate = true;
+
             // 备注: 将箱子移得更远，避免阻挡小球
             const crates = [
                 { x: 0, y: 5, z: 40 }, { x: 0, y: 5, z: -40 },
@@ -930,6 +872,7 @@
                 crateMesh.position.set(crate.x, crate.y, crate.z);
                 scene.add(crateMesh);
             });
+
             // === 添加石阶 ===
             const stairGeometry = new THREE.BoxGeometry(10, 1, 10);
             const stairMaterial = new THREE.MeshStandardMaterial({
@@ -942,6 +885,7 @@
             stairMaterial.map.wrapT = THREE.RepeatWrapping;
             stairMaterial.map.repeat.set(2, 2);
             stairMaterial.map.needsUpdate = true;
+
             // 创建楼梯
             const stairs = [
                 { x: 20, y: 5, z: 20, rotationY: Math.PI/2 }, // 右侧楼梯
@@ -955,6 +899,7 @@
                 if (stair.rotationY) stairMesh.rotation.y = stair.rotationY;
                 scene.add(stairMesh);
             });
+
             // === 添加拱门 ===
             const archGeometry = new THREE.CylinderGeometry(1, 1, 5, 16);
             const archMaterial = new THREE.MeshStandardMaterial({
@@ -967,6 +912,7 @@
             archMaterial.map.wrapT = THREE.RepeatWrapping;
             archMaterial.map.repeat.set(2, 2);
             archMaterial.map.needsUpdate = true;
+
             // 创建拱门
             const arches = [
                 { x: 0, y: 5, z: 20, rotationY: Math.PI/2 },
@@ -980,6 +926,7 @@
                 if (arch.rotationY) archMesh.rotation.y = arch.rotationY;
                 scene.add(archMesh);
             });
+
             // === 添加墙壁标签 ===
             const wallLabels = [];
             function createWallLabel(text, position, rotation, flipX = false) {
@@ -1015,44 +962,42 @@
                 wallLabels.push(label);
                 return label;
             }
+
             // 添加A、B、C、D四个墙壁标签
             createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0));
             createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
             createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true);
             createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
+
             // 设置相机初始位置 - 面朝A墙
             camera.position.set(0, 5, 0);
             camera.rotation.set(0, 0, 0, 'YXZ');
             camera.lookAt(0, 5, -10);
+
             // 创建射线投射器用于检测点击
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
+
             // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
             crosshair.style.top = '50%';
             crosshair.style.transform = 'translate(-50%, -50%)';
             trainingArea.style.cursor = 'none';
+
             // ==================== 3D 控制逻辑 ====================
             let inShootingMode = false;
             let isPointerLocked = false;
             let cameraRotation = { x: 0, y: 0 };
+
             // 监听键盘事件以切换射击模式和游戏状态
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'a' || e.key === 'A') {
                     inShootingMode = !inShootingMode;
                     if (inShootingMode) {
                         trainingArea.requestPointerLock();
-                        // 显示手枪模型
-                        if (pistolModel) {
-                            pistolModel.visible = true;
-                        }
                     } else {
                         if (isPointerLocked) {
                             document.exitPointerLock();
-                        }
-                        // 隐藏手枪模型
-                        if (pistolModel) {
-                            pistolModel.visible = false;
                         }
                     }
                 }
@@ -1060,6 +1005,7 @@
                     toggleTraining();
                 }
             });
+
             // 监听指针锁定状态变化
             document.addEventListener('pointerlockchange', function() {
                 if (document.pointerLockElement === trainingArea) {
@@ -1069,14 +1015,11 @@
                     isPointerLocked = false;
                     if (inShootingMode) {
                         inShootingMode = false;
-                        // 隐藏手枪模型
-                        if (pistolModel) {
-                            pistolModel.visible = false;
-                        }
                     }
                     trainingArea.style.cursor = 'default';
                 }
             });
+
             // 处理鼠标移动以控制3D视角
             document.addEventListener('mousemove', function(e) {
                 if (!inShootingMode || !isPointerLocked) return;
@@ -1086,13 +1029,27 @@
                 cameraRotation.x -= deltaY * sensitivity;
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
                 camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
+
+                // 更新手枪的位置和旋转，使其跟随相机
+                if (pistolModel) {
+                    // 手枪的位置应该相对于相机
+                    pistolModel.position.set(0, -0.5, 1.5); // 保持相对位置
+                    // 手枪的旋转应该与相机一致，但可能需要反向处理（因为相机是观察者）
+                    // 通常，相机的旋转就是手枪的旋转
+                    pistolModel.rotation.set(camera.rotation.x, camera.rotation.y, camera.rotation.z);
+                }
             });
+
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
                 shots++;
                 updateStats();
                 if (!gameActive) return;
                 if (!inShootingMode) return;
+
+                // 在射击时创建枪口闪光
+                createMuzzleFlash();
+
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
@@ -1103,26 +1060,13 @@
                     targetCount++;
                     // 修复: 打破一个球固定得1分
                     targetHit(target, 1);
-                    // 触发枪口闪光
-                    triggerMuzzleFlash();
-                    // 添加后坐力动画
-                    isReloading = true;
-                    setTimeout(() => {
-                        isReloading = false;
-                    }, 100); // 动画持续100毫秒
                 } else {
                     combo = 0;
                     comboDisplay.textContent = combo;
                     updateStats();
-                    // 即使未命中也触发枪口闪光
-                    triggerMuzzleFlash();
-                    // 添加后坐力动画
-                    isReloading = true;
-                    setTimeout(() => {
-                        isReloading = false;
-                    }, 100); // 动画持续100毫秒
                 }
             });
+
             // ==================== 3D 游戏逻辑 ====================
             // 创建棋盘格纹理
             function createCheckerboardTexture() {
@@ -1140,6 +1084,7 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
+
             // 创建沙漠纹理
             function createDesertTexture() {
                 const canvas = document.createElement('canvas');
@@ -1161,6 +1106,7 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
+
             // 创建石墙纹理
             function createStoneTexture() {
                 const canvas = document.createElement('canvas');
@@ -1182,6 +1128,7 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
+
             // 创建木箱纹理
             function createWoodTexture() {
                 const canvas = document.createElement('canvas');
@@ -1206,6 +1153,7 @@
                 }
                 return new THREE.CanvasTexture(canvas);
             }
+
             // 生成目标函数 - 优化为在玩家前方集中区域生成
             function spawnTargets() {
                 if (!gameActive) return;
@@ -1256,6 +1204,7 @@
                 // 备注: 移除了目标自动消失的代码
                 // 目标现在只会在被击中时消失
             }
+
             // 处理目标命中
             function targetHit(target, points) {
                 if (target.userData.isHit) return;
@@ -1280,6 +1229,7 @@
                     }
                 }, 200);
             }
+
             // 创建爆炸效果
             function createExplosionEffect(position) {
                 const particleCount = 30;
@@ -1333,6 +1283,7 @@
                 };
                 animateParticles();
             }
+
             // 显示得分指示器 - 修复显示问题
             function showScoreIndicator(points, x, y) {
                 const scoreIndicator = document.createElement('div');
@@ -1354,6 +1305,7 @@
                     }
                 }, 1000);
             }
+
             // 开始/暂停训练
             function toggleTraining() {
                 if (countdownTimer) {
@@ -1389,6 +1341,7 @@
                     }, 1000);
                 }
             }
+
             // 显示游戏状态消息
             function showGameStatus(text) {
                 gameStatus.textContent = text;
@@ -1397,13 +1350,16 @@
                     gameStatus.classList.remove('visible');
                 }, 1000);
             }
+
             // 重置统计数据
             resetBtn.addEventListener('click', resetGame);
+
             // 语言切换
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
                 updateLanguage();
             });
+
             // 灵敏度输入框事件监听
             sensitivityInput.addEventListener('input', function() {
                 const newSensitivity = parseFloat(this.value);
@@ -1411,15 +1367,60 @@
                     sensitivity = newSensitivity;
                 }
             });
+
+            // ==================== 枪口闪光效果 ====================
+            function createMuzzleFlash() {
+                if (!pistolModel) return; // 如果手枪模型未加载，则不创建闪光
+
+                // 创建一个简单的圆形光效
+                const flashGeometry = new THREE.CircleGeometry(0.5, 32); // 半径0.5，32个片段
+                const flashMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffffff, // 白色
+                    transparent: true,
+                    opacity: 0.8,
+                    side: THREE.DoubleSide
+                });
+                const flash = new THREE.Mesh(flashGeometry, flashMaterial);
+                scene.add(flash);
+
+                // 将闪光的位置设置在手枪的枪口位置（需要根据你的模型调整）
+                // 这里假设枪口在手枪模型的局部坐标系中的某个位置，例如 (0, 0, 0.5)
+                // 你需要根据你的 lxxx.glb 模型的实际结构来确定枪口位置
+                // 下面是一个示例，你可能需要调整这个向量
+                const muzzleOffset = new THREE.Vector3(0, 0, 0.5); // 示例：枪口在模型Z轴正方向0.5单位处
+                flash.position.copy(pistolModel.localToWorld(muzzleOffset)); // 将局部坐标转换为世界坐标
+
+                // 设置闪光的旋转，使其面向相机
+                flash.lookAt(camera.position);
+
+                // 动画：让闪光快速淡出并缩小
+                const startTime = Date.now();
+                const duration = 100; // 闪光持续时间，毫秒
+                const animateFlash = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    if (progress >= 1) {
+                        scene.remove(flash);
+                        return;
+                    }
+                    // 缩放和透明度随时间变化
+                    const scale = 1 - progress;
+                    const opacity = 0.8 * (1 - progress);
+                    flash.scale.set(scale, scale, scale);
+                    flash.material.opacity = opacity;
+                    requestAnimationFrame(animateFlash);
+                };
+                animateFlash();
+            }
+
             // 渲染循环
             function animate() {
                 requestAnimationFrame(animate);
                 renderer.render(scene, camera);
                 updateMiniMap();
-                // 更新手枪位置
-                updatePistolPosition();
             }
             animate();
+
             // 更新小地图
             function updateMiniMap() {
                 const width = miniMapCanvas.width;
@@ -1472,6 +1473,7 @@
                     miniMapCtx.fill();
                 });
             }
+
             // 调整小地图大小
             function resizeMiniMap() {
                 miniMapCanvas.width = miniMapCanvas.offsetWidth;
@@ -1479,6 +1481,7 @@
             }
             resizeMiniMap();
             window.addEventListener('resize', resizeMiniMap);
+
             // 重置游戏
             function resetGame() {
                 gameActive = false;
@@ -1512,16 +1515,13 @@
                     if (isPointerLocked) {
                         document.exitPointerLock();
                     }
-                    // 隐藏手枪模型
-                    if (pistolModel) {
-                        pistolModel.visible = false;
-                    }
                 }
                 camera.position.set(0, 5, 0);
                 cameraRotation = { x: 0, y: 0 };
                 camera.rotation.set(0, 0, 0, 'YXZ');
                 camera.lookAt(0, 5, -10);
             }
+
             // 更新统计信息
             function updateStats() {
                 const accuracy = shots > 0 ? Math.min(100, Math.round((hits / shots) * 100)) : 0;
@@ -1532,6 +1532,7 @@
                 reactionElement.textContent = averageReactionTime + 'ms';
                 scoreElement.textContent = score;
             }
+
             // 更新语言
             function updateLanguage() {
                 const t = translations[language];
@@ -1564,6 +1565,7 @@
                     startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 }
             }
+
             // 初始化
             updateStats();
             updateLanguage();
