@@ -1353,8 +1353,8 @@
             let isRecoiling = false;
             let recoilStartTime = 0;
             const RECOIL_DURATION = 200; // 后坐力动画持续时间（毫秒）
-
             const loader = new THREE.GLTFLoader();
+
             loader.load('lxxx.glb', function(gltf) {
                 playerModel = gltf.scene;
                 // 可以对模型进行缩放、旋转、位置调整
@@ -1366,6 +1366,55 @@
             }, undefined, function(error) {
                 console.error('加载手枪模型时出错:', error);
             });
+
+            /*
+            // --- 注释掉: 旧的“虚拟”玩家模型代码 (导致冲突的部分) ---
+            // - 新增: 玩家视角手枪模型和相关动画 -
+            // 用于管理后坐力动画的状态
+            let isRecoiling = false; // <-- 重复定义，导致冲突
+            let recoilStartTime = 0; // <-- 重复定义，导致冲突
+            const RECOIL_DURATION = 200; // <-- 重复定义，导致冲突
+
+            // 创建玩家模型组
+            const playerModel = new THREE.Group(); // <-- 重复定义，导致冲突，覆盖了上面加载的模型
+            // 创建一个简单的“手”模型
+            const handGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.05);
+            const handMaterial = new THREE.MeshStandardMaterial({ color: 0xccaa88 }); // 皮肤色
+            const hand = new THREE.Mesh(handGeometry, handMaterial);
+            hand.position.set(0.05, -0.05, -0.1); // 手的位置
+            playerModel.add(hand);
+
+            // 创建手枪模型
+            const gunGroup = new THREE.Group();
+            // 握把
+            const gripGeometry = new THREE.BoxGeometry(0.08, 0.12, 0.05);
+            const gripMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const grip = new THREE.Mesh(gripGeometry, gripMaterial);
+            grip.position.set(0, -0.06, 0);
+            gunGroup.add(grip);
+            // 枪管
+            const barrelGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.25);
+            const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+            barrel.position.set(0, -0.025, -0.125); // 连接到握把
+            gunGroup.add(barrel);
+            // 套筒
+            const slideGeometry = new THREE.BoxGeometry(0.08, 0.06, 0.2);
+            const slideMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const slide = new THREE.Mesh(slideGeometry, slideMaterial);
+            slide.position.set(0, 0, -0.1); // 覆盖枪管后半部分
+            gunGroup.add(slide);
+            // 将枪模型附加到手上
+            gunGroup.position.set(0, 0, 0); // 相对于手的位置
+            playerModel.add(gunGroup);
+
+            // 设置枪口相对于模型的位置（用于闪光）
+            const gunMuzzleOffset = new THREE.Vector3(0, -0.025, -0.25); // 枪口在枪管前端
+
+            // 将玩家模型添加到场景
+            scene.add(playerModel); // <-- 这行将空的 Group 添加到场景，覆盖了上面加载的模型
+            */
+
 
             // 创建枪口闪光效果
             function createGunshotFlash() {
