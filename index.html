@@ -941,6 +941,9 @@
             camera.lookAt(0, 5, -10);
 
             // ========== 新增：手枪模型加载 ==========
+            const gunGroup = new THREE.Group();
+            // 手枪模型变量
+            let pistolModel = null;
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
                 const model = gltf.scene;
