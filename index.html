@@ -941,32 +941,63 @@
             camera.lookAt(0, 5, -10);
 
             // ========== 新增：手枪模型加载 ==========
-
             // 创建一个用于存放手枪的组，方便控制
             const gunGroup = new THREE.Group();
             // 手枪模型变量
             let pistolModel = null;
 
             // 使用 Three.js 内置的 GLTFLoader 加载手枪模型
-            // 注意: 此处不再需要引入外部的 GLTFLoader.js 文件
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
                 pistolModel = gltf.scene;
                 // 调整手枪的缩放和位置，使其看起来像握在手中
-                // 根据您的截图，调整缩放和位置，使其位于屏幕底部中央
-                pistolModel.scale.set(0.01, 0.01, 0.01); // 调整缩放
+                // 尝试一个非常小的缩放值，确保它不会太大而看不见
+                pistolModel.scale.set(0.001, 0.001, 0.001);
+
                 // 将手枪添加到枪组中
                 gunGroup.add(pistolModel);
+
                 // 将枪组添加到相机上，这样它会跟随相机移动
                 camera.add(gunGroup);
-                // 设置手枪的初始位置和旋转，使其位于屏幕底部中央
-                gunGroup.position.set(0, -0.5, 0.5); // Y轴向下，Z轴向前，尝试不同的Z值
-                gunGroup.rotation.set(0, Math.PI, 0); // 让枪口指向屏幕前方，这是一个常见的初始姿态
-                // 微调旋转，使其与CS2中的视角一致
-                gunGroup.rotation.y = Math.PI; // 可能需要根据模型方向微调
+
+                // ==================== 关键调试部分开始 ====================
+                // 创建一个简单的红色球体作为调试标记，放在模型原点
+                const debugSphereGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+                const debugSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const debugSphere = new THREE.Mesh(debugSphereGeometry, debugSphereMaterial);
+                gunGroup.add(debugSphere);
+
+                // 在模型的中心创建一个绿色立方体，指示其大致范围
+                const debugBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
+                const debugBoxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+                const debugBox = new THREE.Mesh(debugBoxGeometry, debugBoxMaterial);
+                debugBox.position.set(0, 0, 0); // 确保它在模型中心
+                gunGroup.add(debugBox);
+
+                // 设置一个非常明显的初始位置和旋转，让调试标记出现在屏幕中央
+                gunGroup.position.set(0, 0, 0); // 放在相机原点，确保它在视野内
+                gunGroup.rotation.set(0, 0, 0); // 先设置为无旋转
+
+                // 打印模型信息到控制台，查看其边界框
+                console.log("Pistol Model Loaded:", pistolModel);
+                if (pistolModel && pistolModel.children && pistolModel.children.length > 0) {
+                    const box = new THREE.Box3().setFromObject(pistolModel);
+                    console.log("Pistol Model BoundingBox:", box);
+                    // 如果有边界框，可以计算一个中心点
+                    const center = box.getCenter(new THREE.Vector3());
+                    console.log("Pistol Model Center:", center);
+                }
+                // ==================== 关键调试部分结束 ====================
+
+                // 注释掉原有的位置和旋转设置，先用调试标记定位
+                // gunGroup.position.set(0, -0.3, 0.8);
+                // gunGroup.rotation.set(-Math.PI/2, 0, 0);
+                // gunGroup.rotation.y = Math.PI;
+
             }, undefined, function(error) {
                 console.error('An error occurred loading the pistol model:', error);
             });
+            // ========== 新增结束 ========
 
             // ========== 新增：闪光效果 ==========
 
