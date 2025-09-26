@@ -942,41 +942,26 @@
 
             // ========== 新增：手枪模型加载 ==========
             const gunGroup = new THREE.Group();
-            let pistolModel = null;
-
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
-                // 关键：克隆整个场景，避免原始场景的相机/灯光干扰
-                const clonedScene = gltf.scene.clone();
-                
-                // 遍历克隆后的场景，找到所有 Mesh 并添加到 gunGroup
-                clonedScene.traverse(function(child) {
-                    if (child.isMesh) {
-                        // 重置每个网格的位置、旋转和缩放
-                        child.position.set(0, 0, 0);
-                        child.rotation.set(0, 0, 0);
-                        child.scale.set(1, 1, 1);
-                        // 将网格从原场景中移除，并添加到 gunGroup
-                        if (child.parent) {
-                            child.parent.remove(child);
-                        }
-                        gunGroup.add(child);
-                    }
-                });
-
-                if (gunGroup.children.length > 0) {
-                    // 调整整体缩放
-                    gunGroup.scale.set(0.05, 0.05, 0.05);
-                    // 将枪组添加到主相机
-                    camera.add(gunGroup);
-                    // 设置枪组在相机坐标系下的位置和旋转
-                    gunGroup.position.set(0, -0.3, -0.5); // Z为负，在相机前方
-                    gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度
-
-                    console.log("Pistol model loaded and attached to camera.");
-                } else {
-                    console.error("No mesh found in the GLTF file!");
+                // ===== 关键检查：确保 gltf.scene 存在 =====
+                if (!gltf || !gltf.scene) {
+                    console.error('Failed to load pistol model: gltf.scene is undefined.');
+                    return;
                 }
+                // ======================================
+
+                const actualPistolMesh = gltf.scene;
+                actualPistolMesh.scale.set(0.05, 0.05, 0.05);
+                actualPistolMesh.position.set(0, 0, 0);
+                actualPistolMesh.rotation.set(0, 0, 0);
+
+                gunGroup.add(actualPistolMesh);
+                camera.add(gunGroup);
+                gunGroup.position.set(0, -0.3, -0.5); // Z为负，在相机前方
+                gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度
+
+                console.log("Pistol model loaded successfully.");
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
             });
