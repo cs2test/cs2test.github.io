@@ -941,45 +941,33 @@
             camera.lookAt(0, 5, -10);
 
             // ========== 新增：手枪模型加载 ==========
-            // 在 DOMContentLoaded 回调函数内，但在 loader.load 之外声明
             const gunGroup = new THREE.Group();
-            camera.add(gunGroup); // 先把空的 gunGroup 添加到相机
-
+            // 手枪模型变量
+            let pistolModel = null;
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
-                // 遍历找到第一个 Mesh
-                let actualPistolMesh = null;
-                gltf.scene.traverse(function(child) {
+                const model = gltf.scene;
+                // 1. 重置位置、旋转、缩放
+                model.position.set(0, 0, 0);
+                model.rotation.set(0, 0, 0);
+                model.scale.set(0.1, 0.1, 0.1); // 先用1:1的缩放
+
+                // 2. 替换材质为亮绿色，确保可见
+                const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                model.traverse((child) => {
                     if (child.isMesh) {
-                        actualPistolMesh = child;
-                        return;
+                        child.material = basicMaterial;
                     }
                 });
 
-                if (actualPistolMesh) {
-                    // 重置模型自身变换
-                    actualPistolMesh.position.set(0, 0, 0);
-                    actualPistolMesh.rotation.set(0, 0, 0);
-                    actualPistolMesh.scale.set(0.1, 0.1, 0.1);
+                // 3. 直接将模型添加到主场景，而不是相机！
+                scene.add(model);
 
-                    // 替换材质为亮绿色
-                    const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-                    actualPistolMesh.material = basicMaterial;
-
-                    // 将模型添加到已附加到相机的 gunGroup 中
-                    gunGroup.add(actualPistolMesh);
-
-                    // 设置 gunGroup 相对于相机的位置和旋转
-                    // Z 必须是负数！在相机前方！
-                    gunGroup.position.set(0, -0.3, -0.5);
-                    gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度
-
-                    console.log("Pistol model loaded and attached to camera.");
-                }
+                console.log("Pistol model added directly to the main scene.");
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
             });
-            // ========== 新增结束 ========
+            // ========== 新增结束 ======== 
 
             // ========== 新增：闪光效果 ==========
 
