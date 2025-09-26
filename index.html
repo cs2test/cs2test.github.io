@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
-    <!-- 引入 Three.js -->
+    <!-- 引入 Three.js 核心库 -->
     <script src="https://cs2test.github.io/three.js"></script>
-    <!-- 引入 GLTFLoader -->
+    <!-- 引入 GLTFLoader 插件 -->
     <script src="GLTFLoader.js"></script>
     <style>
         * {
@@ -15,6 +15,7 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         body {
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #e0e0e0;
@@ -26,17 +27,17 @@
             padding: 20px 0;
             cursor: default;
         }
+
         .container {
             width: 100%;
             max-width: 1400px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
         }
+
         header {
             text-align: center;
             margin-bottom: 20px;
         }
+
         h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
@@ -47,12 +48,14 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
         .subtitle {
             font-size: 1.3rem;
             color: #a9a9c5;
             position: relative;
             z-index: 1;
         }
+
         .game-container {
             display: flex;
             flex-direction: column;
@@ -60,6 +63,7 @@
             margin-bottom: 30px;
             height: 180vh;
         }
+
         .training-area-wrapper {
             flex: 1;
             display: flex;
@@ -67,15 +71,20 @@
             gap: 20px;
             position: relative;
         }
+
         .training-area {
             background: rgba(10, 10, 30, 0.95);
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             position: relative;
+            /* 让 Three.js 渲染器占据整个容器 */
+            width: 100%;
             height: 100%;
-            overflow: hidden;
+            /* 为枪械预留空间 */
+            padding-bottom: 150px; /* 根据需要调整 */
         }
+
         .mini-map {
             width: 100px;
             height: 100px;
@@ -83,178 +92,273 @@
             left: 10px;
             position: absolute;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 8px;
             padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
+
         .mini-map-canvas {
             width: 100%;
             height: 100%;
             border-radius: 4px;
         }
+
         .crosshair {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 10;
-        }
-        .crosshair::before,
-        .crosshair::after {
-            content: '';
-            position: absolute;
-            background: white;
-            opacity: 0.8;
-        }
-        .crosshair::before {
             width: 20px;
-            height: 2px;
-            top: -1px;
-            left: -10px;
-        }
-        .crosshair::after {
-            width: 2px;
             height: 20px;
-            top: -10px;
-            left: -1px;
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -50%);
+            /* 使用 SVG 或 CSS 绘制准星 */
+            /* 这里用简单的线条表示 */
+            &::before,
+            &::after {
+                content: '';
+                position: absolute;
+                background: white;
+            }
+            &::before {
+                width: 20px;
+                height: 2px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            &::after {
+                width: 2px;
+                height: 20px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
         }
+
         .game-status {
             position: absolute;
-            top: 10px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
             background: rgba(0, 0, 0, 0.7);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            z-index: 10;
+            padding: 20px 40px;
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
         }
-        .stats-panel {
-            background: rgba(10, 10, 30, 0.95);
+
+        .game-status.visible {
+            opacity: 1;
+        }
+
+        .controls-panel {
+            background: rgba(15, 15, 35, 0.9);
             border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            justify-content: space-around;
-            align-items: center;
+            gap: 15px;
+            justify-content: center;
         }
-        .stat-item {
+
+        .control-item {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 10px;
         }
-        .stat-value {
-            font-size: 1.8rem;
+
+        label {
+            font-size: 0.9rem;
+            color: #d0d0e0;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #4ecdc4;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: bold;
-            color: #4ecdc4;
+            transition: all 0.2s ease;
         }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        #start-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: #0f0c29;
+        }
+
+        #reset-btn {
+            background: linear-gradient(45deg, #4ecdc4, #2ecc71);
+            color: #0f0c29;
+        }
+
+        #lang-btn {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: #ffffff;
+        }
+
+        .score-section {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
         .combo-display, .score-display {
             font-size: 1.5rem;
             padding: 8px 20px;
-        }
-        .mini-map {
-            width: 100px;
-            height: 100px;
-            top: 10px;
-            left: 10px;
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* 新增：枪械模型容器样式 */
+        .stats-panel {
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+        }
+
+        .stats-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .instructions {
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+        }
+
+        .instructions h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+            line-height: 1.5;
+        }
+
+        .instructions li::before {
+            content: '→';
+            color: #4ecdc4;
+            position: absolute;
+            left: -20px;
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: #4ecdc4;
+            font-weight: bold;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #a9a9c5;
+            font-size: 1.1rem;
+            margin-top: 30px;
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* 新增：枪械和闪光效果样式 */
         .gun-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px; /* 与 training-area 的 padding-bottom 匹配 */
+            pointer-events: none; /* 避免干扰点击事件 */
+            z-index: 5; /* 在游戏状态之上，但在准星之下 */
+        }
+
+        .gun-model {
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            pointer-events: none;
-            z-index: 5;
             width: 100%;
-            height: 200px; /* 根据需要调整高度 */
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
+            height: 100%;
+            /* 通过 CSS 控制大小，也可以在 Three.js 中控制 */
+            /* 为了简单起见，我们主要在 Three.js 中处理缩放 */
         }
 
-        /* 新增：闪光效果样式 */
-        .muzzle-flash {
+        .flash-effect {
             position: absolute;
-            bottom: 10px;
+            bottom: 50px; /* 调整位置以匹配枪口 */
             left: 50%;
             transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 30px solid rgba(255, 255, 255, 0.8);
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
             opacity: 0;
-            transition: opacity 0.1s ease-out;
             pointer-events: none;
             z-index: 100;
+            transition: opacity 0.1s ease-out;
         }
 
-        .instructions {
-            background: rgba(10, 10, 30, 0.95);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-            margin-top: 30px;
+        .flash-effect.active {
+            opacity: 1;
         }
-        .instructions h2 {
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .instructions ul {
-            list-style-type: none;
-            padding-left: 20px;
-        }
-        .instructions li {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        .highlight {
-            background: #ff6b6b;
-            color: white;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-weight: bold;
-        }
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-        }
-        button {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            margin: 5px;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        input[type="number"] {
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #4ecdc4;
-            background: rgba(10, 10, 30, 0.7);
-            color: white;
-            width: 100px;
-        }
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #ff6b6b;
-        }
+
     </style>
 </head>
 <body>
@@ -272,48 +376,16 @@
                 <div class="training-area" id="training-area">
                     <div class="crosshair" id="crosshair"></div>
                     <div class="game-status" id="game-status">准备就绪</div>
-                    <!-- 新增：枪械模型容器 -->
-                    <div class="gun-container" id="gun-container">
-                        <div class="muzzle-flash" id="muzzle-flash"></div>
+                    <!-- 新增：枪械和闪光效果容器 -->
+                    <div class="gun-container">
+                        <div class="gun-model" id="gun-model"></div>
+                        <div class="flash-effect" id="flash-effect"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="stats-panel">
-                <div class="stat-item">
-                    <span id="shots-label">射击次数:</span>
-                    <span class="stat-value" id="shots">0</span>
-                </div>
-                <div class="stat-item">
-                    <span id="hits-label">命中次数:</span>
-                    <span class="stat-value" id="hits">0</span>
-                </div>
-                <div class="stat-item">
-                    <span id="accuracy-label">命中率:</span>
-                    <span class="stat-value" id="accuracy">0%</span>
-                </div>
-                <div class="stat-item">
-                    <span id="reaction-label">平均反应时间:</span>
-                    <span class="stat-value" id="reaction">0ms</span>
-                </div>
-                <div class="stat-item">
-                    <span id="max-combo-label">最高连击:</span>
-                    <span class="stat-value" id="max-combo">0</span>
-                </div>
-                <div class="stat-item">
-                    <span id="score-label">当前得分:</span>
-                    <span class="stat-value" id="score">0</span>
-                </div>
-                <div class="stat-item">
-                    <span id="combo-display">连击: 0</span>
-                </div>
-                <div class="stat-item">
-                    <span id="score-display">得分: 0</span>
-                </div>
-            </div>
-
-            <div class="controls">
-                <div>
+            <div class="controls-panel">
+                <div class="control-item">
                     <label for="sensitivity-input">鼠标灵敏度:</label>
                     <input type="number" id="sensitivity-input" min="0.0001" max="0.01" step="0.0001" value="0.002">
                 </div>
@@ -321,19 +393,34 @@
                 <button id="reset-btn">重置数据</button>
                 <button id="lang-btn">EN/中文</button>
             </div>
-        </div>
 
-        <div class="instructions">
-            <h2 id="instructions-title">训练说明</h2>
-            <ul>
-                <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
-                <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
-                <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
-                <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
-                <li id="instruction-5">击中目标得 <span class='highlight'>1分</span>（固定得分）</li>
-                <li id="instruction-6">连续命中会获得额外连击加成</li>
-                <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
-            </ul>
+            <div class="score-section">
+                <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
+                <div class="score-display" id="score-display-container">得分: <span id="score-display">0</span></div>
+            </div>
+
+            <div class="stats-panel">
+                <h2 class="stats-title" id="stats-title">训练数据</h2>
+                <div class="stat-item"><span class="stat-label" id="shots-label">射击次数:</span><span class="stat-value" id="shots">0</span></div>
+                <div class="stat-item"><span class="stat-label" id="hits-label">命中次数:</span><span class="stat-value" id="hits">0</span></div>
+                <div class="stat-item"><span class="stat-label" id="accuracy-label">命中率:</span><span class="stat-value" id="accuracy">0%</span></div>
+                <div class="stat-item"><span class="stat-label" id="reaction-label">平均反应时间:</span><span class="stat-value" id="reaction">0ms</span></div>
+                <div class="stat-item"><span class="stat-label" id="max-combo-label">最高连击:</span><span class="stat-value" id="max-combo">0</span></div>
+                <div class="stat-item"><span class="stat-label" id="score-label">当前得分:</span><span class="stat-value" id="score">0</span></div>
+            </div>
+
+            <div class="instructions">
+                <h2 id="instructions-title">训练说明</h2>
+                <ul>
+                    <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
+                    <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
+                    <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
+                    <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
+                    <li id="instruction-5">击中目标得 <span class='highlight'>1分</span>（固定得分）</li>
+                    <li id="instruction-6">连续命中会获得额外连击加成</li>
+                    <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
+                </ul>
+            </div>
         </div>
 
         <footer>
@@ -342,7 +429,7 @@
     </div>
 
     <script>
-        // ==================== 初始化 ====================
+        // ==================== 初始化变量 ====================
         document.addEventListener('DOMContentLoaded', function() {
             const trainingArea = document.getElementById('training-area');
             const crosshair = document.getElementById('crosshair');
@@ -370,6 +457,7 @@
             const reactionLabel = document.getElementById('reaction-label');
             const maxComboLabel = document.getElementById('max-combo-label');
             const scoreLabel = document.getElementById('score-label');
+            const instructionsTitle = document.getElementById('instructions-title');
             const instruction1 = document.getElementById('instruction-1');
             const instruction2 = document.getElementById('instruction-2');
             const instruction3 = document.getElementById('instruction-3');
@@ -379,9 +467,9 @@
             const instruction7 = document.getElementById('instruction-7');
             const footerText = document.getElementById('footer-text');
 
-            // 新增：获取枪械容器和闪光元素
-            const gunContainer = document.getElementById('gun-container');
-            const muzzleFlash = document.getElementById('muzzle-flash');
+            // 新增：获取枪械和闪光效果元素
+            const gunModelContainer = document.getElementById('gun-model');
+            const flashEffect = document.getElementById('flash-effect');
 
             let gameActive = false;
             let shots = 0;
@@ -472,7 +560,7 @@
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0x000000);
+            renderer.setClearColor(0x0f0c29); // 设置背景色
             trainingArea.appendChild(renderer.domElement);
 
             // 创建棋盘格纹理
@@ -481,9 +569,9 @@
                 canvas.width = 64;
                 canvas.height = 64;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#24243e';
                 ctx.fillRect(0, 0, 64, 64);
-                ctx.fillStyle = '#cccccc';
+                ctx.fillStyle = '#0f0c29';
                 for (let i = 0; i < 8; i++) {
                     for (let j = 0; j < 8; j++) {
                         if ((i + j) % 2 === 0) {
@@ -502,33 +590,20 @@
             });
             const ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = Math.PI / 2;
-            ground.position.y = 0;
+            ground.position.y = -1;
             scene.add(ground);
-
-            // 创建天空盒
-            const skyGeometry = new THREE.BoxGeometry(100, 100, 100);
-            const skyMaterials = [
-                new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }),
-                new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }),
-                new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }),
-                new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }),
-                new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }),
-                new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide })
-            ];
-            const skyBox = new THREE.Mesh(skyGeometry, skyMaterials);
-            scene.add(skyBox);
 
             // 创建光源
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
 
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(10, 10, 10);
+            directionalLight.position.set(0, 10, 0);
             scene.add(directionalLight);
 
-            // 创建射线投射器
-            const raycaster = new THREE.Raycaster();
-            const mouse = new THREE.Vector2();
+            // 初始化相机位置和朝向
+            camera.position.set(0, 5, 0);
+            camera.lookAt(0, 5, -10);
 
             // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
@@ -579,7 +654,7 @@
                 const deltaY = e.movementY;
                 cameraRotation.y -= deltaX * sensitivity;
                 cameraRotation.x -= deltaY * sensitivity;
-                cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
+                cameraRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotation.x));
                 camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
             });
 
@@ -587,11 +662,12 @@
             trainingArea.addEventListener('click', function(e) {
                 shots++;
                 updateStats();
+
                 if (!gameActive) return;
                 if (!inShootingMode) return;
 
-                // 新增：播放闪光效果
-                playMuzzleFlash();
+                // 触发开枪闪光效果
+                triggerFlashEffect();
 
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
                 const intersects = raycaster.intersectObjects(targets, true);
@@ -601,6 +677,7 @@
                     const reactionTime = hitTime - parseInt(target.userData.spawnTime);
                     totalReactionTime += reactionTime;
                     targetCount++;
+
                     // 修复: 打破一个球固定得1分
                     targetHit(target, 1);
                 } else {
@@ -611,6 +688,9 @@
             });
 
             // ==================== 3D 游戏逻辑 ====================
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
             // 生成目标函数 - 优化为在玩家前方集中区域生成
             function spawnTargets() {
                 if (!gameActive) return;
@@ -621,21 +701,24 @@
                 lastSpawnTime = now;
                 const settings = difficultySettings.easy;
 
-                // 计算玩家前方的一个区域
-                const playerDirection = new THREE.Vector3();
-                camera.getWorldDirection(playerDirection);
-                const spawnDistance = 10; // 距离玩家的距离
+                // 在玩家前方一定距离内随机生成
+                const distance = 5; // 目标距离玩家的距离
+                const spread = 2; // 目标散布范围
 
-                // 在玩家前方生成目标
-                const x = playerDirection.x * spawnDistance + (Math.random() - 0.5) * 5;
-                const y = 5; // 固定高度
-                const z = playerDirection.z * spawnDistance + (Math.random() - 0.5) * 5;
+                const targetPosition = new THREE.Vector3(
+                    (Math.random() - 0.5) * spread,
+                    Math.random() * 2 + 1, // 在 Y 轴上稍微分散
+                    -distance
+                );
+
+                // 应用相机旋转
+                targetPosition.applyQuaternion(camera.quaternion);
 
                 const geometry = new THREE.SphereGeometry(settings.size, 32, 32);
-                const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // 红色
                 const target = new THREE.Mesh(geometry, material);
-                target.position.set(x, y, z);
-                target.userData.spawnTime = Date.now();
+                target.position.copy(targetPosition);
+                target.userData.spawnTime = now;
                 target.userData.isHit = false;
                 scene.add(target);
                 targets.push(target);
@@ -652,6 +735,7 @@
                     maxCombo = combo;
                     maxComboElement.textContent = maxCombo;
                 }
+
                 // 修复: 不再添加连击奖励，固定得1分
                 score += points;
                 scoreDisplay.textContent = score;
@@ -663,24 +747,31 @@
                         scene.remove(target);
                         targets.splice(targets.indexOf(target), 1);
                     }
-                }, 1000); // 延迟移除目标，让爆炸效果有时间播放
+                }, 500); // 延迟移除，让爆炸效果更明显
             }
 
             // 创建爆炸效果
             function createExplosionEffect(position) {
-                const explosionGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-                const explosionMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.8 });
+                const explosionGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+                const explosionMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffff00,
+                    transparent: true,
+                    opacity: 0.8
+                });
                 const explosion = new THREE.Mesh(explosionGeometry, explosionMaterial);
                 explosion.position.copy(position);
                 scene.add(explosion);
 
-                // 动画效果
-                let scale = 0.5;
+                // 动画：缩放和淡出
+                const scale = 0.5;
+                const duration = 500;
+                const startTime = Date.now();
                 const animateExplosion = () => {
-                    scale += 0.1;
-                    explosion.scale.set(scale, scale, scale);
-                    explosion.material.opacity -= 0.02;
-                    if (explosion.material.opacity > 0) {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    explosion.scale.set(scale * (1 + progress), scale * (1 + progress), scale * (1 + progress));
+                    explosion.material.opacity = 0.8 * (1 - progress);
+                    if (progress < 1) {
                         requestAnimationFrame(animateExplosion);
                     } else {
                         scene.remove(explosion);
@@ -689,27 +780,10 @@
                 animateExplosion();
             }
 
-            // 显示得分指示器
+            // 显示得分指示器（可选）
             function showScoreIndicator(points, x, y) {
-                const indicator = document.createElement('div');
-                indicator.textContent = '+' + points;
-                indicator.style.position = 'absolute';
-                indicator.style.color = '#ff6b6b';
-                indicator.style.fontSize = '2rem';
-                indicator.style.fontWeight = 'bold';
-                indicator.style.pointerEvents = 'none';
-                indicator.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
-                indicator.style.transform = `translate(${x}px, ${y}px)`;
-                indicator.style.opacity = '1';
-                trainingArea.appendChild(indicator);
-
-                setTimeout(() => {
-                    indicator.style.transform = `translate(${x}px, ${y - 50}px)`;
-                    indicator.style.opacity = '0';
-                    setTimeout(() => {
-                        trainingArea.removeChild(indicator);
-                    }, 500);
-                }, 10);
+                // 可以在这里实现一个漂浮的数字效果
+                console.log(`+${points} points`);
             }
 
             // 更新统计信息
@@ -718,35 +792,47 @@
                 const averageReactionTime = targetCount > 0 ? Math.round(totalReactionTime / targetCount) : 0;
                 shotsElement.textContent = shots;
                 hitsElement.textContent = hits;
-                accuracyElement.textContent = accuracy + '%';
-                reactionElement.textContent = averageReactionTime + 'ms';
+                accuracyElement.textContent = `${accuracy}%`;
+                reactionElement.textContent = `${averageReactionTime}ms`;
+                maxComboElement.textContent = maxCombo;
                 scoreElement.textContent = score;
             }
 
             // 切换训练状态
             function toggleTraining() {
-                if (!gameActive) {
-                    gameActive = true;
-                    startBtn.textContent = language === 'zh' ? translations.zh.training : translations.en.training;
-                    showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
-                    targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
-                } else {
+                if (gameActive) {
                     gameActive = false;
-                    startBtn.textContent = language === 'zh' ? translations.zh.stopped : translations.en.stopped;
-                    showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
+                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                     clearInterval(targetSpawnInterval);
+                    if (countdownTimer) {
+                        clearInterval(countdownTimer);
+                        countdownTimer = null;
+                    }
+                    startBtn.disabled = false;
+                    showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
+                } else {
+                    gameActive = true;
+                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                    startBtn.disabled = false;
+                    spawnTargets();
+                    targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
+                    showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
                 }
             }
 
-            // 显示游戏状态
-            function showGameStatus(status) {
-                gameStatus.textContent = status;
+            // 显示游戏状态消息
+            function showGameStatus(text) {
+                gameStatus.textContent = text;
+                gameStatus.classList.add('visible');
+                setTimeout(() => {
+                    gameStatus.classList.remove('visible');
+                }, 1000);
             }
 
-            // 重置游戏
+            // 重置统计数据
             function resetGame() {
                 gameActive = false;
-                startBtn.textContent = language === 'zh' ? translations.zh.ready : translations.en.ready;
+                startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
                 clearInterval(targetSpawnInterval);
                 if (countdownTimer) {
                     clearInterval(countdownTimer);
@@ -782,60 +868,68 @@
                 camera.lookAt(0, 5, -10);
             }
 
-            // 更新语言
-            function updateLanguage() {
-                const t = translations[language];
-                titleElement.innerHTML = t.title;
-                subtitleElement.innerHTML = t.subtitle;
-                statsTitleElement.innerHTML = t.statsTitle;
-                shotsLabel.innerHTML = t.shotsLabel;
-                hitsLabel.innerHTML = t.hitsLabel;
-                accuracyLabel.innerHTML = t.accuracyLabel;
-                reactionLabel.innerHTML = t.reactionLabel;
-                maxComboLabel.innerHTML = t.maxComboLabel;
-                scoreLabel.innerHTML = t.scoreLabel;
-                comboDisplay.innerHTML = t.comboDisplay + combo;
-                scoreDisplay.innerHTML = t.scoreDisplay + score;
-                startBtn.innerHTML = t.startBtn;
-                resetBtn.innerHTML = t.resetBtn;
-                langBtn.innerHTML = t.langBtn;
-                instructionsTitle.innerHTML = t.instructionsTitle;
-                instruction1.innerHTML = t.instruction1;
-                instruction2.innerHTML = t.instruction2;
-                instruction3.innerHTML = t.instruction3;
-                instruction4.innerHTML = t.instruction4;
-                instruction5.innerHTML = t.instruction5;
-                instruction6.innerHTML = t.instruction6;
-                instruction7.innerHTML = t.instruction7;
-                footerText.innerHTML = t.footerText;
-                showGameStatus(gameActive ? (language === 'zh' ? t.training : t.training) : (language === 'zh' ? t.ready : t.ready));
+            // ==================== 枪械和闪光效果逻辑 ====================
+            let gunModel = null; // 存储加载的枪械模型
+
+            // 加载枪械模型
+            function loadGunModel() {
+                const loader = new THREE.GLTFLoader();
+                loader.load('lxxx.glb', function(gltf) {
+                    gunModel = gltf.scene;
+
+                    // 缩放模型，使其适合屏幕底部
+                    gunModel.scale.set(0.5, 0.5, 0.5); // 根据实际模型大小调整比例
+
+                    // 旋转模型，使其指向屏幕中心
+                    gunModel.rotation.y = Math.PI; // 通常需要翻转
+
+                    // 将模型添加到场景中，但不直接添加到主场景，而是作为相机的子对象
+                    // 这样枪械会跟随相机移动
+                    camera.add(gunModel);
+
+                    // 设置枪械的位置（相对于相机）
+                    gunModel.position.set(0, -1, -1); // 调整 Z 值来控制枪械离镜头的距离
+
+                    // 隐藏默认的枪械网格（如果有的话），因为我们使用的是 3D 模型
+                    // 如果你希望保留默认的枪械网格，请删除或注释掉下面这行
+                    // gunModelContainer.style.display = 'none';
+
+                }, undefined, function(error) {
+                    console.error('Error loading gun model:', error);
+                });
             }
 
-            // 监听灵敏度输入
-            sensitivityInput.addEventListener('input', function() {
-                sensitivity = parseFloat(this.value);
-            });
+            // 触发闪光效果
+            function triggerFlashEffect() {
+                flashEffect.classList.add('active');
+                setTimeout(() => {
+                    flashEffect.classList.remove('active');
+                }, 100); // 闪光持续 100 毫秒
+            }
 
-            // 监听语言按钮
+            // ==================== 渲染循环 ====================
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // 更新相机位置和朝向
+                // 这里可以添加一些平滑的相机移动效果
+
+                // 渲染场景
+                renderer.render(scene, camera);
+            }
+
+            // ==================== 事件监听器 ====================
+            // 语言切换
             langBtn.addEventListener('click', function() {
                 language = language === 'zh' ? 'en' : 'zh';
-                updateLanguage();
+                updateUI();
             });
 
-            // 监听开始按钮
-            startBtn.addEventListener('click', function() {
-                if (gameActive) {
-                    toggleTraining();
-                } else {
-                    gameActive = true;
-                    startBtn.textContent = language === 'zh' ? translations.zh.training : translations.en.training;
-                    showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
-                    targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
-                }
-            });
-
-            // 监听重置按钮
+            // 重置统计数据
             resetBtn.addEventListener('click', resetGame);
+
+            // 开始/停止训练
+            startBtn.addEventListener('click', toggleTraining);
 
             // 监听窗口大小变化
             window.addEventListener('resize', function() {
@@ -847,79 +941,43 @@
 
             // 调整小地图大小
             function resizeMiniMap() {
-                const size = Math.min(100, window.innerWidth * 0.1);
-                miniMapCanvas.width = size;
-                miniMapCanvas.height = size;
-                miniMapCtx.clearRect(0, 0, size, size);
+                miniMapCanvas.width = miniMapCanvas.clientWidth;
+                miniMapCanvas.height = miniMapCanvas.clientHeight;
             }
 
-            // ==================== 新增：枪械模型加载与管理 ====================
-            let gunModel = null;
-
-            // 加载枪械模型
-            function loadGunModel() {
-                const loader = new THREE.GLTFLoader();
-                loader.load('lxxx.glb', function(gltf) {
-                    gunModel = gltf.scene;
-                    // 缩小模型
-                    gunModel.scale.set(0.05, 0.05, 0.05); // 根据实际模型大小调整缩放比例
-                    // 将枪械模型添加到场景中
-                    scene.add(gunModel);
-                    // 隐藏模型，直到射击模式开启
-                    gunModel.visible = false;
-                }, undefined, function(error) {
-                    console.error('Error loading gun model:', error);
-                });
-            }
-
-            // 播放闪光效果
-            function playMuzzleFlash() {
-                muzzleFlash.style.opacity = '1';
-                setTimeout(() => {
-                    muzzleFlash.style.opacity = '0';
-                }, 100); // 闪光持续100毫秒
-            }
-
-            // ==================== 新增：更新枪械位置 ====================
-            function updateGunPosition() {
-                if (!gunModel) return;
-
-                // 在射击模式下显示枪械
-                gunModel.visible = inShootingMode;
-
-                if (inShootingMode) {
-                    // 获取相机的位置和方向
-                    const cameraPosition = camera.position.clone();
-                    const cameraDirection = new THREE.Vector3();
-                    camera.getWorldDirection(cameraDirection);
-
-                    // 计算枪械的位置（在相机前方下方）
-                    const gunOffset = new THREE.Vector3(0, -0.5, -1); // 根据需要调整偏移量
-                    const gunPosition = cameraPosition.clone().add(cameraDirection.multiplyScalar(0.5)).add(gunOffset);
-
-                    // 设置枪械的位置和旋转
-                    gunModel.position.copy(gunPosition);
-                    gunModel.rotation.copy(camera.rotation);
-                    // 可能需要根据模型调整旋转角度
-                    gunModel.rotation.x += Math.PI / 2; // 例如，使枪口朝前
-                }
-            }
-
-            // ==================== 渲染循环 ====================
-            function animate() {
-                requestAnimationFrame(animate);
-                updateGunPosition(); // 更新枪械位置
-                renderer.render(scene, camera);
+            // 更新 UI 文本
+            function updateUI() {
+                titleElement.textContent = translations[language].title;
+                subtitleElement.textContent = translations[language].subtitle;
+                statsTitleElement.textContent = translations[language].statsTitle;
+                shotsLabel.textContent = translations[language].shotsLabel;
+                hitsLabel.textContent = translations[language].hitsLabel;
+                accuracyLabel.textContent = translations[language].accuracyLabel;
+                reactionLabel.textContent = translations[language].reactionLabel;
+                maxComboLabel.textContent = translations[language].maxComboLabel;
+                scoreLabel.textContent = translations[language].scoreLabel;
+                comboDisplay.textContent = combo;
+                scoreDisplay.textContent = score;
+                startBtn.textContent = gameActive ? (language === 'zh' ? '停止训练' : 'Stop Training') : (language === 'zh' ? '开始训练' : 'Start Training');
+                resetBtn.textContent = language === 'zh' ? '重置数据' : 'Reset Stats';
+                langBtn.textContent = language === 'zh' ? 'EN/中文' : 'EN/中文';
+                instructionsTitle.textContent = translations[language].instructionsTitle;
+                instruction1.innerHTML = translations[language].instruction1;
+                instruction2.innerHTML = translations[language].instruction2;
+                instruction3.innerHTML = translations[language].instruction3;
+                instruction4.innerHTML = translations[language].instruction4;
+                instruction5.innerHTML = translations[language].instruction5;
+                instruction6.innerHTML = translations[language].instruction6;
+                instruction7.innerHTML = translations[language].instruction7;
+                footerText.textContent = translations[language].footerText;
+                gameStatus.textContent = gameActive ? translations[language].training : translations[language].ready;
             }
 
             // 初始化
             loadGunModel(); // 加载枪械模型
-            resizeMiniMap();
-            window.addEventListener('resize', resizeMiniMap);
             animate(); // 启动渲染循环
-
-            // ==================== 旧有代码结束 ====================
         });
+
     </script>
 </body>
 </html>
