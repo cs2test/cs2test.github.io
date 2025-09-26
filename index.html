@@ -949,49 +949,38 @@
             // 使用 Three.js 内置的 GLTFLoader 加载手枪模型
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
-                pistolModel = gltf.scene;
-                // 调整手枪的缩放和位置，使其看起来像握在手中
-                // 根据调试信息，尝试一个更小的缩放值
-                pistolModel.scale.set(0.0005, 0.0005, 0.0005); // 这个值可能需要微调
+                // 关键修改：不直接使用 gltf.scene，而是遍历它找到真正的手枪网格
+                let actualPistolMesh = null;
 
-                // 将手枪添加到枪组中
-                gunGroup.add(pistolModel);
+                // 遍历场景中的所有子对象
+                gltf.scene.traverse(function(child) {
+                    // 找到第一个 Mesh 对象，通常这就是我们要的手枪
+                    if (child.isMesh) {
+                        actualPistolMesh = child;
+                        // 找到后就停止遍历，避免找到多个
+                        return;
+                    }
+                });
 
-                // 将枪组添加到相机上，这样它会跟随相机移动
-                camera.add(gunGroup);
+                if (actualPistolMesh) {
+                    pistolModel = actualPistolMesh;
+                    // 调整手枪的缩放和位置
+                    pistolModel.scale.set(0.05, 0.05, 0.05); // 从 0.0005 放大 100 倍
 
-                // ==================== 最终定位和旋转 ====================
-                // 设置枪组的位置和旋转，使其在屏幕底部中央可见
-                // 位置: Z轴向前，Y轴向下
-                gunGroup.position.set(0, -0.4, 0.6); // Y轴向下，Z轴向前
-                // 旋转: 让枪口指向屏幕前方
-                gunGroup.rotation.set(-Math.PI / 2, Math.PI, 0); // 绕X轴旋转90度，再绕Y轴旋转180度
+                    // 将手枪添加到枪组中
+                    gunGroup.add(pistolModel);
 
-                // ==================== 调试辅助 (可选，调试完成后可以移除) ====================
-                // 创建一个简单的红色球体作为调试标记，放在模型原点
-                // const debugSphereGeometry = new THREE.SphereGeometry(0.5, 8, 8);
-                // const debugSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-                // const debugSphere = new THREE.Mesh(debugSphereGeometry, debugSphereMaterial);
-                // gunGroup.add(debugSphere);
+                    // 将枪组添加到相机上
+                    camera.add(gunGroup);
 
-                // 在模型的中心创建一个绿色立方体，指示其大致范围
-                // const debugBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
-                // const debugBoxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-                // const debugBox = new THREE.Mesh(debugBoxGeometry, debugBoxMaterial);
-                // debugBox.position.set(0, 0, 0); // 确保它在模型中心
-                // gunGroup.add(debugBox);
+                    // 设置枪组的位置和旋转
+                    gunGroup.position.set(0, -0.3, 0.5); // Y轴向下，Z轴向前
+                    gunGroup.rotation.set(-Math.PI / 2, Math.PI, 0); // 让枪口指向屏幕前方
 
-                // 打印模型信息到控制台，查看其边界框
-                console.log("Pistol Model Loaded:", pistolModel);
-                if (pistolModel && pistolModel.children && pistolModel.children.length > 0) {
-                    const box = new THREE.Box3().setFromObject(pistolModel);
-                    console.log("Pistol Model BoundingBox:", box);
-                    // 如果有边界框，可以计算一个中心点
-                    const center = box.getCenter(new THREE.Vector3());
-                    console.log("Pistol Model Center:", center);
+                    console.log("Actual Pistol Mesh found and added:", pistolModel);
+                } else {
+                    console.error("No Mesh found in the loaded GLTF model!");
                 }
-                // ==================== 调试辅助结束 ====================
-
             }, undefined, function(error) {
                 console.error('An error occurred loading the pistol model:', error);
             });
