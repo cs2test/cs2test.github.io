@@ -949,7 +949,7 @@
 
             // 使用 Three.js 内置的 GLTFLoader 加载手枪模型
             // 注意: 此处不再需要引入外部的 GLTFLoader.js 文件
-            const loader = GLTFLoader();
+            const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
                 pistolModel = gltf.scene;
                 // 调整手枪的缩放和位置，使其看起来像握在手中
