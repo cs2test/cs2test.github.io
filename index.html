@@ -949,15 +949,11 @@
             // 使用 Three.js 内置的 GLTFLoader 加载手枪模型
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
-                // 关键修改：不直接使用 gltf.scene，而是遍历它找到真正的手枪网格
+                // 遍历场景中的所有子对象，找到真正的手枪网格
                 let actualPistolMesh = null;
-
-                // 遍历场景中的所有子对象
                 gltf.scene.traverse(function(child) {
-                    // 找到第一个 Mesh 对象，通常这就是我们要的手枪
                     if (child.isMesh) {
                         actualPistolMesh = child;
-                        // 找到后就停止遍历，避免找到多个
                         return;
                     }
                 });
@@ -965,28 +961,36 @@
                 if (actualPistolMesh) {
                     pistolModel = actualPistolMesh;
                     
-                    // ========== 关键修复1：将模型的位置重置到原点 ==========
+                    // 1. 重置模型自身的位置和旋转
                     pistolModel.position.set(0, 0, 0);
-                    // ========== 关键修复2：将模型的旋转重置为0 ==========
                     pistolModel.rotation.set(0, 0, 0);
-                    // ========== 关键修复3：调整缩放以适应场景 ==========
-                    pistolModel.scale.set(0.05, 0.05, 0.05); // 这个值需要根据您的模型微调
 
-                    // 将手枪添加到枪组中
+                    // ========== 关键修复：替换材质为 MeshBasicMaterial ==========
+                    // 创建一个新的、明亮的、不需要光照的基础材质
+                    const basicMaterial = new THREE.MeshBasicMaterial({ 
+                        color: 0x00ff00, // 鲜艳的绿色，确保可见
+                        wireframe: false 
+                    });
+                    // 将新材质应用到模型的所有子网格上
+                    pistolModel.traverse(function(child) {
+                        if (child.isMesh) {
+                            child.material = basicMaterial;
+                        }
+                    });
+                    // ===================================================
+
+                    // 2. 调整缩放
+                    pistolModel.scale.set(0.05, 0.05, 0.05);
+
+                    // 3. 将手枪添加到枪组，并将枪组添加到相机
                     gunGroup.add(pistolModel);
-
-                    // 将枪组添加到相机上
                     camera.add(gunGroup);
 
-                    // ========== 关键修复4：设置枪组的位置和旋转，使其符合第一人称视角 ==========
-                    // 位置: Y轴向下，Z轴向前
-                    gunGroup.position.set(0, -0.3, 0.5);
-                    // 旋转: 让枪口指向屏幕前方 (Z轴负方向)
-                    // 根据您提供的模型图片，手枪模型的枪口默认朝向 Z轴正方向。
-                    // 我们需要将其绕Y轴旋转180度，使其枪口朝向Z轴负方向，与相机朝向一致。
-                    gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度
+                    // 4. 设置枪组的位置和旋转
+                    gunGroup.position.set(0, -0.3, -0.5); // Z为负，确保在相机前方
+                    gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度，使枪口朝前
 
-                    console.log("Actual Pistol Mesh found, reset position & rotation, and added:", pistolModel);
+                    console.log("Pistol mesh loaded with basic material.");
                 } else {
                     console.error("No Mesh found in the loaded GLTF model!");
                 }
