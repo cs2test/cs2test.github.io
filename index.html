@@ -1,3 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 3D 精准度训练模拟器</title>
+    <script src="https://cs2test.github.io/three.js"></script>
+    <script src="https://cs2test.github.io/GLTFLoader.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px 0;
+            cursor: default;
+        }
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 25px;
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            font-size: 1.3rem;
+            color: #a9a9c5;
+            position: relative;
+            z-index: 1;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 30px;
+            height: 180vh;
+        }
+        .training-area-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+        .training-area {
+            background: rgba(10, 10, 30, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            width: 100%; 
+            flex-grow: 1; 
+            margin: 0 auto;
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            backdrop-filter: blur(5px);
+            cursor: none !important;
+        }
+        .score-section {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(15, 15, 40, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .combo-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd166;
+            text-shadow: 0 0 15px rgba(255, 209, 102, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 24px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 209, 102, 0.3);
+            animation: glow 1.5s infinite alternate;
+        }
+        .score-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            text-shadow: 0 0 15px rgba(78, 205, 196, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 24px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            animation: glow2 1.5s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(255, 209, 102, 0.7); }
+            to { text-shadow: 0 0 20px rgba(255, 209, 102, 0.9); }
+        }
+        @keyframes glow2 {
+            from { text-shadow: 0 0 10px rgba(78, 205, 196, 0.7); }
+            to { text-shadow: 0 0 20px rgba(78, 205, 196, 0.9); }
+        }
+        .stats-panel {
+            flex: 1;
+            background: rgba(15, 15, 40, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .stats-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4ecdc4;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.7);
+            position: relative;
+            padding-bottom: 15px;
+        }
+        .stats-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #4ecdc4, transparent);
+            border-radius: 3px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 16px 10px;
+            margin: 0 -10px;
+        }
+        .stat-label {
+            color: #a9a9c5;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        .stat-label::before {
+            content: '•';
+            color: #4ecdc4;
+            margin-right: 8px;
+            font-size: 1.4rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .stat-value {
+            font-weight: bold;
+            color: #ffd166;
+            font-size: 1.3rem;
+            text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
+            min-width: 80px;
+            text-align: right;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+        .control-group label {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: #a9a9c5;
+        }
+        .control-group input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #4ecdc4;
+            background: rgba(10, 10, 30, 0.8);
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+        button {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.15rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+            overflow: hidden;
+        }
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+            z-index: 1;
+        }
+        button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.6);
+        }
+        button:hover::before {
+            left: 100%;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        #reset-btn {
+            background: linear-gradient(135deg, #4ecdc4, #88d3ce);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+        }
+        #reset-btn:hover {
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.6);
+        }
+        #lang-btn {
+            background: linear-gradient(135deg, #6a5af9, #d66efd);
+            box-shadow: 0 6px 20px rgba(106, 90, 249, 0.4);
+        }
+        #lang-btn:hover {
+            box-shadow: 0 10px 25px rgba(106, 90, 249, 0.6);
+        }
+        .target {
+            position: absolute;
+            border-radius: 50%;
+            cursor: none !important;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+            border: 2px solid #ff8e53;
+            z-index: 10;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .target.hit {
+            animation: hitAnimation 0.2s forwards;
+        }
+        @keyframes hitAnimation {
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+            50% { transform: scale(1.5); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .crosshair {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+            z-index: 100;
+            transition: none !important;
+        }
+        .crosshair::before, .crosshair::after {
+            content: '';
+            position: absolute;
+            background-color: #00ff88;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
+        }
+        .crosshair::before {
+            width: 14px;
+            height: 2px;
+            top: 6px;
+            left: 0;
+        }
+        .crosshair::after {
+            width: 2px;
+            height: 14px;
+            top: 0;
+            left: 6px;
+        }
+        .crosshair.center-dot::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: #00ff88;
+            border-radius: 50%;
+            top: 5.5px;
+            left: 5.5px;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.9);
+        }
+        .hit-effect {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 70%, transparent 100%);
+            pointer-events: none;
+            animation: spread 0.3s forwards;
+            z-index: 20;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+        }
+        @keyframes spread {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        .instructions {
+            background: rgba(15, 15, 40, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .instructions h2 {
+            color: #ffd166;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
+            font-size: 1.8rem;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        .instructions h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffd166, transparent);
+        }
+        .instructions ul {
+            padding-left: 30px;
+        }
+        .instructions li {
+            margin-bottom: 15px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        .instructions li::before {
+            content: '→';
+            color: #4ecdc4;
+            position: absolute;
+            left: -20px;
+            font-weight: bold;
+        }
+        .highlight {
+            color: #4ecdc4;
+            font-weight: bold;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #a9a9c5;
+            font-size: 1.1rem;
+            margin-top: 30px;
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .difficulty {
+            display: none;
+        }
+        .game-status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+        }
+        .game-status.visible {
+            opacity: 1;
+        }
+        .score-indicator {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd166;
+            text-shadow: 0 0 15px rgba(255, 209, 102, 0.9);
+            z-index: 60;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(78, 205, 196, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(78, 205, 196, 0.8);
+        }
+        .mini-map {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            width: 180px;
+            height: 180px;
+            background: rgba(30, 144, 255, 0.2);
+            border-radius: 50%;
+            z-index: 100;
+            border: 2px solid rgba(30, 144, 255, 0.5);
+            box-shadow: 0 0 15px rgba(30, 144, 255, 0.4);
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+        .mini-map-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+        .wall-label {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd166;
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.8);
+            z-index: 10;
+        }
+        @media (max-width: 992px) {
+            .game-container {
+                flex-direction: column;
+            }
+            .training-area {
+                min-height: 500px;
+                height: 500px;
+                width: 90%;
+                margin: 0 auto;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+            .mini-map {
+                width: 120px;
+                height: 120px;
+                top: 15px;
+                left: 15px;
+            }
+        }
+        @media (max-width: 576px) {
+            .training-area {
+                min-height: 400px;
+                height: 400px;
+                width: 95%;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            .stat-label, .stat-value {
+                font-size: 1.05rem;
+            }
+            .combo-display, .score-display {
+                font-size: 1.5rem;
+                padding: 8px 20px;
+            }
+            .mini-map {
+                width: 100px;
+                height: 100px;
+                top: 10px;
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="title">CS2 3D 精准度训练模拟器</h1>
+            <p class="subtitle" id="subtitle">提升你的射击精准度和反应速度</p>
+        </header>
+        <div class="game-container">
+            <div class="training-area-wrapper">
+                <div class="mini-map" id="mini-map">
+                    <canvas class="mini-map-canvas" id="mini-map-canvas"></canvas>
+                </div>
+                <div class="training-area" id="training-area">
+                    <div class="crosshair" id="crosshair"></div>
+                    <div class="game-status" id="game-status">准备就绪</div>
+                </div>
+                <div class="score-section">
+                    <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
+                    <div class="score-display" id="score-display-container">得分: <span id="score-display">0</span></div>
+                </div>
+            </div>
+            <div class="stats-panel">
+                <h2 class="stats-title" id="stats-title">训练数据</h2>
+                <div class="stat-item">
+                    <span class="stat-label" id="shots-label">射击次数:</span>
+                    <span class="stat-value" id="shots">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="hits-label">命中次数:</span>
+                    <span class="stat-value" id="hits">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="accuracy-label">命中率:</span>
+                    <span class="stat-value" id="accuracy">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="reaction-label">平均反应时间:</span>
+                    <span class="stat-value" id="reaction">0ms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="max-combo-label">最高连击:</span>
+                    <span class="stat-value" id="max-combo">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="score-label">当前得分:</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="difficulty">
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="sensitivity-input">鼠标灵敏度:</label>
+                        <input type="number" id="sensitivity-input" min="0.0001" max="0.01" step="0.0001" value="0.002">
+                    </div>
+                    <button id="start-btn">开始训练</button>
+                    <button id="reset-btn">重置数据</button>
+                    <button id="lang-btn">EN/中文</button>
+                </div>
+            </div>
+        </div>
+        <div class="instructions">
+            <h2 id="instructions-title">训练说明</h2>
+            <ul>
+                <li id="instruction-1">按下 <span class="highlight">A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面</li>
+                <li id="instruction-2">再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状</li>
+                <li id="instruction-3">按下 <span class='highlight'>S</span> 键开始/暂停/继续训练</li>
+                <li id="instruction-4">在射击模式下，点击红色球体进行射击</li>
+                <li id="instruction-5">击中目标得 <span class='highlight'>1分</span>（固定得分）</li>
+                <li id="instruction-6">连续命中会获得额外连击加成</li>
+                <li id="instruction-7">按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验</li>
+            </ul>
+        </div>
+        <footer>
+            <p id="footer-text">CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验</p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const trainingArea = document.getElementById('training-area');
+            const crosshair = document.getElementById('crosshair');
+            const startBtn = document.getElementById('start-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const langBtn = document.getElementById('lang-btn');
+            const gameStatus = document.getElementById('game-status');
+            const sensitivityInput = document.getElementById('sensitivity-input');
+            const miniMapCanvas = document.getElementById('mini-map-canvas');
+            const miniMapCtx = miniMapCanvas.getContext('2d');
+            const shotsElement = document.getElementById('shots');
+            const hitsElement = document.getElementById('hits');
+            const accuracyElement = document.getElementById('accuracy');
+            const reactionElement = document.getElementById('reaction');
+            const maxComboElement = document.getElementById('max-combo');
+            const scoreElement = document.getElementById('score');
+            const comboDisplay = document.getElementById('combo-display');
+            const scoreDisplay = document.getElementById('score-display');
+            const titleElement = document.getElementById('title');
+            const subtitleElement = document.getElementById('subtitle');
+            const statsTitleElement = document.getElementById('stats-title');
+            const shotsLabel = document.getElementById('shots-label');
+            const hitsLabel = document.getElementById('hits-label');
+            const accuracyLabel = document.getElementById('accuracy-label');
+            const reactionLabel = document.getElementById('reaction-label');
+            const maxComboLabel = document.getElementById('max-combo-label');
+            const scoreLabel = document.getElementById('score-label');
+            const instructionsTitle = document.getElementById('instructions-title');
+            const instruction1 = document.getElementById('instruction-1');
+            const instruction2 = document.getElementById('instruction-2');
+            const instruction3 = document.getElementById('instruction-3');
+            const instruction4 = document.getElementById('instruction-4');
+            const instruction5 = document.getElementById('instruction-5');
+            const instruction6 = document.getElementById('instruction-6');
+            const instruction7 = document.getElementById('instruction-7');
+            const footerText = document.getElementById('footer-text');
+            let gameActive = false;
+            let shots = 0;
+            let hits = 0;
+            let totalReactionTime = 0;
+            let targetCount = 0;
+            let combo = 0;
+            let maxCombo = 0;
+            let score = 0;
+            let targets = [];
+            let targetSpawnInterval;
+            let countdownTimer = null;
+            let language = 'zh';
+            let lastSpawnTime = 0;
+            let currentAngle = 0;
+            let angleChangeCounter = 0;
+            let minAngleChange = -30;
+            let maxAngleChange = 30;
+            // 备注小球大小: 将 size 从 5 改为 3
+            const difficultySettings = {
+                easy: { size: 3, speed: 5000, spawnRate: 800 }
+            };
+            let sensitivity = 0.002;
+            const translations = {
+                en: {
+                    title: "CS2 3D Aim Trainer",
+                    subtitle: "Improve your shooting accuracy and reaction speed",
+                    statsTitle: "Training Stats",
+                    shotsLabel: "Shots Fired:",
+                    hitsLabel: "Hits:",
+                    accuracyLabel: "Accuracy:",
+                    reactionLabel: "Average Reaction Time:",
+                    maxComboLabel: "Max Combo:",
+                    scoreLabel: "Current Score:",
+                    comboDisplay: "Combo: ",
+                    scoreDisplay: "Score: ",
+                    startBtn: "Start Training",
+                    resetBtn: "Reset Stats",
+                    langBtn: "EN/中文",
+                    instructionsTitle: "Training Instructions",
+                    instruction1: "Press <span class='highlight'>A</span> key to enter shooting mode, mouse becomes a crosshair and can drag the 3D view",
+                    instruction2: "Press <span class='highlight'>A</span> key again to exit shooting mode, mouse returns to normal",
+                    instruction3: "Press <span class='highlight'>S</span> key to start/pause/resume training",
+                    instruction4: "In shooting mode, click on red spheres to shoot",
+                    instruction5: "Each hit gives <span class='highlight'>1 point</span> (fixed score)",
+                    instruction6: "Consecutive hits earn bonus points",
+                    instruction7: "Press <span class='highlight'>F11</span> for fullscreen",
+                    footerText: "CS2 3D Aim Trainer | Improve your shooting skills | Press F11 for fullscreen",
+                    ready: "READY",
+                    training: "TRAINING",
+                    stopped: "STOPPED"
+                },
+                zh: {
+                    title: "CS2 3D 精准度训练模拟器",
+                    subtitle: "提升你的射击精准度和反应速度",
+                    statsTitle: "训练数据",
+                    shotsLabel: "射击次数:",
+                    hitsLabel: "命中次数:",
+                    accuracyLabel: "命中率:",
+                    reactionLabel: "平均反应时间:",
+                    maxComboLabel: "最高连击:",
+                    scoreLabel: "当前得分:",
+                    comboDisplay: "连击: ",
+                    scoreDisplay: "得分: ", 
+                    startBtn: "开始训练",
+                    resetBtn: "重置数据",
+                    langBtn: "EN/中文",
+                    instructionsTitle: "训练说明",
+                    instruction1: "按下 <span class='highlight'>A</span> 键进入射击模式，鼠标变为准星并可拖动3D画面",
+                    instruction2: "再次按下 <span class='highlight'>A</span> 键退出射击模式，鼠标恢复原状",
+                    instruction3: "按下 <span class='highlight'>S</span> 键开始/暂停/继续训练",
+                    instruction4: "在射击模式下，点击红色球体进行射击",
+                    instruction5: "击中目标得 <span class='highlight'>1分</span>（固定得分）",
+                    instruction6: "连续命中会获得额外连击加成",
+                    instruction7: "按 <span class='highlight'>F11</span> 进入全屏模式获得最佳体验",
+                    footerText: "CS2 3D 精准度训练模拟器 | 提升你的射击技巧 | 按F11进入全屏模式获得最佳体验",
+                    ready: "准备就绪",
+                    training: "训练中",
+                    stopped: "已停止"
+                }
+            };
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, trainingArea.clientWidth / trainingArea.clientHeight, 0.1, 2000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(trainingArea.clientWidth, trainingArea.clientHeight);
+            renderer.setClearColor(0x87CEEB); // 更深的蓝色天空
+            trainingArea.appendChild(renderer.domElement);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+            // 创建更深的天空盒
+            const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+            const skyboxMaterial = new THREE.MeshBasicMaterial({
+                color: 0x87CEEB, // 更深的蓝色
+                side: THREE.BackSide,
+                transparent: true,
+                opacity: 0.95
+            });
+            const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+            scene.add(skybox);
+            // === 创建沙漠地面 ===
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf5f5dc, // 沙地颜色
+                roughness: 0.9,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.8,
+                map: createDesertTexture()
+            });
+            groundMaterial.map.wrapS = THREE.RepeatWrapping;
+            groundMaterial.map.wrapT = THREE.RepeatWrapping;
+            groundMaterial.map.repeat.set(10, 10);
+            groundMaterial.map.needsUpdate = true;
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = 1;
+            scene.add(ground);
+            // === 创建墙壁 ===
+            const wallWidth = 100;
+            const wallDepth = 10;
+            const wallHeight = 20;
+            const wallDistance = 50;
+            const wallGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: 0xe6d6b8, // 石墙颜色
+                roughness: 0.7,
+                metalness: 0.3,
+                map: createStoneTexture()
+            });
+            wallMaterial.map.wrapS = THREE.RepeatWrapping;
+            wallMaterial.map.wrapT = THREE.RepeatWrapping;
+            wallMaterial.map.repeat.set(10, 2);
+            wallMaterial.map.needsUpdate = true;
+            // 后墙 (Z+) - 标签C
+            const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            backWall.position.set(0, wallHeight/2, wallDistance);
+            scene.add(backWall);
+            // 前墙 (Z-) - 标签A
+            const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            frontWall.position.set(0, wallHeight/2, -wallDistance);
+            scene.add(frontWall);
+            // 左墙 (X-) - 标签D
+            const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            leftWall.position.set(-wallDistance, wallHeight/2, 0);
+            leftWall.rotation.y = Math.PI / 2;
+            scene.add(leftWall);
+            // 右墙 (X+) - 标签B
+            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            rightWall.position.set(wallDistance, wallHeight/2, 0);
+            rightWall.rotation.y = Math.PI / 2;
+            scene.add(rightWall);
+            // === 添加障碍物 ===
+            const crateGeometry = new THREE.BoxGeometry(5, 5, 5);
+            const crateMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b7355, // 木箱颜色
+                roughness: 0.8,
+                metalness: 0.1,
+                map: createWoodTexture()
+            });
+            crateMaterial.map.wrapS = THREE.RepeatWrapping;
+            crateMaterial.map.wrapT = THREE.RepeatWrapping;
+            crateMaterial.map.repeat.set(2, 2);
+            crateMaterial.map.needsUpdate = true;
+            // 备注: 将箱子移得更远，避免阻挡小球
+            const crates = [
+                { x: 0, y: 5, z: 40 }, { x: 0, y: 5, z: -40 },
+                { x: 40, y: 5, z: 0 }, { x: -40, y: 5, z: 0 },
+                { x: 25, y: 5, z: 25 }, { x: -25, y: 5, z: -25 },
+                { x: 30, y: 5, z: 30 }, { x: -30, y: 5, z: -30 }
+            ];
+            crates.forEach(crate => {
+                const crateMesh = new THREE.Mesh(crateGeometry, crateMaterial);
+                crateMesh.position.set(crate.x, crate.y, crate.z);
+                scene.add(crateMesh);
+            });
+            // === 添加石阶 ===
+            const stairGeometry = new THREE.BoxGeometry(10, 1, 10);
+            const stairMaterial = new THREE.MeshStandardMaterial({
+                color: 0xd2b48c, // 石阶颜色
+                roughness: 0.7,
+                metalness: 0.2,
+                map: createStoneTexture()
+            });
+            stairMaterial.map.wrapS = THREE.RepeatWrapping;
+            stairMaterial.map.wrapT = THREE.RepeatWrapping;
+            stairMaterial.map.repeat.set(2, 2);
+            stairMaterial.map.needsUpdate = true;
+            // 创建楼梯
+            const stairs = [
+                { x: 20, y: 5, z: 20, rotationY: Math.PI/2 }, // 右侧楼梯
+                { x: -20, y: 5, z: 20, rotationY: Math.PI/2 }, // 左侧楼梯
+                { x: 20, y: 5, z: -20, rotationY: Math.PI/2 }, // 右侧楼梯
+                { x: -20, y: 5, z: -20, rotationY: Math.PI/2 } // 左侧楼梯
+            ];
+            stairs.forEach(stair => {
+                const stairMesh = new THREE.Mesh(stairGeometry, stairMaterial);
+                stairMesh.position.set(stair.x, stair.y, stair.z);
+                if (stair.rotationY) stairMesh.rotation.y = stair.rotationY;
+                scene.add(stairMesh);
+            });
+            // === 添加拱门 ===
+            const archGeometry = new THREE.CylinderGeometry(1, 1, 5, 16);
+            const archMaterial = new THREE.MeshStandardMaterial({
+                color: 0xe6d6b8, // 石墙颜色
+                roughness: 0.7,
+                metalness: 0.3,
+                map: createStoneTexture()
+            });
+            archMaterial.map.wrapS = THREE.RepeatWrapping;
+            archMaterial.map.wrapT = THREE.RepeatWrapping;
+            archMaterial.map.repeat.set(2, 2);
+            archMaterial.map.needsUpdate = true;
+            // 创建拱门
+            const arches = [
+                { x: 0, y: 5, z: 20, rotationY: Math.PI/2 },
+                { x: 0, y: 5, z: -20, rotationY: Math.PI/2 },
+                { x: 20, y: 5, z: 0, rotationY: 0 },
+                { x: -20, y: 5, z: 0, rotationY: 0 }
+            ];
+            arches.forEach(arch => {
+                const archMesh = new THREE.Mesh(archGeometry, archMaterial);
+                archMesh.position.set(arch.x, arch.y, arch.z);
+                if (arch.rotationY) archMesh.rotation.y = arch.rotationY;
+                scene.add(archMesh);
+            });
+            // === 添加墙壁标签 ===
+            const wallLabels = [];
+            function createWallLabel(text, position, rotation, flipX = false) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.font = 'bold 180px Arial';
+                ctx.fillStyle = '#ffd166';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                if (flipX) {
+                    ctx.translate(canvas.width/2, canvas.height/2);
+                    ctx.scale(-1, 1);
+                    ctx.translate(-canvas.width/2, -canvas.height/2);
+                }
+                ctx.fillText(text, canvas.width/2, canvas.height/2);
+                const texture = new THREE.CanvasTexture(canvas);
+                const material = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    depthTest: false,
+                    depthWrite: false
+                });
+                const geometry = new THREE.PlaneGeometry(15, 15);
+                const label = new THREE.Mesh(geometry, material);
+                label.position.copy(position);
+                if (rotation) label.rotation.copy(rotation);
+                scene.add(label);
+                wallLabels.push(label);
+                return label;
+            }
+            // 添加A、B、C、D四个墙壁标签
+            createWallLabel('A', new THREE.Vector3(0, 15, -45), new THREE.Euler(0, 0, 0));
+            createWallLabel('B', new THREE.Vector3(45, 15, 0), new THREE.Euler(0, -Math.PI/2, 0));
+            createWallLabel('C', new THREE.Vector3(0, 15, 45), new THREE.Euler(0, Math.PI, 0), true);
+            createWallLabel('D', new THREE.Vector3(-45, 15, 0), new THREE.Euler(0, Math.PI/2, 0));
+            // 设置相机初始位置 - 面朝A墙
+            camera.position.set(0, 5, 0);
+            camera.rotation.set(0, 0, 0, 'YXZ');
+            camera.lookAt(0, 5, -10);
+
             // ========== 新增：手枪模型加载 ==========
             // 创建一个用于存放手枪的组，方便控制
             const gunGroup = new THREE.Group();
@@ -48,3 +990,573 @@
                 console.error('An error occurred loading the pistol model:', error);
             });
             // ========== 新增结束 ========
+
+            // ========== 新增：闪光效果 ==========
+
+            // 创建闪光材质和几何体
+            // 修复: 使用 MeshStandardMaterial 代替 MeshBasicMaterial
+            const flashGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+            const flashMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.8,
+                emissive: 0xffffff, // 发光颜色
+                emissiveIntensity: 1.0 // 发光强度
+            });
+            const flashMesh = new THREE.Mesh(flashGeometry, flashMaterial);
+            // 将闪光网格添加到枪组中，这样它也会跟随枪移动
+            gunGroup.add(flashMesh);
+            // 初始隐藏闪光
+            flashMesh.visible = false;
+
+            // 创建闪光动画函数
+            function playGunFlash() {
+                if (!flashMesh) return;
+                // 显示闪光
+                flashMesh.visible = true;
+                // 重置透明度和大小
+                flashMesh.material.opacity = 0.8;
+                flashMesh.scale.set(1, 1, 1);
+                // 动画参数
+                const duration = 100; // 闪烁持续时间，单位毫秒
+                const startTime = Date.now();
+                const animateFlash = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    if (progress >= 1) {
+                        // 动画结束，隐藏闪光
+                        flashMesh.visible = false;
+                        return;
+                    }
+                    // 缩放动画
+                    const scale = 1 + progress * 0.5; // 从1放大到1.5
+                    flashMesh.scale.set(scale, scale, scale);
+                    // 透明度动画
+                    const opacity = 0.8 * (1 - progress); // 从0.8淡出到0
+                    flashMesh.material.opacity = opacity;
+                    requestAnimationFrame(animateFlash);
+                };
+                animateFlash();
+            }
+
+            // ========== 新增：在射击时触发闪光 ==========
+
+            // 创建射线投射器用于检测点击
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            // ==================== 准星设置 ====================
+            crosshair.style.left = '50%';
+            crosshair.style.top = '50%';
+            crosshair.style.transform = 'translate(-50%, -50%)';
+            trainingArea.style.cursor = 'none';
+            // ==================== 3D 控制逻辑 ====================
+            let inShootingMode = false;
+            let isPointerLocked = false;
+            let cameraRotation = { x: 0, y: 0 };
+            // 监听键盘事件以切换射击模式和游戏状态
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'a' || e.key === 'A') {
+                    inShootingMode = !inShootingMode;
+                    if (inShootingMode) {
+                        trainingArea.requestPointerLock();
+                    } else {
+                        if (isPointerLocked) {
+                            document.exitPointerLock();
+                        }
+                    }
+                }
+                if (e.key === 's' || e.key === 'S') {
+                    toggleTraining();
+                }
+            });
+            // 监听指针锁定状态变化
+            document.addEventListener('pointerlockchange', function() {
+                if (document.pointerLockElement === trainingArea) {
+                    isPointerLocked = true;
+                    trainingArea.style.cursor = 'none';
+                } else {
+                    isPointerLocked = false;
+                    if (inShootingMode) {
+                        inShootingMode = false;
+                    }
+                    trainingArea.style.cursor = 'default';
+                }
+            });
+            // 处理鼠标移动以控制3D视角
+            document.addEventListener('mousemove', function(e) {
+                if (!inShootingMode || !isPointerLocked) return;
+                const deltaX = e.movementX;
+                const deltaY = e.movementY;
+                cameraRotation.y -= deltaX * sensitivity;
+                cameraRotation.x -= deltaY * sensitivity;
+                cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
+                camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
+            });
+            // 处理点击事件
+            trainingArea.addEventListener('click', function(e) {
+                shots++;
+                updateStats();
+                // ======== 新增：触发闪光 ========
+                playGunFlash();
+                // ======== 新增结束 ========
+                if (!gameActive) return;
+                if (!inShootingMode) return;
+                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
+                const intersects = raycaster.intersectObjects(targets, true);
+                if (intersects.length > 0) {
+                    const target = intersects[0].object;
+                    const hitTime = Date.now();
+                    const reactionTime = hitTime - parseInt(target.userData.spawnTime);
+                    totalReactionTime += reactionTime;
+                    targetCount++;
+                    // 修复: 打破一个球固定得1分
+                    targetHit(target, 1);
+                } else {
+                    combo = 0;
+                    comboDisplay.textContent = combo;
+                    updateStats();
+                }
+            });
+            // ==================== 3D 游戏逻辑 ====================
+            // 创建棋盘格纹理
+            function createCheckerboardTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                const tileSize = 32;
+                for (let i = 0; i < canvas.width; i += tileSize) {
+                    for (let j = 0; j < canvas.height; j += tileSize) {
+                        const isEven = ((i / tileSize) + (j / tileSize)) % 2 === 0;
+                        ctx.fillStyle = isEven ? '#ffffff' : '#000000';
+                        ctx.fillRect(i, j, tileSize, tileSize);
+                    }
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+            // 创建沙漠纹理
+            function createDesertTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                // 绘制沙地纹理
+                ctx.fillStyle = '#f5f5dc';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // 添加一些随机的暗色斑点来模拟沙地上的污渍
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 10 + 2;
+                    ctx.fillStyle = '#d2b48c';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+            // 创建石墙纹理
+            function createStoneTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                // 绘制石墙纹理
+                ctx.fillStyle = '#e6d6b8';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // 添加一些随机的暗色斑点来模拟石墙上的污渍
+                for (let i = 0; i < 30; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 10 + 2;
+                    ctx.fillStyle = '#8b7355';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+            // 创建木箱纹理
+            function createWoodTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                // 绘制木箱纹理
+                ctx.fillStyle = '#8b7355';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // 添加木纹效果
+                for (let i = 0; i < 5; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const length = Math.random() * 30 + 10;
+                    const width = Math.random() * 2 + 1;
+                    ctx.strokeStyle = '#654321';
+                    ctx.lineWidth = width;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + length, y + Math.random() * 10 - 5);
+                    ctx.stroke();
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+            // 生成目标函数 - 优化为在玩家前方集中区域生成
+            function spawnTargets() {
+                if (!gameActive) return;
+                const now = Date.now();
+                if (now - lastSpawnTime < difficultySettings.easy.spawnRate) {
+                    return;
+                }
+                lastSpawnTime = now;
+                const settings = difficultySettings.easy;
+                const size = settings.size;
+                let x, y, z;
+                // 备注最大高度和最低高度: 设置小球生成的垂直范围
+                const minHeight = 3;   // 最低高度
+                const maxHeight = 12;  // 最大高度
+                y = minHeight + Math.random() * (maxHeight - minHeight); // 随机高度
+                // 获取当前相机位置和朝向
+                const cameraPos = camera.position.clone();
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+                // 备注半径: 设置小球离玩家的最小距离为10，最大距离为12
+                const minDistance = 10;
+                const maxDistance = 12;
+                const distance = minDistance + Math.random() * (maxDistance - minDistance);
+                // 在相机前方的一个小区域内随机生成
+                const spread = 8; // 生成区域的扩散范围
+                const offsetX = (Math.random() - 0.5) * spread;
+                const offsetZ = (Math.random() - 0.5) * spread;
+                // 计算目标位置
+                x = cameraPos.x + forward.x * distance + offsetX;
+                z = cameraPos.z + forward.z * distance + offsetZ;
+                // 边界限制
+                const padding = wallDistance - 15;
+                x = Math.max(-padding, Math.min(padding, x));
+                z = Math.max(-padding, Math.min(padding, z));
+                const geometry = new THREE.SphereGeometry(size / 2, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 0xff0000, 
+                    transparent: true, 
+                    opacity: 0.9,
+                    depthTest: true
+                });
+                const target = new THREE.Mesh(geometry, material);
+                target.position.set(x, y, z);
+                target.userData.spawnTime = Date.now().toString();
+                target.userData.isHit = false;
+                scene.add(target);
+                targets.push(target);
+                // 备注: 移除了目标自动消失的代码
+                // 目标现在只会在被击中时消失
+            }
+            // 处理目标命中
+            function targetHit(target, points) {
+                if (target.userData.isHit) return;
+                target.userData.isHit = true;
+                hits++;
+                combo++;
+                comboDisplay.textContent = combo;
+                if (combo > maxCombo) {
+                    maxCombo = combo;
+                    maxComboElement.textContent = maxCombo;
+                }
+                // 修复: 不再添加连击奖励，固定得1分
+                score += points;
+                scoreDisplay.textContent = score;
+                updateStats();
+                showScoreIndicator(points, 0, 0);
+                createExplosionEffect(target.position);
+                setTimeout(() => {
+                    if (target.parent) {
+                        scene.remove(target);
+                        targets.splice(targets.indexOf(target), 1);
+                    }
+                }, 200);
+            }
+            // 创建爆炸效果
+            function createExplosionEffect(position) {
+                const particleCount = 30;
+                const particles = new THREE.Group();
+                scene.add(particles);
+                const particleMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xff3333,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                for (let i = 0; i < particleCount; i++) {
+                    const size = Math.random() * 0.3 + 0.1;
+                    const geometry = new THREE.SphereGeometry(size, 8, 8);
+                    const particle = new THREE.Mesh(geometry, particleMaterial);
+                    particle.position.copy(position);
+                    const speed = 2.5;
+                    const angle1 = Math.random() * Math.PI * 2;
+                    const angle2 = Math.random() * Math.PI * 2;
+                    particle.userData.velocity = new THREE.Vector3(
+                        Math.sin(angle1) * Math.cos(angle2) * speed,
+                        Math.sin(angle1) * Math.sin(angle2) * speed,
+                        Math.cos(angle1) * speed
+                    );
+                    particle.userData.rotationSpeed = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.4,
+                        (Math.random() - 0.5) * 0.4,
+                        (Math.random() - 0.5) * 0.4
+                    );
+                    particles.add(particle);
+                }
+                const startTime = Date.now();
+                const duration = 300;
+                const animateParticles = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    if (progress >= 1) {
+                        scene.remove(particles);
+                        return;
+                    }
+                    particles.children.forEach(particle => {
+                        if (particle.userData.velocity) {
+                            particle.position.add(particle.userData.velocity);
+                            particle.rotation.x += particle.userData.rotationSpeed.x;
+                            particle.rotation.y += particle.userData.rotationSpeed.y;
+                            particle.rotation.z += particle.userData.rotationSpeed.z;
+                            particle.userData.velocity.multiplyScalar(0.9);
+                            particle.material.opacity = 0.9 * (1 - progress);
+                        }
+                    });
+                    requestAnimationFrame(animateParticles);
+                };
+                animateParticles();
+            }
+            // 显示得分指示器 - 修复显示问题
+            function showScoreIndicator(points, x, y) {
+                const scoreIndicator = document.createElement('div');
+                scoreIndicator.className = 'score-indicator';
+                scoreIndicator.textContent = '+' + points;
+                const rect = trainingArea.getBoundingClientRect();
+                const screenX = rect.width / 2;
+                const screenY = rect.height / 2;
+                scoreIndicator.style.left = (screenX - 25) + 'px';
+                scoreIndicator.style.top = (screenY - 50) + 'px';
+                trainingArea.appendChild(scoreIndicator);
+                setTimeout(() => {
+                    scoreIndicator.style.opacity = '1';
+                    scoreIndicator.style.transform = 'translateY(-20px)';
+                }, 10);
+                setTimeout(() => {
+                    if (scoreIndicator && scoreIndicator.parentNode) {
+                        scoreIndicator.remove();
+                    }
+                }, 1000);
+            }
+            // 开始/暂停训练
+            function toggleTraining() {
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+                if (gameActive) {
+                    gameActive = false;
+                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
+                    clearInterval(targetSpawnInterval);
+                    showGameStatus(language === 'zh' ? translations.zh.stopped : translations.en.stopped);
+                } else {
+                    let count = 3;
+                    gameActive = false;
+                    startBtn.disabled = true;
+                    startBtn.textContent = `${count}`;
+                    showGameStatus(`${count}`);
+                    countdownTimer = setInterval(() => {
+                        count--;
+                        if (count > 0) {
+                            startBtn.textContent = count;
+                            showGameStatus(`${count}`);
+                        } else {
+                            clearInterval(countdownTimer);
+                            countdownTimer = null;
+                            startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                            startBtn.disabled = false;
+                            gameActive = true;
+                            spawnTargets();
+                            targetSpawnInterval = setInterval(spawnTargets, difficultySettings.easy.spawnRate);
+                            showGameStatus(language === 'zh' ? translations.zh.training : translations.en.training);
+                        }
+                    }, 1000);
+                }
+            }
+            // 显示游戏状态消息
+            function showGameStatus(text) {
+                gameStatus.textContent = text;
+                gameStatus.classList.add('visible');
+                setTimeout(() => {
+                    gameStatus.classList.remove('visible');
+                }, 1000);
+            }
+            // 重置统计数据
+            resetBtn.addEventListener('click', resetGame);
+            // 语言切换
+            langBtn.addEventListener('click', function() {
+                language = language === 'zh' ? 'en' : 'zh';
+                updateLanguage();
+            });
+            // 灵敏度输入框事件监听
+            sensitivityInput.addEventListener('input', function() {
+                const newSensitivity = parseFloat(this.value);
+                if (!isNaN(newSensitivity) && newSensitivity > 0) {
+                    sensitivity = newSensitivity;
+                }
+            });
+            // 渲染循环
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+                updateMiniMap();
+            }
+            animate();
+            // 更新小地图
+            function updateMiniMap() {
+                const width = miniMapCanvas.width;
+                const height = miniMapCanvas.height;
+                const radius = Math.min(width, height) / 2;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                miniMapCtx.clearRect(0, 0, width, height);
+                miniMapCtx.fillStyle = 'rgba(30, 144, 255, 0.2)';
+                miniMapCtx.beginPath();
+                miniMapCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                miniMapCtx.fill();
+                miniMapCtx.fillStyle = '#ffd166';
+                miniMapCtx.font = 'bold 16px Arial';
+                miniMapCtx.textAlign = 'center';
+                miniMapCtx.textBaseline = 'middle';
+                miniMapCtx.fillText('A', centerX, centerY - radius * 0.7);
+                miniMapCtx.fillText('B', centerX + radius * 0.7, centerY);
+                miniMapCtx.fillText('C', centerX, centerY + radius * 0.7);
+                miniMapCtx.fillText('D', centerX - radius * 0.7, centerY);
+                const directionAngle = -cameraRotation.y - Math.PI/2;
+                const fov = 75 * Math.PI / 180;
+                const directionLength = radius * 0.8;
+                miniMapCtx.fillStyle = 'rgba(0, 255, 136, 0.3)';
+                miniMapCtx.beginPath();
+                miniMapCtx.moveTo(centerX, centerY);
+                miniMapCtx.arc(centerX, centerY, directionLength, 
+                               directionAngle - fov/2, directionAngle + fov/2);
+                miniMapCtx.closePath();
+                miniMapCtx.fill();
+                miniMapCtx.fillStyle = '#00ff88';
+                miniMapCtx.beginPath();
+                miniMapCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+                miniMapCtx.fill();
+                targets.forEach(target => {
+                    const scale = 1.5;
+                    let targetX = centerX + target.position.x * scale;
+                    let targetY = centerY + target.position.z * scale;
+                    const dx = targetX - centerX;
+                    const dy = targetY - centerY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance > radius * 0.9) {
+                        const angle = Math.atan2(dy, dx);
+                        targetX = centerX + Math.cos(angle) * radius * 0.9;
+                        targetY = centerY + Math.sin(angle) * radius * 0.9;
+                    }
+                    miniMapCtx.fillStyle = '#ff0000';
+                    miniMapCtx.beginPath();
+                    miniMapCtx.arc(targetX, targetY, 3, 0, Math.PI * 2);
+                    miniMapCtx.fill();
+                });
+            }
+            // 调整小地图大小
+            function resizeMiniMap() {
+                miniMapCanvas.width = miniMapCanvas.offsetWidth;
+                miniMapCanvas.height = miniMapCanvas.offsetHeight;
+            }
+            resizeMiniMap();
+            window.addEventListener('resize', resizeMiniMap);
+            // 重置游戏
+            function resetGame() {
+                gameActive = false;
+                startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
+                clearInterval(targetSpawnInterval);
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+                startBtn.disabled = false;
+                shots = 0;
+                hits = 0;
+                totalReactionTime = 0;
+                targetCount = 0;
+                combo = 0;
+                maxCombo = 0;
+                score = 0;
+                comboDisplay.textContent = combo;
+                scoreDisplay.textContent = score;
+                targets.forEach(target => {
+                    if (target.parent) {
+                        scene.remove(target);
+                    }
+                });
+                targets = [];
+                updateStats();
+                maxComboElement.textContent = maxCombo;
+                showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
+                if (inShootingMode) {
+                    inShootingMode = false;
+                    if (isPointerLocked) {
+                        document.exitPointerLock();
+                    }
+                }
+                camera.position.set(0, 5, 0);
+                cameraRotation = { x: 0, y: 0 };
+                camera.rotation.set(0, 0, 0, 'YXZ');
+                camera.lookAt(0, 5, -10);
+            }
+            // 更新统计信息
+            function updateStats() {
+                const accuracy = shots > 0 ? Math.min(100, Math.round((hits / shots) * 100)) : 0;
+                const averageReactionTime = targetCount > 0 ? Math.round(totalReactionTime / targetCount) : 0;
+                shotsElement.textContent = shots;
+                hitsElement.textContent = hits;
+                accuracyElement.textContent = accuracy + '%';
+                reactionElement.textContent = averageReactionTime + 'ms';
+                scoreElement.textContent = score;
+            }
+            // 更新语言
+            function updateLanguage() {
+                const t = translations[language];
+                titleElement.innerHTML = t.title;
+                subtitleElement.innerHTML = t.subtitle;
+                statsTitleElement.innerHTML = t.statsTitle;
+                shotsLabel.innerHTML = t.shotsLabel;
+                hitsLabel.innerHTML = t.hitsLabel;
+                accuracyLabel.innerHTML = t.accuracyLabel;
+                reactionLabel.innerHTML = t.reactionLabel;
+                maxComboLabel.innerHTML = t.maxComboLabel;
+                scoreLabel.innerHTML = t.scoreLabel;
+                comboDisplay.textContent = '0';
+                scoreDisplay.textContent = '0';
+                startBtn.innerHTML = t.startBtn;
+                resetBtn.innerHTML = t.resetBtn;
+                langBtn.innerHTML = t.langBtn;
+                instructionsTitle.innerHTML = t.instructionsTitle;
+                instruction1.innerHTML = t.instruction1;
+                instruction2.innerHTML = t.instruction2;
+                instruction3.innerHTML = t.instruction3;
+                instruction4.innerHTML = t.instruction4;
+                instruction5.innerHTML = t.instruction5;
+                instruction6.innerHTML = t.instruction6;
+                instruction7.innerHTML = t.instruction7;
+                footerText.innerHTML = t.footerText;
+                if (gameActive) {
+                    startBtn.textContent = language === 'zh' ? '停止训练' : 'Stop Training';
+                } else {
+                    startBtn.textContent = language === 'zh' ? '开始训练' : 'Start Training';
+                }
+            }
+            // 初始化
+            updateStats();
+            updateLanguage();
+            showGameStatus(language === 'zh' ? translations.zh.ready : translations.en.ready);
+        });
+    </script>
+</body>
+</html>
