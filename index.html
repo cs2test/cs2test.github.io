@@ -941,27 +941,26 @@
             camera.lookAt(0, 5, -10);
 
             // ========== 新增：手枪模型加载 ==========
-            const gunGroup = new THREE.Group();
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
-                // ===== 关键检查：确保 gltf.scene 存在 =====
-                if (!gltf || !gltf.scene) {
-                    console.error('Failed to load pistol model: gltf.scene is undefined.');
-                    return;
-                }
-                // ======================================
+                const model = gltf.scene;
+                // 1. 重置位置、旋转、缩放
+                model.position.set(0, 0, 0);
+                model.rotation.set(0, 0, 0);
+                model.scale.set(1, 1, 1); // 先用1:1的缩放
 
-                const actualPistolMesh = gltf.scene;
-                actualPistolMesh.scale.set(0.05, 0.05, 0.05);
-                actualPistolMesh.position.set(0, 0, 0);
-                actualPistolMesh.rotation.set(0, 0, 0);
+                // 2. 替换材质为亮绿色，确保可见
+                const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = basicMaterial;
+                    }
+                });
 
-                gunGroup.add(actualPistolMesh);
-                camera.add(gunGroup);
-                gunGroup.position.set(0, -0.3, -0.5); // Z为负，在相机前方
-                gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度
+                // 3. 直接将模型添加到主场景，而不是相机！
+                scene.add(model);
 
-                console.log("Pistol model loaded successfully.");
+                console.log("Pistol model added directly to the main scene.");
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
             });
