@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 3D 精准度训练模拟器</title>
     <script src="https://cs2test.github.io/three.js"></script>
-    <!-- 添加 GLTFLoader -->
-    <script src="GLTFLoader.js"></script>
+    <script src="https://cs2test.github.io/GLTFLoader.js"></script>
     <style>
         * {
             margin: 0;
@@ -504,6 +503,27 @@
             text-shadow: 0 0 10px rgba(255, 209, 102, 0.8);
             z-index: 10;
         }
+        .pistol-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 200px;
+            z-index: 50;
+            pointer-events: none;
+        }
+        .muzzle-flash {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #ff9900 0%, #ff5500 70%, transparent 100%);
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 51;
+            pointer-events: none;
+            filter: blur(5px);
+        }
         @media (max-width: 992px) {
             .game-container {
                 flex-direction: column;
@@ -526,6 +546,10 @@
                 height: 120px;
                 top: 15px;
                 left: 15px;
+            }
+            .pistol-container {
+                width: 200px;
+                height: 150px;
             }
         }
         @media (max-width: 576px) {
@@ -554,6 +578,10 @@
                 top: 10px;
                 left: 10px;
             }
+            .pistol-container {
+                width: 150px;
+                height: 100px;
+            }
         }
     </style>
 </head>
@@ -571,6 +599,7 @@
                 <div class="training-area" id="training-area">
                     <div class="crosshair" id="crosshair"></div>
                     <div class="game-status" id="game-status">准备就绪</div>
+                    <div class="pistol-container" id="pistol-container"></div>
                 </div>
                 <div class="score-section">
                     <div class="combo-display" id="combo-display-container">连击: <span id="combo-display">0</span></div>
@@ -643,6 +672,7 @@
             const sensitivityInput = document.getElementById('sensitivity-input');
             const miniMapCanvas = document.getElementById('mini-map-canvas');
             const miniMapCtx = miniMapCanvas.getContext('2d');
+            const pistolContainer = document.getElementById('pistol-container');
             const shotsElement = document.getElementById('shots');
             const hitsElement = document.getElementById('hits');
             const accuracyElement = document.getElementById('accuracy');
@@ -940,86 +970,86 @@
             camera.position.set(0, 5, 0);
             camera.rotation.set(0, 0, 0, 'YXZ');
             camera.lookAt(0, 5, -10);
-
-            // ==================== 新增：加载枪械模型 ====================
-            let gunModel = null;
+            // 创建射线投射器用于检测点击
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            // ==================== 手枪模型加载 ====================
+            let pistol = null;
             const loader = new THREE.GLTFLoader();
-            loader.load('lxxx.glb', function(gltf) {
-                gunModel = gltf.scene;
-                // 调整枪械大小和位置，使其位于屏幕底部中央
-                gunModel.scale.set(0.03, 0.03, 0.03); // 缩放模型，这是关键！
-                // 设置枪械初始位置和旋转，使其看起来像握在手中
-                gunModel.position.set(0, -0.5, 0.5); // 初始位置在相机下方和前方
-                // 旋转枪械使其朝向正确
-                gunModel.rotation.set(0, 0, 0);
-                scene.add(gunModel);
-                // 设置枪械始终面向相机前方
-                updateGunPosition();
+            loader.load('https://cs2test.github.io/lxxx.glb', function(gltf) {
+                pistol = gltf.scene;
+                // 调整手枪位置和大小
+                pistol.scale.set(0.5, 0.5, 0.5);
+                pistol.position.set(0, -2, -3);
+                pistol.rotation.x = Math.PI / 8;
+                // 将手枪添加到场景中
+                scene.add(pistol);
             }, undefined, function(error) {
-                console.error('An error occurred loading the GLB model:', error);
+                console.error('加载手枪模型时出错:', error);
+                // 如果加载失败，创建一个简单的手枪模型作为替代
+                createFallbackPistol();
             });
-
-            // ==================== 新增：创建枪口闪光效果 ====================
-            let muzzleFlash = null;
+            // 创建备用简单手枪模型
+            function createFallbackPistol() {
+                const pistolGroup = new THREE.Group();
+                
+                // 手枪主体
+                const bodyGeometry = new THREE.BoxGeometry(1, 0.3, 0.1);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                pistolGroup.add(body);
+                
+                // 枪管
+                const barrelGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
+                const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x666666 });
+                const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+                barrel.rotation.z = Math.PI / 2;
+                barrel.position.set(0.5, 0, 0);
+                pistolGroup.add(barrel);
+                
+                // 握把
+                const gripGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.2);
+                const gripMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+                const grip = new THREE.Mesh(gripGeometry, gripMaterial);
+                grip.position.set(0, -0.4, 0);
+                pistolGroup.add(grip);
+                
+                pistol = pistolGroup;
+                pistol.scale.set(0.5, 0.5, 0.5);
+                pistol.position.set(0, -2, -3);
+                pistol.rotation.x = Math.PI / 8;
+                scene.add(pistol);
+            }
+            // 创建枪口闪光效果
             function createMuzzleFlash() {
-                if (muzzleFlash) {
-                    scene.remove(muzzleFlash);
-                }
-                // 创建一个发光的平面作为闪光
-                const geometry = new THREE.PlaneGeometry(0.5, 0.5);
-                const material = new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
+                if (!pistol) return;
+                
+                // 创建闪光效果
+                const flashGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+                const flashMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xffff00,
                     transparent: true,
-                    opacity: 0.8,
-                    side: THREE.DoubleSide
+                    opacity: 0.8
                 });
-                muzzleFlash = new THREE.Mesh(geometry, material);
-                // 让闪光出现在枪口位置
-                muzzleFlash.position.set(0, 0, 0.5); // 在枪口前方一点的位置
-                muzzleFlash.rotation.set(0, 0, 0);
-                scene.add(muzzleFlash);
-
-                // 动画：闪光淡出
-                let startTime = Date.now();
-                const duration = 100; // 闪光持续时间
-
-                function animateFlash() {
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    if (progress >= 1) {
-                        scene.remove(muzzleFlash);
-                        muzzleFlash = null;
-                        return;
+                const flash = new THREE.Mesh(flashGeometry, flashMaterial);
+                
+                // 将闪光放置在枪口位置
+                flash.position.set(1.2, 0, 0); // 相对于手枪的位置
+                pistol.add(flash);
+                
+                // 闪光动画
+                let scale = 1;
+                const flashInterval = setInterval(() => {
+                    scale += 0.5;
+                    flash.scale.set(scale, scale, scale);
+                    flashMaterial.opacity -= 0.1;
+                    
+                    if (flashMaterial.opacity <= 0) {
+                        clearInterval(flashInterval);
+                        pistol.remove(flash);
                     }
-                    muzzleFlash.material.opacity = 0.8 * (1 - progress);
-                    requestAnimationFrame(animateFlash);
-                }
-                animateFlash();
+                }, 50);
             }
-
-            // ==================== 新增：更新枪械位置函数 ====================
-            function updateGunPosition() {
-                if (!gunModel) return;
-                // 获取相机位置和朝向
-                const cameraPos = camera.position.clone();
-                const forward = new THREE.Vector3();
-                camera.getWorldDirection(forward);
-                // 计算枪械位置（在相机前方偏下的位置）
-                const distance = 0.3; // 枪口离相机的距离
-                const offsetY = -0.2; // 枪口在相机下方的位置
-                gunModel.position.set(
-                    cameraPos.x + forward.x * distance,
-                    cameraPos.y + forward.y * distance + offsetY,
-                    cameraPos.z + forward.z * distance
-                );
-                // 让枪械旋转以匹配相机的旋转
-                gunModel.rotation.set(camera.rotation.x, camera.rotation.y, camera.rotation.z);
-                // 为了看起来像第一人称视角，可能需要微调旋转
-                // 注意：这里不再添加 Math.PI / 2，因为模型本身应该已经朝向正确
-                // 如果模型方向不对，可以在这里调整，例如：
-                // gunModel.rotation.x += Math.PI / 2;
-            }
-
             // ==================== 准星设置 ====================
             crosshair.style.left = '50%';
             crosshair.style.top = '50%';
@@ -1067,8 +1097,12 @@
                 cameraRotation.x -= deltaY * sensitivity;
                 cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
                 camera.rotation.set(cameraRotation.x, cameraRotation.y, 0, 'YXZ');
-                // 更新枪械位置
-                updateGunPosition();
+                
+                // 手枪跟随视角移动
+                if (pistol) {
+                    pistol.rotation.y = cameraRotation.y;
+                    pistol.rotation.x = cameraRotation.x + Math.PI / 8;
+                }
             });
             // 处理点击事件
             trainingArea.addEventListener('click', function(e) {
@@ -1076,6 +1110,10 @@
                 updateStats();
                 if (!gameActive) return;
                 if (!inShootingMode) return;
+                
+                // 创建枪口闪光效果
+                createMuzzleFlash();
+                
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
                 const intersects = raycaster.intersectObjects(targets, true);
                 if (intersects.length > 0) {
@@ -1091,8 +1129,6 @@
                     comboDisplay.textContent = combo;
                     updateStats();
                 }
-                // 在点击时触发枪口闪光
-                createMuzzleFlash();
             });
             // ==================== 3D 游戏逻辑 ====================
             // 创建棋盘格纹理
@@ -1387,10 +1423,6 @@
                 requestAnimationFrame(animate);
                 renderer.render(scene, camera);
                 updateMiniMap();
-                // 更新枪械位置
-                if (inShootingMode && gunModel) {
-                    updateGunPosition();
-                }
             }
             animate();
             // 更新小地图
@@ -1490,6 +1522,12 @@
                 cameraRotation = { x: 0, y: 0 };
                 camera.rotation.set(0, 0, 0, 'YXZ');
                 camera.lookAt(0, 5, -10);
+                // 重置手枪位置
+                if (pistol) {
+                    pistol.position.set(0, -2, -3);
+                    pistol.rotation.x = Math.PI / 8;
+                    pistol.rotation.y = 0;
+                }
             }
             // 更新统计信息
             function updateStats() {
