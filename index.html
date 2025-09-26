@@ -969,8 +969,8 @@
                     pistolModel.position.set(0, 0, 0);
                     // ========== 关键修复2：将模型的旋转重置为0 ==========
                     pistolModel.rotation.set(0, 0, 0);
-                    // ========== 关键修复3：使用一个巨大的缩放值确保可见 ==========
-                    pistolModel.scale.set(1, 1, 1); // 先用1:1的缩放
+                    // ========== 关键修复3：调整缩放以适应场景 ==========
+                    pistolModel.scale.set(0.05, 0.05, 0.05); // 这个值需要根据您的模型微调
 
                     // 将手枪添加到枪组中
                     gunGroup.add(pistolModel);
@@ -978,9 +978,13 @@
                     // 将枪组添加到相机上
                     camera.add(gunGroup);
 
-                    // ========== 关键修复4：确保模型在相机前方 (Z为负值) ==========
-                    gunGroup.position.set(0, -1, -2); // Y轴向下，Z轴为负（前方）
-                    gunGroup.rotation.set(0, 0, 0); // 先不旋转枪组，看模型默认朝向
+                    // ========== 关键修复4：设置枪组的位置和旋转，使其符合第一人称视角 ==========
+                    // 位置: Y轴向下，Z轴向前
+                    gunGroup.position.set(0, -0.3, 0.5);
+                    // 旋转: 让枪口指向屏幕前方 (Z轴负方向)
+                    // 根据您提供的模型图片，手枪模型的枪口默认朝向 Z轴正方向。
+                    // 我们需要将其绕Y轴旋转180度，使其枪口朝向Z轴负方向，与相机朝向一致。
+                    gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度
 
                     console.log("Actual Pistol Mesh found, reset position & rotation, and added:", pistolModel);
                 } else {
