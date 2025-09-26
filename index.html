@@ -941,31 +941,51 @@
             camera.lookAt(0, 5, -10);
 
             // ========== 新增：手枪模型加载 ==========
+            // 创建一个用于存放手枪的组，方便控制
             const gunGroup = new THREE.Group();
             // 手枪模型变量
             let pistolModel = null;
+
+            // 使用 Three.js 内置的 GLTFLoader 加载手枪模型
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
-                const model = gltf.scene;
-                // 1. 重置位置、旋转、缩放
-                model.position.set(0, 0, 0);
-                model.rotation.set(0, 0, 0);
-                model.scale.set(1, 1, 1); // 先用1:1的缩放
-
-                // 2. 替换材质为亮绿色，确保可见
-                const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-                model.traverse((child) => {
+                // 关键：遍历场景，找到第一个 Mesh 并将其作为手枪模型
+                let actualPistolMesh = null;
+                gltf.scene.traverse(function(child) {
                     if (child.isMesh) {
-                        child.material = basicMaterial;
+                        actualPistolMesh = child;
+                        return; // 找到后就停止遍历
                     }
                 });
 
-                // 3. 直接将模型添加到主场景，而不是相机！
-                scene.add(model);
+                if (actualPistolMesh) {
+                    pistolModel = actualPistolMesh;
+                    
+                    // 重置模型自身的位置、旋转和缩放
+                    pistolModel.position.set(0, 0, 0);
+                    pistolModel.rotation.set(0, 0, 0);
+                    // 调整缩放，使其在屏幕底部看起来大小合适
+                    pistolModel.scale.set(0.05, 0.05, 0.05);
 
-                console.log("Pistol model added directly to the main scene.");
+                    // 将手枪添加到枪组中
+                    gunGroup.add(pistolModel);
+
+                    // 将枪组添加到相机上
+                    camera.add(gunGroup);
+
+                    // 设置枪组的位置和旋转，使其位于屏幕底部中央
+                    // 位置: Y轴向下，Z轴向前
+                    gunGroup.position.set(0, -0.3, 0.5); 
+                    // 旋转: 让枪口指向屏幕前方
+                    gunGroup.rotation.set(-Math.PI / 2, Math.PI, 0); 
+
+                    console.log("Pistol model loaded and attached to camera.");
+
+                } else {
+                    console.error("No Mesh found in the loaded GLTF model!");
+                }
             }, undefined, function(error) {
-                console.error('Error loading pistol model:', error);
+                console.error('An error occurred loading the pistol model:', error);
             });
             // ========== 新增结束 ========
 
