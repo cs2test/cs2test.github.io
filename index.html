@@ -951,8 +951,8 @@
             loader.load('lxxx.glb', function(gltf) {
                 pistolModel = gltf.scene;
                 // 调整手枪的缩放和位置，使其看起来像握在手中
-                // 尝试一个非常小的缩放值，确保它不会太大而看不见
-                pistolModel.scale.set(0.001, 0.001, 0.001);
+                // 根据调试信息，尝试一个更小的缩放值
+                pistolModel.scale.set(0.0005, 0.0005, 0.0005); // 这个值可能需要微调
 
                 // 将手枪添加到枪组中
                 gunGroup.add(pistolModel);
@@ -960,23 +960,26 @@
                 // 将枪组添加到相机上，这样它会跟随相机移动
                 camera.add(gunGroup);
 
-                // ==================== 关键调试部分开始 ====================
+                // ==================== 最终定位和旋转 ====================
+                // 设置枪组的位置和旋转，使其在屏幕底部中央可见
+                // 位置: Z轴向前，Y轴向下
+                gunGroup.position.set(0, -0.4, 0.6); // Y轴向下，Z轴向前
+                // 旋转: 让枪口指向屏幕前方
+                gunGroup.rotation.set(-Math.PI / 2, Math.PI, 0); // 绕X轴旋转90度，再绕Y轴旋转180度
+
+                // ==================== 调试辅助 (可选，调试完成后可以移除) ====================
                 // 创建一个简单的红色球体作为调试标记，放在模型原点
-                const debugSphereGeometry = new THREE.SphereGeometry(0.5, 8, 8);
-                const debugSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-                const debugSphere = new THREE.Mesh(debugSphereGeometry, debugSphereMaterial);
-                gunGroup.add(debugSphere);
+                // const debugSphereGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+                // const debugSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                // const debugSphere = new THREE.Mesh(debugSphereGeometry, debugSphereMaterial);
+                // gunGroup.add(debugSphere);
 
                 // 在模型的中心创建一个绿色立方体，指示其大致范围
-                const debugBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
-                const debugBoxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-                const debugBox = new THREE.Mesh(debugBoxGeometry, debugBoxMaterial);
-                debugBox.position.set(0, 0, 0); // 确保它在模型中心
-                gunGroup.add(debugBox);
-
-                // 设置一个非常明显的初始位置和旋转，让调试标记出现在屏幕中央
-                gunGroup.position.set(0, 0, 0); // 放在相机原点，确保它在视野内
-                gunGroup.rotation.set(0, 0, 0); // 先设置为无旋转
+                // const debugBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
+                // const debugBoxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+                // const debugBox = new THREE.Mesh(debugBoxGeometry, debugBoxMaterial);
+                // debugBox.position.set(0, 0, 0); // 确保它在模型中心
+                // gunGroup.add(debugBox);
 
                 // 打印模型信息到控制台，查看其边界框
                 console.log("Pistol Model Loaded:", pistolModel);
@@ -987,12 +990,7 @@
                     const center = box.getCenter(new THREE.Vector3());
                     console.log("Pistol Model Center:", center);
                 }
-                // ==================== 关键调试部分结束 ====================
-
-                // 注释掉原有的位置和旋转设置，先用调试标记定位
-                // gunGroup.position.set(0, -0.3, 0.8);
-                // gunGroup.rotation.set(-Math.PI/2, 0, 0);
-                // gunGroup.rotation.y = Math.PI;
+                // ==================== 调试辅助结束 ====================
 
             }, undefined, function(error) {
                 console.error('An error occurred loading the pistol model:', error);
