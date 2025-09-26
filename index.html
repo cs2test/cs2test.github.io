@@ -971,12 +971,8 @@
                         color: 0x00ff00, // 鲜艳的绿色，确保可见
                         wireframe: false 
                     });
-                    // 将新材质应用到模型的所有子网格上
-                    pistolModel.traverse(function(child) {
-                        if (child.isMesh) {
-                            child.material = basicMaterial;
-                        }
-                    });
+                    // 将新材质应用到模型
+                    pistolModel.material = basicMaterial;
                     // ===================================================
 
                     // 2. 调整缩放
@@ -987,7 +983,8 @@
                     camera.add(gunGroup);
 
                     // 4. 设置枪组的位置和旋转
-                    gunGroup.position.set(0, -0.3, -0.5); // Z为负，确保在相机前方
+                    // Z 必须是负数，才能在相机前方！
+                    gunGroup.position.set(0, -0.3, -0.5); // Y轴向下，Z轴为负（前方）
                     gunGroup.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度，使枪口朝前
 
                     console.log("Pistol mesh loaded with basic material.");
