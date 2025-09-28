@@ -953,7 +953,7 @@
                 model.scale.set(1, 1, 1); // 先重置缩放
                 // 根据你的模型大小调整这个值。0.00003 太小了，尝试一个更大的值，比如 0.0008 或 0.001。
                 // 你需要根据实际模型大小反复调试，直到它看起来大小合适。
-                model.scale.multiplyScalar(0.0001); // 使用 multiplyScalar 来应用缩放，或者直接 set
+                model.scale.multiplyScalar(0.00005); // 使用 multiplyScalar 来应用缩放，或者直接 set
 
                 // 2. 替换材质为亮绿色，确保可见
                 const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -971,7 +971,7 @@
                 // 4. 设置初始位置和旋转
                 // 将枪放在相机前方，略低于中心点，这样看起来像握在手里
                 // 你可以调整这些数值来获得最佳视觉效果
-                gunGroup.position.set(0, -1, 0); // X: 0 (居中), Y: -1 (向下移动), Z: 0 (在相机前方一点点)
+                gunGroup.position.set(0, 2, 0); // X: 0 (居中), Y: -1 (向下移动), Z: 0 (在相机前方一点点)
                 // 让枪的朝向与相机一致
                 gunGroup.rotation.copy(camera.rotation);
 
