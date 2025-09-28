@@ -949,11 +949,8 @@
             loader.load('lxxx.glb', function(gltf) {
                 const model = gltf.scene;
                 // 1. 重置位置、旋转、缩放
-                // 模型本身可能已经有缩放，我们先将其重置到1:1，然后用一个合理的值进行缩放
-                model.scale.set(1, 1, 1); // 先重置缩放
-                // 根据你的模型大小调整这个值。0.00003 太小了，尝试一个更大的值，比如 0.0008 或 0.001。
-                // 你需要根据实际模型大小反复调试，直到它看起来大小合适。
-                model.scale.multiplyScalar(0.000001); // 使用 multiplyScalar 来应用缩放，或者直接 set
+                // 首先，将模型的缩放重置为 1:1，这是关键的第一步
+                model.scale.set(1, 1, 1);
 
                 // 2. 替换材质为亮绿色，确保可见
                 const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -963,19 +960,44 @@
                     }
                 });
 
-                // 3. 将模型添加到 gunGroup 中，而不是直接添加到主场景
+                // 3. 将模型添加到 gunGroup 中
                 gunGroup.add(model);
                 // 现在将 gunGroup 添加到场景中
                 scene.add(gunGroup);
 
                 // 4. 设置初始位置和旋转
                 // 将枪放在相机前方，略低于中心点，这样看起来像握在手里
-                // 你可以调整这些数值来获得最佳视觉效果
-                gunGroup.position.set(0, 5, 0); // X: 0 (居中), Y: -1 (向下移动), Z: 0 (在相机前方一点点)
+                gunGroup.position.set(0, -1, 0); // X: 0 (居中), Y: -1 (向下移动), Z: 0 (在相机前方一点点)
                 // 让枪的朝向与相机一致
                 gunGroup.rotation.copy(camera.rotation);
 
                 console.log("Pistol model loaded and added to gunGroup.");
+
+                // ========== 调试用：创建一个边长为1的立方体作为参考物 ==========
+                // 你可以根据需要注释掉下面这段代码，或者在调试完成后删除
+                const referenceGeometry = new THREE.BoxGeometry(1, 1, 1);
+                const referenceMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // 红色
+                const referenceCube = new THREE.Mesh(referenceGeometry, referenceMaterial);
+                referenceCube.position.set(0, 0, 0); // 放在原点，方便观察
+                scene.add(referenceCube);
+                console.log("Reference cube (1x1x1) added for scale comparison.");
+                // ========== 调试结束 ==========
+
+                // ========== 关键步骤：调整缩放 ==========
+                // 先尝试一个相对较大的缩放值，比如 0.01，然后根据视觉效果逐步调整
+                // 如果还是太大，就减小这个值；如果太小，就增大它。
+                // 常见的合理范围可能是 0.001 到 0.01 之间，但具体取决于你的模型。
+                // 请务必根据你看到的效果进行调整！
+                model.scale.multiplyScalar(0.005); // 从 0.005 开始尝试，这是一个比 0.00005 更合理的起点
+
+                // ========== 调试提示 ==========
+                // 如果你觉得模型还是太大，请尝试：
+                // model.scale.multiplyScalar(0.001); // 减小到 0.001
+                // 如果觉得太小，请尝试：
+                // model.scale.multiplyScalar(0.01);  // 增大到 0.01
+                // 你需要反复调试，直到找到一个让你满意的大小。
+                // ========== 调试提示结束 ==========
+
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
             });
