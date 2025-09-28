@@ -950,7 +950,7 @@
                 // 1. 重置位置、旋转、缩放
                 model.position.set(0, 0, 0);
                 model.rotation.set(0, 0, 0);
-                model.scale.set(0.000001, 0.000001, 0.000001); // 先用1:1的缩放
+                model.scale.set(0.00001, 0.00001, 0.00001); // 先用1:1的缩放
 
                 // 2. 替换材质为亮绿色，确保可见
                 const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
