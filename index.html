@@ -967,7 +967,7 @@
 
                 // 4. 设置初始位置和旋转
                 // 将枪放在相机前方，略低于中心点，这样看起来像握在手里
-                gunGroup.position.set(0, -1, 0); // X: 0 (居中), Y: -1 (向下移动), Z: 0 (在相机前方一点点)
+                gunGroup.position.set(0, 1, 0); // X: 0 (居中), Y: -1 (向下移动), Z: 0 (在相机前方一点点)
                 // 让枪的朝向与相机一致
                 gunGroup.rotation.copy(camera.rotation);
 
