@@ -941,13 +941,19 @@
             camera.lookAt(0, 5, -10);
 
             // ========== 新增：手枪模型加载 ==========
+            const gunGroup = new THREE.Group();
+            // 手枪模型变量
+            let pistolModel = null;
+
             const loader = new THREE.GLTFLoader();
             loader.load('lxxx.glb', function(gltf) {
                 const model = gltf.scene;
-                // 1. 重置位置、旋转
-                model.position.set(0, 5, -10); // 放在相机前方 (Z为负)，高度与相机一致 (Y=5)
-                model.rotation.set(0, Math.PI, 0); // 绕Y轴旋转180度，使枪口朝向相机
-                model.scale.set(0.0005, 0.0005, 0.0005); // 根据您之前的调试，这个缩放值可能合适
+                // 1. 重置位置、旋转、缩放
+                // 模型本身可能已经有缩放，我们先将其重置到1:1，然后用一个合理的值进行缩放
+                model.scale.set(1, 1, 1); // 先重置缩放
+                // 根据你的模型大小调整这个值。0.00003 太小了，尝试一个更大的值，比如 0.0008 或 0.001。
+                // 你需要根据实际模型大小反复调试，直到它看起来大小合适。
+                model.scale.multiplyScalar(0.0008); // 使用 multiplyScalar 来应用缩放，或者直接 set
 
                 // 2. 替换材质为亮绿色，确保可见
                 const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -957,14 +963,23 @@
                     }
                 });
 
-                // 3. 直接将模型添加到主场景
-                scene.add(model);
+                // 3. 将模型添加到 gunGroup 中，而不是直接添加到主场景
+                gunGroup.add(model);
+                // 现在将 gunGroup 添加到场景中
+                scene.add(gunGroup);
 
-                console.log("Pistol model added directly to the main scene.");
+                // 4. 设置初始位置和旋转
+                // 将枪放在相机前方，略低于中心点，这样看起来像握在手里
+                // 你可以调整这些数值来获得最佳视觉效果
+                gunGroup.position.set(0, -1, 0); // X: 0 (居中), Y: -1 (向下移动), Z: 0 (在相机前方一点点)
+                // 让枪的朝向与相机一致
+                gunGroup.rotation.copy(camera.rotation);
+
+                console.log("Pistol model loaded and added to gunGroup.");
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
             });
-            // ========== 新增结束 ========
+            // ========== 新增结束 ======== 
 
             // ========== 新增：闪光效果 ==========
 
