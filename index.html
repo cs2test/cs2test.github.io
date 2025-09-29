@@ -952,18 +952,26 @@
                 // 首先，将模型的缩放重置为 1:1
                 model.scale.set(1, 1, 1);
 
-                // 2. 替换材质为亮绿色，确保可见
-                const basicMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                // 2. 替换材质为金属色，确保可见
+                // 使用 MeshStandardMaterial 创建金属质感
+                const metalMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x808080, // 灰色金属
+                    roughness: 0.3,  // 粗糙度，值越小越光滑
+                    metalness: 0.8,  // 金属度，值越大越像金属
+                    emissive: 0x202020, // 自发光颜色，增加一点暗光
+                    envMap: createEnvironmentMap() // 添加环境贴图，增强金属反射效果
+                });
+
                 model.traverse((child) => {
                     if (child.isMesh) {
-                        child.material = basicMaterial;
+                        child.material = metalMaterial;
                     }
                 });
 
                 // ========== 关键步骤：修正枪的初始朝向和倾斜 ==========
                 // 尝试一个更通用的初始旋转，使枪口朝前，并带有一点倾斜
                 // 这个值可能需要根据你的模型微调
-                model.rotation.x = -Math.PI / 2; // 绕X轴旋转-90度，使枪口朝前
+                model.rotation.x = Math.PI / 2; // 绕X轴旋转-90度，使枪口朝前
                 model.rotation.z = Math.PI / 12; // 绕Z轴旋转+15度，增加倾斜感 (Math.PI/12 = 15度)
 
                 // 3. 将模型添加到 gunGroup 中
@@ -994,6 +1002,24 @@
                 console.error('Error loading pistol model:', error);
             });
             // ========== 新增结束 ======== 
+
+
+            // ========== 新增：创建环境贴图 ==========
+            function createEnvironmentMap() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                // 绘制一个简单的渐变背景，模拟天空和地面
+                const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+                gradient.addColorStop(0, '#ffffff'); // 白色中心
+                gradient.addColorStop(1, '#87CEEB'); // 蓝色边缘
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                return new THREE.CanvasTexture(canvas);
+            }
+            // ========== 新增结束 ========== 
+
 
             // ========== 新增：闪光效果 ==========
 
