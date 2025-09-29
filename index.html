@@ -971,8 +971,8 @@
                 // ========== 关键步骤：修正枪的初始朝向和倾斜 ==========
                 // 尝试一个更通用的初始旋转，使枪口朝前，并带有一点倾斜
                 // 这个值可能需要根据你的模型微调
-                model.rotation.x = -Math.PI / 2; // 绕X轴旋转-90度，使枪口朝前
-                model.rotation.z = Math.PI / 14; // 绕Z轴旋转+15度，增加倾斜感 (Math.PI/12 = 15度)
+                model.rotation.x = Math.PI / 2; // 绕X轴旋转-90度，使枪口朝前
+                model.rotation.z = -Math.PI / 12; // 绕Z轴旋转+15度，增加倾斜感 (Math.PI/12 = 15度)
 
                 // 3. 将模型添加到 gunGroup 中
                 gunGroup.add(model);
@@ -981,22 +981,12 @@
 
                 console.log("Pistol model loaded and added to gunGroup.");
 
-                // ========== 调试用：创建一个边长为1的立方体作为参考物 ==========
-                // 你可以根据需要注释掉下面这段代码，或者在调试完成后删除
-                const referenceGeometry = new THREE.BoxGeometry(1, 1, 1);
-                const referenceMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // 红色
-                const referenceCube = new THREE.Mesh(referenceGeometry, referenceMaterial);
-                referenceCube.position.set(0, 0, 0); // 放在原点，方便观察
-                scene.add(referenceCube);
-                console.log("Reference cube (1x1x1) added for scale comparison.");
-                // ========== 调试结束 ==========
-
                 // ========== 关键步骤：调整缩放 ==========
                 // 根据你的描述，模型比红色立方体大20倍。
                 // 这意味着我们需要将它的尺寸缩小到原来的 1/20 或更小。
                 // 我们直接用 set 来设置一个非常小的值。
                 // 从 0.000005 开始尝试，这是一个合理的起点。
-                model.scale.set(0.000001, 0.000001, 0.000001);
+                model.scale.set(0.000002, 0.000002, 0.000002);
 
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
