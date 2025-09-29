@@ -982,7 +982,7 @@
                 // 这意味着我们需要将它的尺寸缩小到原来的 1/20 或更小。
                 // 我们直接用 set 来设置一个非常小的值。
                 // 从 0.000005 开始尝试，这是一个合理的起点。
-                model.scale.set(0.000001, 0.000001, 0.000001);
+                model.scale.set(0.000005, 0.000005, 0.000005);
 
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
