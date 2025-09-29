@@ -982,7 +982,7 @@
                 // 这意味着我们需要将它的尺寸缩小到原来的 1/20 或更小。
                 // 我们直接用 set 来设置一个非常小的值。
                 // 从 0.000005 开始尝试，这是一个合理的起点。
-                model.scale.set(0.000005, 0.000005, 0.000005);
+                model.scale.set(0.000001, 0.000001, 0.000001);
 
             }, undefined, function(error) {
                 console.error('Error loading pistol model:', error);
@@ -1418,8 +1418,8 @@
                 camera.getWorldDirection(cameraDirection);
 
                 // 设置枪的位置：在相机前方一小段距离（例如 0.5），并向下移动一点（例如 -0.5）
-                const distanceFromCamera = 0.5; // 枪离相机的距离
-                const yOffset = -0.5;           // 枪在垂直方向上的偏移量（向下）
+                const distanceFromCamera = 0.3; // 枪离相机的距离
+                const yOffset = 1;           // 枪在垂直方向上的偏移量（向下）
 
                 gunGroup.position.set(
                     cameraPosition.x + cameraDirection.x * distanceFromCamera,
