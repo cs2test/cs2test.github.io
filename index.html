@@ -960,6 +960,10 @@
                     }
                 });
 
+                // ========== 关键步骤：修正枪的初始朝向 ==========
+                // 将枪模型绕 X 轴旋转 -90 度（-π/2 弧度），使枪口朝前
+                model.rotation.x = -Math.PI / 2;
+
                 // 3. 将模型添加到 gunGroup 中
                 gunGroup.add(model);
                 // 现在将 gunGroup 添加到场景中
