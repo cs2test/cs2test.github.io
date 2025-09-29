@@ -940,7 +940,7 @@
             camera.rotation.set(0, 0, 0, 'YXZ');
             camera.lookAt(0, 5, -10);
 
-            // ========== 新增：手枪模型加载 ==========
+            // ========== 新增：手枪模型加载1 ==========
             const gunGroup = new THREE.Group();
             // 手枪模型变量
             let pistolModel = null;
@@ -972,7 +972,7 @@
                 // 尝试一个更通用的初始旋转，使枪口朝前，并带有一点倾斜
                 // 这个值可能需要根据你的模型微调
                 model.rotation.x = Math.PI / 2; // 绕X轴旋转-90度，使枪口朝前
-                model.rotation.z = -Math.PI / 12; // 绕Z轴旋转+15度，增加倾斜感 (Math.PI/12 = 15度)
+                model.rotation.z = -Math.PI / 10; // 绕Z轴旋转+15度，增加倾斜感 (Math.PI/12 = 15度)
 
                 // 3. 将模型添加到 gunGroup 中
                 gunGroup.add(model);
@@ -1435,7 +1435,7 @@
                     sensitivity = newSensitivity;
                 }
             });
-            // 渲染循环
+            // 渲染循环  新增：手枪模型加载2
             function animate() {
                 requestAnimationFrame(animate);
 
@@ -1450,8 +1450,8 @@
                 camera.getWorldDirection(cameraDirection);
 
                 // 设置枪的位置：在相机前方一小段距离（例如 0.5），并向下移动一点（例如 -0.5）
-                const distanceFromCamera = 0.3; // 枪离相机的距离
-                const yOffset = -0.1;           // 枪在垂直方向上的偏移量（向下）
+                const distanceFromCamera = 0.2; // 枪离相机的距离
+                const yOffset = -0.2;           // 枪在垂直方向上的偏移量（向下）
 
                 gunGroup.position.set(
                     cameraPosition.x + cameraDirection.x * distanceFromCamera,
