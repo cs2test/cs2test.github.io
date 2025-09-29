@@ -1406,6 +1406,28 @@
             // 渲染循环
             function animate() {
                 requestAnimationFrame(animate);
+
+                // ========== 新增：动态更新手枪位置和旋转 ==========
+                // 让枪的朝向与相机一致
+                gunGroup.rotation.copy(camera.rotation);
+
+                // 将枪放在相机前方，略低于中心点，这样看起来像握在手里
+                // 使用相机的世界坐标和方向来计算枪的位置
+                const cameraPosition = camera.position.clone();
+                const cameraDirection = new THREE.Vector3();
+                camera.getWorldDirection(cameraDirection);
+
+                // 设置枪的位置：在相机前方一小段距离（例如 0.5），并向下移动一点（例如 -0.5）
+                const distanceFromCamera = 0.5; // 枪离相机的距离
+                const yOffset = -0.5;           // 枪在垂直方向上的偏移量（向下）
+
+                gunGroup.position.set(
+                    cameraPosition.x + cameraDirection.x * distanceFromCamera,
+                    cameraPosition.y + cameraDirection.y * distanceFromCamera + yOffset,
+                    cameraPosition.z + cameraDirection.z * distanceFromCamera
+                );
+                // ========== 新增结束 ==========
+
                 renderer.render(scene, camera);
                 updateMiniMap();
             }
