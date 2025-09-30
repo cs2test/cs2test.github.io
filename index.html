@@ -976,7 +976,7 @@
                 // 尝试一个更通用的初始旋转，使枪口朝前，并带有一点倾斜
                 // 这个值可能需要根据你的模型微调
                 model.rotation.x = Math.PI / 2; // 绕X轴旋转-90度，使枪口朝前
-                model.rotation.z = -Math.PI / 20; // 绕Z轴旋转+15度，增加倾斜感 (Math.PI/12 = 15度)
+                model.rotation.z = -Math.PI / 25; // 绕Z轴旋转+15度，增加倾斜感 (Math.PI/12 = 15度)
 
                 // 3. 将模型添加到 gunGroup 中
                 gunGroup.add(model);
@@ -1434,6 +1434,7 @@
             // 渲染循环  新增：手枪模型加载2
             function animate() {
                 requestAnimationFrame(animate);
+
                 // ========== 新增：动态更新手枪位置和旋转 ==========
                 // 让枪的朝向与相机一致
                 gunGroup.rotation.copy(camera.rotation);
@@ -1444,50 +1445,22 @@
                 const cameraDirection = new THREE.Vector3();
                 camera.getWorldDirection(cameraDirection);
 
-                // === 关键修改开始 (计算相对于相机的偏移) ===
-                // 获取相机的局部坐标系向量 (Right, Up, Forward)
-                // Forward vector is cameraDirection (normalized by getWorldDirection)
-                const forwardVector = cameraDirection; 
-
-                // Right vector: X-axis from the camera's world matrix
-                const rightVector = new THREE.Vector3(
-                    camera.matrixWorld.elements[0],
-                    camera.matrixWorld.elements[1],
-                    camera.matrixWorld.elements[2]
-                ).normalize(); // Ensure it's a unit vector
-
-                // Up vector: Y-axis from the camera's world matrix  
-                const upVector = new THREE.Vector3(
-                    camera.matrixWorld.elements[4],
-                    camera.matrixWorld.elements[5],
-                    camera.matrixWorld.elements[6]
-                ).normalize(); // Ensure it's a unit vector
-
-                // 设置枪的位置：
-                // 1. 在相机位置
-                // 2. 加上 前方偏移 (forwardVector * distanceFromCamera)
-                // 3. 加上 右方偏移 (rightVector * xOffset)
-                // 4. 加上 上方/下方偏移 (upVector * yOffset)
+                // 设置枪的位置：在相机前方一小段距离（例如 0.5），并向下移动一点（例如 -0.5）
                 const distanceFromCamera = 0.3; // 枪离相机的距离
-                const yOffset = -0.17;           // 枪在垂直方向上的偏移量（向下为负）
-                const xOffset = 0.06;             // 枪在水平方向上的偏移量（向右为正）
+                const yOffset = -0.17;           // 枪在垂直方向上的偏移量（向下）
+                const xOffset = 0.07;             // 枪在水平方向上的偏移量（向右）
 
                 gunGroup.position.set(
-                    cameraPosition.x + forwardVector.x * distanceFromCamera +
-                        rightVector.x * xOffset +
-                        upVector.x * yOffset,
-                    cameraPosition.y + forwardVector.y * distanceFromCamera +
-                        rightVector.y * xOffset +
-                        upVector.y * yOffset,
-                    cameraPosition.z + forwardVector.z * distanceFromCamera +
-                        rightVector.z * xOffset +
-                        upVector.z * yOffset
+                    cameraPosition.x + cameraDirection.x * distanceFromCamera + xOffset, // 在X轴上增加一个偏移量
+                    cameraPosition.y + cameraDirection.y * distanceFromCamera + yOffset,
+                    cameraPosition.z + cameraDirection.z * distanceFromCamera
                 );
-                // === 关键修改结束 ===
+                // ========== 新增结束 ==========
 
                 renderer.render(scene, camera);
                 updateMiniMap();
             }
+
 
             animate();
             // 更新小地图
