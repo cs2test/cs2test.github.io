@@ -1458,12 +1458,11 @@
                     camera.matrixWorld.elements[6]
                 ).normalize();
 
-                const forwardVector = camera.matrixWorld.elements[8];
-                const forwardVectorY = camera.matrixWorld.elements[9];
-                const forwardVectorZ = camera.matrixWorld.elements[10];
-                // 注意：这里简化了 forwardVector 的获取，也可以像 right 和 up 一样创建 Vector3
-                // 但为了最小化改动，直接用元素值计算
-                const forwardVectorObj = new THREE.Vector3(forwardVector, forwardVectorY, forwardVectorZ).normalize();
+                const forwardVectorObj = new THREE.Vector3(
+                    camera.matrixWorld.elements[8],
+                    camera.matrixWorld.elements[9],
+                    camera.matrixWorld.elements[10]
+                ).normalize();
 
                 // 设置枪的位置：
                 // 1. 在相机前方一小段距离
@@ -1486,12 +1485,9 @@
                 );
                 // === 关键修改结束 ===
 
-                // ========== 新增结束 ==========
-
                 renderer.render(scene, camera);
                 updateMiniMap();
             }
-
 
             animate();
             // 更新小地图
