@@ -690,6 +690,17 @@
                 easy: { size: 3, speed: 5000, spawnRate: 800 }
             };
             let sensitivity = 0.002;
+            // ========== 新增：后坐力变量 ==========
+            let recoilActive = false;       // 标记后坐力动画是否正在进行
+            let recoilStartTime = 0;        // 后坐力开始时间
+            let recoilDuration = 150;       // 后坐力恢复动画持续时间 (毫秒)
+            let recoilAmount = 0.15;        // 后坐力向上移动的强度 (弧度)
+            let recoilRotationX = 0;        // 当前后坐力造成的额外X轴旋转
+            let recoilTargetRotationX = 0;  // 目标后坐力旋转 (用于平滑恢复)
+            let recoilPositionOffsetY = 0;  // 当前后坐力造成的额外Y轴位置偏移
+            let recoilTargetPositionOffsetY = 0; // 目标后坐力位置偏移 (用于平滑恢复)
+            let recoilSmoothness = 0.15;    // 后坐力恢复的平滑度 (0-1, 越小越平滑)
+            // ========== 新增结束 ==========
             const translations = {
                 en: {
                     title: "CS2 3D Aim Trainer",
@@ -1123,6 +1134,14 @@
                 // ======== 新增：触发闪光 ========
                 playGunFlash();
                 // ======== 新增结束 ========
+                // ======== 新增：触发后坐力 ========
+                if (!recoilActive) { // 避免连续射击时叠加
+                    recoilTargetRotationX = -recoilAmount; // 设置目标旋转 (负值表示向上)
+                    recoilTargetPositionOffsetY = -recoilAmount * 2; // 设置目标位置偏移 (可选，增加真实感)
+                    recoilActive = true;
+                    recoilStartTime = Date.now();
+                }
+                // ======== 新增结束 ========
                 if (!gameActive) return;
                 if (!inShootingMode) return;
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); 
@@ -1455,6 +1474,38 @@
                     cameraPosition.y + cameraDirection.y * distanceFromCamera + yOffset,
                     cameraPosition.z + cameraDirection.z * distanceFromCamera
                 );
+                // ========== 新增结束 ==========
+
+
+                // ========== 新增：后坐力动画逻辑 ==========
+                const now = Date.now();
+                if (recoilActive) {
+                    // 简单的线性插值来平滑恢复
+                    const elapsed = now - recoilStartTime;
+                    const progress = Math.min(elapsed / recoilDuration, 1);
+                    // 使用插值平滑地从当前值过渡到目标值
+                    recoilRotationX = recoilRotationX + (recoilTargetRotationX - recoilRotationX) * recoilSmoothness;
+                    recoilPositionOffsetY = recoilPositionOffsetY + (recoilTargetPositionOffsetY - recoilPositionOffsetY) * recoilSmoothness;
+
+                    // 当接近目标且时间到了，结束后坐力
+                    if (progress >= 1 && Math.abs(recoilRotationX - recoilTargetRotationX) < 0.001 && Math.abs(recoilPositionOffsetY - recoilTargetPositionOffsetY) < 0.001) {
+                        recoilRotationX = 0;
+                        recoilTargetRotationX = 0;
+                        recoilPositionOffsetY = 0;
+                        recoilTargetPositionOffsetY = 0;
+                        recoilActive = false;
+                    }
+                } else {
+                    // 如果没有后坐力活动，确保值归零
+                    recoilRotationX = 0;
+                    recoilTargetRotationX = 0;
+                    recoilPositionOffsetY = 0;
+                    recoilTargetPositionOffsetY = 0;
+                }
+
+                // 应用后坐力到枪组
+                gunGroup.rotation.x += recoilRotationX; // 绕X轴旋转，产生向上效果
+                gunGroup.position.y += recoilPositionOffsetY; // Y轴位置偏移 (可选)
                 // ========== 新增结束 ==========
 
                 renderer.render(scene, camera);
