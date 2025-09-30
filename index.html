@@ -1476,7 +1476,6 @@
                 );
                 // ========== 新增结束 ==========
 
-
                 // ========== 修改：后坐力动画逻辑 (基于时间，更精确) ==========
                 const now = Date.now();
                 if (recoilActive) {
@@ -1509,13 +1508,15 @@
                 gunGroup.rotation.x += recoilRotationX;
 
                 // 首先应用相机的原始位置
-                const cameraPosition = camera.position.clone();
-                const cameraDirection = new THREE.Vector3();
-                camera.getWorldDirection(cameraDirection);
+                // 注意：这里复用之前声明的 cameraPosition 和 cameraDirection 变量
+                // 如果这些变量在此处作用域不可见，需要在这里重新获取
+                const tempCameraPosition = camera.position.clone();
+                const tempCameraDirection = new THREE.Vector3();
+                camera.getWorldDirection(tempCameraDirection);
                 gunGroup.position.set(
-                    cameraPosition.x + cameraDirection.x * distanceFromCamera + xOffset,
-                    cameraPosition.y + cameraDirection.y * distanceFromCamera + yOffset,
-                    cameraPosition.z + cameraDirection.z * distanceFromCamera
+                    tempCameraPosition.x + tempCameraDirection.x * distanceFromCamera + xOffset,
+                    tempCameraPosition.y + tempCameraDirection.y * distanceFromCamera + yOffset,
+                    tempCameraPosition.z + tempCameraDirection.z * distanceFromCamera
                 );
                 // 然后叠加后坐力位置偏移
                 gunGroup.position.y += recoilPositionOffsetY;
@@ -1523,6 +1524,7 @@
 
                 renderer.render(scene, camera);
                 updateMiniMap();
+
             }
 
 
