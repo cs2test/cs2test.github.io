@@ -1434,27 +1434,9 @@
             // 渲染循环  新增：手枪模型加载2
             function animate() {
                 requestAnimationFrame(animate);
-
-
-
                 // ========== 新增：动态更新手枪位置和旋转 ==========
-                // 定义枪相对于相机的“基准姿势” (这个值需要根据您A墙时好看的角度微调)
-                // 这个值代表的是，在相机旋转为0（面对A墙）时，枪应该额外旋转多少才能达到理想姿态。
-                // 您可能需要调整这些值，使其在A墙时看起来和原来一样好。
-                const gunRelativeRotation = new THREE.Euler(
-                    Math.PI / 2, // 绕X轴旋转-90度 (使枪口朝前) - 这个值通常不需要改
-                    0,           // 绕Y轴旋转 (左右) - 这个值通常是0，因为我们希望枪不随相机左右转而改变水平朝向
-                    -Math.PI / 25 // 绕Z轴旋转+15度 (倾斜) - 这个值可能需要微调
-                );
-
-                // 计算枪的最终旋转：相机的旋转 + 相对旋转
-                // gunGroup.rotation.copy(camera.rotation); // 注释掉原来的直接复制
-                const cameraQuaternion = new THREE.Quaternion().setFromEuler(camera.rotation); // 将相机旋转转为四元数
-                const relativeQuaternion = new THREE.Quaternion().setFromEuler(gunRelativeRotation); // 将相对旋转转为四元数
-                const finalQuaternion = new THREE.Quaternion().multiplyQuaternions(cameraQuaternion, relativeQuaternion); // 四元数相乘，组合旋转
-                gunGroup.quaternion.copy(finalQuaternion); // 将最终四元数赋值给枪组的四元数，这会更新其rotation
-
-
+                // 让枪的朝向与相机一致
+                gunGroup.rotation.copy(camera.rotation);
 
                 // 将枪放在相机前方，略低于中心点，这样看起来像握在手里
                 // 使用相机的世界坐标和方向来计算枪的位置
@@ -1462,16 +1444,48 @@
                 const cameraDirection = new THREE.Vector3();
                 camera.getWorldDirection(cameraDirection);
 
-                // 设置枪的位置：在相机前方一小段距离（例如 0.5），并向下移动一点（例如 -0.5）
+                // === 关键修改开始 (计算相对于相机的偏移) ===
+                // 获取相机的局部坐标系向量
+                const rightVector = new THREE.Vector3(
+                    camera.matrixWorld.elements[0],
+                    camera.matrixWorld.elements[1],
+                    camera.matrixWorld.elements[2]
+                ).normalize();
+
+                const upVector = new THREE.Vector3(
+                    camera.matrixWorld.elements[4],
+                    camera.matrixWorld.elements[5],
+                    camera.matrixWorld.elements[6]
+                ).normalize();
+
+                const forwardVector = camera.matrixWorld.elements[8];
+                const forwardVectorY = camera.matrixWorld.elements[9];
+                const forwardVectorZ = camera.matrixWorld.elements[10];
+                // 注意：这里简化了 forwardVector 的获取，也可以像 right 和 up 一样创建 Vector3
+                // 但为了最小化改动，直接用元素值计算
+                const forwardVectorObj = new THREE.Vector3(forwardVector, forwardVectorY, forwardVectorZ).normalize();
+
+                // 设置枪的位置：
+                // 1. 在相机前方一小段距离
+                // 2. 向下移动一点（垂直偏移）
+                // 3. 向右移动一点（水平偏移，使用相机的右向量）
                 const distanceFromCamera = 0.3; // 枪离相机的距离
                 const yOffset = -0.2;           // 枪在垂直方向上的偏移量（向下）
                 const xOffset = 0.1;             // 枪在水平方向上的偏移量（向右）
 
                 gunGroup.position.set(
-                    cameraPosition.x + cameraDirection.x * distanceFromCamera + xOffset, // 在X轴上增加一个偏移量
-                    cameraPosition.y + cameraDirection.y * distanceFromCamera + yOffset,
-                    cameraPosition.z + cameraDirection.z * distanceFromCamera
+                    cameraPosition.x + forwardVectorObj.x * distanceFromCamera +
+                        rightVector.x * xOffset +
+                        upVector.x * yOffset,
+                    cameraPosition.y + forwardVectorObj.y * distanceFromCamera +
+                        rightVector.y * xOffset +
+                        upVector.y * yOffset,
+                    cameraPosition.z + forwardVectorObj.z * distanceFromCamera +
+                        rightVector.z * xOffset +
+                        upVector.z * yOffset
                 );
+                // === 关键修改结束 ===
+
                 // ========== 新增结束 ==========
 
                 renderer.render(scene, camera);
