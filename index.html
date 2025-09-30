@@ -969,7 +969,7 @@
                     roughness: 0.5,  // 粗糙度，值越小越光滑
                     metalness: 1.0,  // 金属度，值越大越像金属
                     emissive: 0xcccccc, // <<--- 关键！设置为纯白色自发光。
-                    emissiveIntensity: 0.2 // <<--- 自发光强度，调整这个值来控制亮度。
+                    emissiveIntensity: 0.3 // <<--- 自发光强度，调整这个值来控制亮度。
                 });
 
                 model.traverse((child) => {
@@ -1454,7 +1454,7 @@
                 // 设置枪的位置：在相机前方一小段距离（例如 0.5），并向下移动一点（例如 -0.5）
                 const distanceFromCamera = 0.3; // 枪离相机的距离
                 const yOffset = -0.2;           // 枪在垂直方向上的偏移量（向下）
-                const xOffset = 0.1;             // 枪在水平方向上的偏移量（向右）
+                const xOffset = 0.08;             // 枪在水平方向上的偏移量（向右）
 
                 gunGroup.position.set(
                     cameraPosition.x + cameraDirection.x * distanceFromCamera + xOffset, // 在X轴上增加一个偏移量
