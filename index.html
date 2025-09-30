@@ -1435,9 +1435,24 @@
             function animate() {
                 requestAnimationFrame(animate);
 
+
+
                 // ========== 新增：动态更新手枪位置和旋转 ==========
-                // 让枪的朝向与相机一致
-                gunGroup.rotation.copy(camera.rotation);
+                // 定义枪相对于相机的“基准姿势” (这个值需要根据您A墙时好看的角度微调)
+                // 这个值代表的是，在相机旋转为0（面对A墙）时，枪应该额外旋转多少才能达到理想姿态。
+                // 您可能需要调整这些值，使其在A墙时看起来和原来一样好。
+                const gunRelativeRotation = new THREE.Euler(
+                    Math.PI / 2, // 绕X轴旋转-90度 (使枪口朝前) - 这个值通常不需要改
+                    0,           // 绕Y轴旋转 (左右) - 这个值通常是0，因为我们希望枪不随相机左右转而改变水平朝向
+                    -Math.PI / 25 // 绕Z轴旋转+15度 (倾斜) - 这个值可能需要微调
+                );
+
+                // 计算枪的最终旋转：相机的旋转 + 相对旋转
+                // gunGroup.rotation.copy(camera.rotation); // 注释掉原来的直接复制
+                const finalGunRotation = new THREE.Euler().copy(camera.rotation).add(gunRelativeRotation); // 使用Euler加法
+                gunGroup.rotation.copy(finalGunRotation); // 应用最终旋转
+
+
 
                 // 将枪放在相机前方，略低于中心点，这样看起来像握在手里
                 // 使用相机的世界坐标和方向来计算枪的位置
