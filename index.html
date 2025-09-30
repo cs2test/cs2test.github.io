@@ -959,17 +959,17 @@
                 // 使用 MeshStandardMaterial 创建金属质感
                 const metalMaterial = new THREE.MeshStandardMaterial({
 
-                    color: 0x808080, // 灰色金属
-                    roughness: 0.5,  // 粗糙度，值越小越光滑
-                    metalness: 1.0,  // 金属度，值越大越像金属
-                    emissive: 0x404040, // 自发光颜色，增加一点暗光
-                    envMap: createEnvironmentMap() // 添加环境贴图，增强金属反射效果
-
-                    //color: 0xffffff, // 灰色金属
+                    //color: 0x808080, // 灰色金属
                     //roughness: 0.5,  // 粗糙度，值越小越光滑
                     //metalness: 1.0,  // 金属度，值越大越像金属
-                    //emissive: 0xffffff, // <<--- 关键！设置为纯白色自发光。
-                    //emissiveIntensity: 0.3 // <<--- 自发光强度，调整这个值来控制亮度。
+                    //emissive: 0x404040, // 自发光颜色，增加一点暗光
+                    //envMap: createEnvironmentMap() // 添加环境贴图，增强金属反射效果
+
+                    color: 0xffffff, // 灰色金属
+                    roughness: 0.5,  // 粗糙度，值越小越光滑
+                    metalness: 1.0,  // 金属度，值越大越像金属
+                    emissive: 0xcccccc, // <<--- 关键！设置为纯白色自发光。
+                    emissiveIntensity: 0.3 // <<--- 自发光强度，调整这个值来控制亮度。
                 });
 
                 model.traverse((child) => {
