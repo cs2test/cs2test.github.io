@@ -1449,8 +1449,10 @@
 
                 // 计算枪的最终旋转：相机的旋转 + 相对旋转
                 // gunGroup.rotation.copy(camera.rotation); // 注释掉原来的直接复制
-                const finalGunRotation = new THREE.Euler().copy(camera.rotation).add(gunRelativeRotation); // 使用Euler加法
-                gunGroup.rotation.copy(finalGunRotation); // 应用最终旋转
+                const cameraQuaternion = new THREE.Quaternion().setFromEuler(camera.rotation); // 将相机旋转转为四元数
+                const relativeQuaternion = new THREE.Quaternion().setFromEuler(gunRelativeRotation); // 将相对旋转转为四元数
+                const finalQuaternion = new THREE.Quaternion().multiplyQuaternions(cameraQuaternion, relativeQuaternion); // 四元数相乘，组合旋转
+                gunGroup.quaternion.copy(finalQuaternion); // 将最终四元数赋值给枪组的四元数，这会更新其rotation
 
 
 
