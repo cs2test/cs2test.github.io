@@ -1445,36 +1445,41 @@
                 camera.getWorldDirection(cameraDirection);
 
                 // === 关键修改开始 (计算相对于相机的偏移) ===
-                // 获取相机的局部坐标系向量
+                // 获取相机的局部坐标系向量 (Right, Up, Forward)
+                // Forward vector is cameraDirection (normalized by getWorldDirection)
+                const forwardVector = cameraDirection; 
+
+                // Right vector: X-axis from the camera's world matrix
                 const rightVector = new THREE.Vector3(
                     camera.matrixWorld.elements[0],
                     camera.matrixWorld.elements[1],
                     camera.matrixWorld.elements[2]
-                ).normalize();
+                ).normalize(); // Ensure it's a unit vector
 
+                // Up vector: Y-axis from the camera's world matrix  
                 const upVector = new THREE.Vector3(
                     camera.matrixWorld.elements[4],
                     camera.matrixWorld.elements[5],
                     camera.matrixWorld.elements[6]
-                ).normalize();
-
+                ).normalize(); // Ensure it's a unit vector
 
                 // 设置枪的位置：
-                // 1. 在相机前方一小段距离
-                // 2. 向下移动一点（垂直偏移）
-                // 3. 向右移动一点（水平偏移，使用相机的右向量）
+                // 1. 在相机位置
+                // 2. 加上 前方偏移 (forwardVector * distanceFromCamera)
+                // 3. 加上 右方偏移 (rightVector * xOffset)
+                // 4. 加上 上方/下方偏移 (upVector * yOffset)
                 const distanceFromCamera = 0.3; // 枪离相机的距离
-                const yOffset = -0.2;           // 枪在垂直方向上的偏移量（向下）
-                const xOffset = 0.1;             // 枪在水平方向上的偏移量（向右）
+                const yOffset = -0.2;           // 枪在垂直方向上的偏移量（向下为负）
+                const xOffset = 0.1;             // 枪在水平方向上的偏移量（向右为正）
 
                 gunGroup.position.set(
-                    cameraPosition.x + forwardVectorObj.x * distanceFromCamera +
+                    cameraPosition.x + forwardVector.x * distanceFromCamera +
                         rightVector.x * xOffset +
                         upVector.x * yOffset,
-                    cameraPosition.y + forwardVectorObj.y * distanceFromCamera +
+                    cameraPosition.y + forwardVector.y * distanceFromCamera +
                         rightVector.y * xOffset +
                         upVector.y * yOffset,
-                    cameraPosition.z + forwardVectorObj.z * distanceFromCamera +
+                    cameraPosition.z + forwardVector.z * distanceFromCamera +
                         rightVector.z * xOffset +
                         upVector.z * yOffset
                 );
