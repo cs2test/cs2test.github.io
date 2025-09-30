@@ -961,7 +961,8 @@
                     color: 0xffffff, // 灰色金属
                     roughness: 0.5,  // 粗糙度，值越小越光滑
                     metalness: 1.0,  // 金属度，值越大越像金属
-                    emissive: 0x000000 // 自发光颜色，增加一点暗光
+                    emissive: 0x000000, // 自发光颜色，增加一点暗光
+                    envMap: createEnvironmentMap() // <<--- 重新启用这行！这是关键！
                 });
 
                 model.traverse((child) => {
