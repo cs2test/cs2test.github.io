@@ -958,11 +958,18 @@
                 // 2. 替换材质为金属色，确保可见
                 // 使用 MeshStandardMaterial 创建金属质感
                 const metalMaterial = new THREE.MeshStandardMaterial({
-                    color: 0xffffff, // 灰色金属
-                    roughness: 0.5,  // 粗糙度，值越小越光滑
-                    metalness: 1.0,  // 金属度，值越大越像金属
-                    emissive: 0xffffff, // <<--- 关键！设置为纯白色自发光。
-                    emissiveIntensity: 0.1 // <<--- 自发光强度，调整这个值来控制亮度。
+
+                    color: 0xffffff, // 纯白色
+                    specular: 0xffffff, // 高光颜色，设为白色以获得强烈的镜面高光
+                    shininess: 100, // 高光大小，值越大高光越小越锐利
+                    emissive: 0x333333, // 可选，增加一点自发光，让模型在暗处也可见
+                    emissiveIntensity: 0.2
+
+                    //color: 0xffffff, // 灰色金属
+                    //roughness: 0.5,  // 粗糙度，值越小越光滑
+                    //metalness: 1.0,  // 金属度，值越大越像金属
+                    //emissive: 0xffffff, // <<--- 关键！设置为纯白色自发光。
+                    //emissiveIntensity: 0.3 // <<--- 自发光强度，调整这个值来控制亮度。
                 });
 
                 model.traverse((child) => {
