@@ -959,9 +959,9 @@
                 // 使用 MeshStandardMaterial 创建金属质感
                 const metalMaterial = new THREE.MeshStandardMaterial({
                     color: 0x808080, // 灰色金属
-                    roughness: 0.5,  // 粗糙度，值越小越光滑
+                    roughness: 0.7,  // 粗糙度，值越小越光滑
                     metalness: 1.0,  // 金属度，值越大越像金属
-                    emissive: 0x404040, // 自发光颜色，增加一点暗光
+                    emissive: 0x000000, // 自发光颜色，增加一点暗光
                    // emissiveIntensity: 0.6, // 自发光强度，让模型在暗处也能被看到
                     envMap: createEnvironmentMap() // 添加环境贴图，增强金属反射效果
                 });
@@ -1447,8 +1447,8 @@
 
                 // 设置枪的位置：在相机前方一小段距离（例如 0.5），并向下移动一点（例如 -0.5）
                 const distanceFromCamera = 0.3; // 枪离相机的距离
-                const yOffset = -0.17;           // 枪在垂直方向上的偏移量（向下）
-                const xOffset = 0.07;             // 枪在水平方向上的偏移量（向右）
+                const yOffset = -0.2;           // 枪在垂直方向上的偏移量（向下）
+                const xOffset = 0.1;             // 枪在水平方向上的偏移量（向右）
 
                 gunGroup.position.set(
                     cameraPosition.x + cameraDirection.x * distanceFromCamera + xOffset, // 在X轴上增加一个偏移量
